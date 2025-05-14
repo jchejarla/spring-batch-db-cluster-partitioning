@@ -77,5 +77,4 @@ CREATE TABLE BATCH_JOB_COORDINATION (
 Licensed under the Apache License, Version 2.0.
 
 ## Author
-
-Janardhan Chejarla, Lead Software Engineer
+janardhan.chejarla@googlemail.com
