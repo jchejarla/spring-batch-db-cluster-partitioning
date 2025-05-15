@@ -20,6 +20,47 @@ A lightweight, fail-safe, database-driven distributed partitioning framework bui
   <li>Cloud-native workloads using database metadata for coordination</li>
 </ul>
 
+## Architecture 
+
+```mermaid
+graph TD
+    A[Job Launcher Node] --> B[Job Execution]
+    B --> C{Step Type}
+    C -->|Single Step| D[Execute Locally]
+    C -->|Partitioned Step| E[Distribute Partitions]
+    E --> F[Worker Node 1]
+    E --> G[Worker Node 2]
+    E --> H[Worker Node N]
+    F --> I[Process Partition]
+    G --> J[Process Partition]
+    H --> K[Process Partition]
+    I --> L[Update Status]
+    J --> L
+    K --> L
+    L --> M[Master Monitors & Reassigns if Needed]
+```
+
+## Sequence diagram
+
+```mermaid
+
+sequenceDiagram
+    participant Master as Job Launcher Node
+    participant Worker1 as Worker Node 1
+    participant Worker2 as Worker Node 2
+    participant DB as Shared Database
+
+    Master->>DB: Store Job & Step Metadata
+    Master->>Worker1: Assign Partition 1
+    Master->>Worker2: Assign Partition 2
+    Worker1->>DB: Update Partition 1 Status
+    Worker2->>DB: Update Partition 2 Status
+    Master->>DB: Monitor Partition Status
+    Master->>Worker1: Reassign Partition if Needed
+
+```
+
+
 ## Table Schema
 
 The following tables are required:
