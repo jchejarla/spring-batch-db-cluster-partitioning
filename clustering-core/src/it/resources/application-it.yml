@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+    initialization-mode: always
+    schema:
+      - classpath:/org/springframework/batch/core/schema-h2.sql
+      - classpath:/dev/jchejarla/springbatch/clustering/schema-h2.sql
+  h2:
+    console:
+      enabled: true
+  sql:
+    init:
+      mode: always
+      platform: h2
+  batch:
+    jdbc:
+      initialize-schema: always
+    cluster:
+      enabled: true
+      node-id: ${HOSTNAME:worker}-${random.uuid}
+      grid-size: 4
+      heartbeat-interval: 5000
+  main:
+    allow-circular-references: true
+
+debug: true

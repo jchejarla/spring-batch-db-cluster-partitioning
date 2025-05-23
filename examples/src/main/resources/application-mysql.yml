@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/dev_db?useUnicode=true&characterEncoding=UTF-8
+    username: dev_user
+    password: dev_password
+
+  batch:
+    jdbc:
+      initialize-schema: "never"
+    cluster:
+      enabled: true
+      node-id: ${HOSTNAME:worker}-${random.uuid}
+
+debug: true

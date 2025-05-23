@@ -1,0 +1,81 @@
+package dev.jchejarla.springbatch.clustering.mgmt;
+
+import dev.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
+import dev.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
+import dev.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.configuration.BatchConfigurationException;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.TaskScheduler;
+
+import java.time.Duration;
+
+@Slf4j
+@RequiredArgsConstructor
+@ConditionalOnClusterEnabled
+public class ClusterNodeManager {
+
+    private final DatabaseBackedClusterService databaseBackedClusterService;
+    private final BatchClusterProperties batchClusterProperties;
+    private final TaskScheduler clusterMonitoringScheduler;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void start() {
+        log.info("Registering the node with id {}", batchClusterProperties.getNodeId());
+        long start = System.currentTimeMillis();
+        int rowsUpdated = databaseBackedClusterService.registerNode();
+        if(rowsUpdated == 0) {
+            log.error("Application failed to register the node with id {}", batchClusterProperties.getNodeId());
+            throw new BatchConfigurationException("Application failed to register the node with id "+batchClusterProperties.getNodeId());
+        }
+        log.info("Application registered the node with id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+        clusterMonitoringScheduler.scheduleAtFixedRate(this::updateHeartbeat, Duration.ofMillis(batchClusterProperties.getWorkerNodeHeartBeatThreadInterval()));
+        clusterMonitoringScheduler.scheduleAtFixedRate(this::markNodesUnreachable, Duration.ofMillis(batchClusterProperties.getWorkerNodeMarkUnreachableThreadInterval()));
+        clusterMonitoringScheduler.scheduleAtFixedRate(this::removeNodesUnreachable, Duration.ofMillis(batchClusterProperties.getWorkerNodeDeleteUnreachableThreadInterval()));
+    }
+
+    protected void updateHeartbeat() {
+        try {
+            long start = System.currentTimeMillis();
+            int rowsUpdated = databaseBackedClusterService.updateNodeHeartbeat();
+            if (rowsUpdated == 0) {
+                log.error("Application failed to update the heartbeat for node id {}, trying to one more time ", batchClusterProperties.getNodeId());
+                 rowsUpdated = databaseBackedClusterService.registerNode();
+                 if(rowsUpdated == 1) {
+                     log.info("Application re-registered the node with id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+                 }
+            } else if (batchClusterProperties.isTracingEnabled()) {
+                log.info("Application updated heartbeat for node id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+            }
+        } catch(Exception e) {
+            log.error("Exception occurred while updating heart beat for node id : {}", batchClusterProperties.getNodeId(), e);
+        }
+    }
+
+    protected void markNodesUnreachable() {
+        try {
+            long start = System.currentTimeMillis();
+            int rowsUpdated = databaseBackedClusterService.markNodesUnreachable();
+            if (rowsUpdated > 0 || batchClusterProperties.isTracingEnabled()) {
+                log.info("PHASE1 of Nodes removal from Application have marked {} nodes that are not reachable, i.e. nodes status was not updated in last {} milli seconds, marking process took {} milliseconds", rowsUpdated, batchClusterProperties.getWorkerMarkUnreachableTimeDiff(), (System.currentTimeMillis() - start));
+            }
+        } catch(Exception e) {
+            log.error("Exception occurred while marking node id : {} unreachable", batchClusterProperties.getNodeId(), e);
+        }
+    }
+
+    protected void removeNodesUnreachable() {
+        try {
+            long start = System.currentTimeMillis();
+            int rowsUpdated = databaseBackedClusterService.deleteNodesUnreachable();
+            if (rowsUpdated > 0 || batchClusterProperties.isTracingEnabled()) {
+                log.info("PHASE2 of Nodes removal from Application have removed {} nodes that are not reachable, i.e. nodes status was not updated in last {} milli seconds, delete process took {} milliseconds", rowsUpdated, batchClusterProperties.getWorkerDeleteUnreachableTimeDiff(), (System.currentTimeMillis() - start));
+            }
+        } catch(Exception e) {
+            log.error("Exception occurred while removing node id : {} from cluster", batchClusterProperties.getNodeId(), e);
+        }
+    }
+
+}

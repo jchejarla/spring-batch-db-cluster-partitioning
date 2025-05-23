@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dev_db?options=-c%20search_path=spring_batch,public
+    username: dev_user
+    password: dev_passw0rd
+
+  batch:
+    jdbc:
+      initialize-schema: "never"
+    cluster:
+      enabled: true
+      node-id: ${HOSTNAME:worker}-${random.uuid}
+      grid-size: 4
+      heartbeat-interval: 5000
+  main:
+    allow-circular-references: true
+
+debug: true
