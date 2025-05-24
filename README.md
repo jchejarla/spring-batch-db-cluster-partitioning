@@ -65,7 +65,7 @@ Demonstrates the usage of `clustering-core` with sample jobs, showcasing:
 4. Invoke the REST end point to start the job (you can have multiple instances of App running for testing multi node setup)
 <code>http://localhost:8080/api/v1/startjob</code>
 
-5. Play around customizing partitioning logic in <code>examples.dev.jchejarla.springbatch.clustering.simplejob.JobConfig#partitioner</code>
+5. Play around customizing partitioning logic in <code>examples.dev.jchejarla.springbatch.clustering.simplejob.SimpleJobConfig#partitioner</code>
 
 ## Architecture 
 

@@ -6,6 +6,7 @@ import dev.jchejarla.springbatch.clustering.api.PartitionStrategy;
 import dev.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import dev.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import dev.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecution;
@@ -17,9 +18,7 @@ import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.core.partition.support.StepExecutionAggregator;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -29,10 +28,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
+@Slf4j
 @Configuration
 @EnableBatchProcessing
-public class JobConfig {
+public class SimpleJobConfig {
 
     @Autowired
     Partitioner partitioner;
@@ -72,7 +74,14 @@ public class JobConfig {
 
             @Override
             public void onSuccess(Collection<StepExecution> executions) {
-
+                AtomicLong sum = new AtomicLong(0);
+                executions.forEach(execution-> {
+                    Long resultFromPartitionedTask = execution.getExecutionContext().get("result", Long.class);
+                    if(Objects.nonNull(resultFromPartitionedTask)) {
+                        sum.addAndGet(resultFromPartitionedTask);
+                    }
+                });
+                log.info("Sum of number from 1...1000 is {} ", sum.longValue());
             }
 
             @Override
@@ -92,29 +101,6 @@ public class JobConfig {
                 .build();
     }
 
-
-    @Bean("sampleJob")
-    public Job sampleJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
-        return new JobBuilder("test-job", jobRepository).incrementer(new RunIdIncrementer())
-                .start(heartbeatStep(jobRepository, platformTransactionManager)).build();
-    }
-
-
-    public Step heartbeatStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
-        return new StepBuilder("heartbeatStep", jobRepository)
-                .tasklet(heartbeatTasklet(), platformTransactionManager).build();
-    }
-
-    @Bean
-    public Tasklet heartbeatTasklet() {
-        return (contribution, chunkContext) -> {
-            System.out.println("Heartbeat: Job is alive on node " + System.getenv("NODE_ID"));
-            // Here you would insert/update a record in your cluster DB
-            return RepeatStatus.FINISHED;
-        };
-    }
-
-
     @Bean
     public Partitioner partitioner() {
         return new ClusterAwarePartitioner() {
@@ -122,10 +108,13 @@ public class JobConfig {
             @Override
             public List<ExecutionContext> splitIntoChunksForDistribution(int availableNodeCount) {
                 List<ExecutionContext> executionContexts = new ArrayList<>(availableNodeCount);
+                int start = 0;
                 for (int i=0; i<2; i++) {
                     ExecutionContext context = new ExecutionContext();
                     context.putString("partitionKey", "partition-" + i);
-                    context.putString("inputFile", "testdata"+(i+1)+".csv");
+                    context.putInt("start", (i*start) + 1);
+                    context.putInt("end", (i*start) + 500);
+                    start = 500;
                     executionContexts.add(context);
                 }
                 return executionContexts;

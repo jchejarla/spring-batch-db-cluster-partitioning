@@ -16,7 +16,10 @@ public class MultiNodeExecutionTask implements Tasklet {
         log.info("Executing MultiNode Task - START");
         StepExecution stepExecution =chunkContext.getStepContext().getStepExecution();
         ExecutionContext executionContext = stepExecution.getExecutionContext();
-        executionContext.put("Result", 1234);
+        Integer start = executionContext.getInt("start");
+        Integer end = executionContext.getInt("end");
+        long result = (long)(end- start +1) * (start + end) /2;
+        executionContext.put("result", result);
         log.info("Executing MultiNode Task - END");
         return RepeatStatus.FINISHED;
     }

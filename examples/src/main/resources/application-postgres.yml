@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/dev_db?options=-c%20search_path=spring_batch,public
     username: dev_user
-    password: dev_passw0rd
+    password: dev_password
 
   batch:
     jdbc:
