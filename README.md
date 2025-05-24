@@ -6,9 +6,9 @@ A lightweight, fail-safe, database-driven distributed partitioning framework bui
 ## ✨ Features
 
 - **Database-Backed Partition Coordination**: Utilizes a shared database to manage partition assignments and job coordination.
-- **Leader Election via Heartbeat Table**: Implements a heartbeat mechanism to elect a master node dynamically.
+- **Decentralized Master Node Election Per Job**: Node that launches the Job acts as master controller for that Job.
 - **Automatic Failover**: Seamlessly reassigns tasks if a node becomes unresponsive, ensuring high availability.
-- **Dynamic Partition Assignment**: Supports real-time partition distribution based on node availability and load.
+- **Dynamic Partition Assignment**: Supports real-time partition distribution based on node availability, load and partitioning stragetgy (<code>FIXED_NODE_COUNT</code>, <code>SCALE_UP</code>, and <code>ROUND_ROBIN</code>).
 - **Cluster-Aware Aggregation**: Provides `ClusterAwareAggregator` and `ClusterAwareAggregatorCallback` interfaces for custom execution context handling post task completion.
 
 ## 🏗️ Modules
@@ -18,16 +18,18 @@ A lightweight, fail-safe, database-driven distributed partitioning framework bui
 Contains the core implementation for:
 
 - Custom `PartitionHandler` with database-backed partition distribution.
+- Custom 'ClusterAwarePartitioner' which can be customized with partition strategy.
 - Leader election and heartbeat mechanisms.
 - Interfaces for cluster-aware aggregation.
+- Handling of failover logic.
 
 ### `examples`
 
 Demonstrates the usage of `clustering-core` with sample jobs, showcasing:
 
 - Configuration of partitioned steps.
+- Implementation of custom partitioner
 - Implementation of custom aggregators.
-- Handling of failover scenarios.
 
 ## 🗄️ Supported Databases
 
