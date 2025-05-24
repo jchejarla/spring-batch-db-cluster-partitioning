@@ -1,24 +1,71 @@
 # Spring Batch Database-Backed Clustered Partitioning
 
-A lightweight, fail-safe, database-driven distributed partitioning framework built on top of Spring Batch. This system enables clustered execution of batch jobs using a shared database for coordination, allowing any node to assume the role of master if another node goes down.
-
-## Features
-<ul>
-  <li><strong>Custom PartitionHandler</strong> with database-backed partition distribution</li>
-  <li><strong>Leader Election via Heartbeat Table</strong></li>
-  <li><strong>Automatic Failover</strong> if a node dies (If the task/sub-task is re-runnable)</li>
-  <li><strong>Dynamic Partition Assignment</strong> (Choice of strategies, such as <code>FIXED_NODE</code>, <code>SCALE_UP</code>, <code>ROUND_ROBIN</code> or you can customize it)</li>
-  <li><strong>No external brokers (like Kafka or RabbitMQ)</strong></li>
-  <li><strong>Built-in resilience and horizontal scalability</strong></li>
-</ul>
+A lightweight, fail-safe, database-driven distributed partitioning framework built on top of Spring Batch. This system enables clustered execution of batch jobs using a shared database for coordination, allowing any node to assume take the role of executing the task if another node goes down (If the task is marked as re-assignable).
 
 
-## Use Cases
-<ul>
-  <li>High-throughput batch jobs in clustered environments</li>
-  <li>Jobs needing fault tolerance and automatic node recovery</li>
-  <li>Cloud-native workloads using database metadata for coordination</li>
-</ul>
+## ✨ Features
+
+- **Database-Backed Partition Coordination**: Utilizes a shared database to manage partition assignments and job coordination.
+- **Leader Election via Heartbeat Table**: Implements a heartbeat mechanism to elect a master node dynamically.
+- **Automatic Failover**: Seamlessly reassigns tasks if a node becomes unresponsive, ensuring high availability.
+- **Dynamic Partition Assignment**: Supports real-time partition distribution based on node availability and load.
+- **Cluster-Aware Aggregation**: Provides `ClusterAwareAggregator` and `ClusterAwareAggregatorCallback` interfaces for custom execution context handling post task completion.
+
+## 🏗️ Modules
+
+### `clustering-core`
+
+Contains the core implementation for:
+
+- Custom `PartitionHandler` with database-backed partition distribution.
+- Leader election and heartbeat mechanisms.
+- Interfaces for cluster-aware aggregation.
+
+### `examples`
+
+Demonstrates the usage of `clustering-core` with sample jobs, showcasing:
+
+- Configuration of partitioned steps.
+- Implementation of custom aggregators.
+- Handling of failover scenarios.
+
+## 🗄️ Supported Databases
+
+- **MySQL**
+- **PostgreSQL**
+- **Oracle**
+- **H2** (Recommended for testing purposes only)
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Java 21 or higher
+- Maven 3.6 or higher
+- A supported relational database
+
+### Build and Run (Locally)
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/jchejarla/spring-batch-db-cluster-partitioning.git
+   cd spring-batch-db-cluster-partitioning
+2. Build the project:
+
+```cmd
+    mvn clean install
+```
+3. Navigate to the <code>examples</code> module and run a sample job:
+
+```cmd
+    cd examples 
+    mvn spring-boot:run
+```
+4. Invoke the REST end point to start the job (you can have multiple instances of App running for testing multi node setup)
+<code>http://localhost:8080/api/v1/startjob</code>
+
+5. Play around customizing partitioning logic in <code>examples.dev.jchejarla.springbatch.clustering.simplejob.JobConfig#partitioner</code>
 
 ## Architecture 
 
@@ -60,58 +107,26 @@ sequenceDiagram
 
 ```
 
-
-## Table Schema
-
-The following tables are required:
-
-<code>BATCH_PARTITIONS</code>
-
-```sql
-CREATE TABLE BATCH_PARTITIONS (
-    step_execution_id BIGINT PRIMARY KEY,
-    job_execution_id BIGINT,
-    partition_key VARCHAR(255),
-    status VARCHAR(50),
-    assigned_node VARCHAR(255),
-    last_updated TIMESTAMP
-);
-```
-
-<code>BATCH_JOB_COORDINATION</code>
-```sql
-CREATE TABLE BATCH_JOB_COORDINATION (
-    job_instance_id BIGINT PRIMARY KEY,
-    leader_id VARCHAR(255),
-    last_heartbeat TIMESTAMP
-);
-```
-
 ## Components
 
 <code>ClusterAwarePartitionHandler</code>: Writes partition metadata to DB.
 
-<code>LeaderElectionScheduler</code>: Elects leader and checks partition completion.
-
-<code>PartitionWorkerTasksRunner</code>: Claims available partitions and executes them.
+<code>PartitionedWorkerNodeTasksRunner</code>: Claims available partitions and executes them.
 
 <code>ClusterAwarePartitioner</code>: Delegates the partitions creation logic to the caller and perists them for execution across nodes.
 
+<code>ClusterAwareAggregator</code>: Cluster aware aggregator, that can be used in <code>Step</code> building logic to be called when all tasks completed.
+
+<code>ClusterAwareAggregatorCallback</code>: A callback interface to be registered with <code>ClusterAwareAggregator</code>, when using aggregator this interface gets called to delegate the final aggregation logic.
+
 ## Failover Logic
 <ul>
-  <li>Nodes periodically claim leadership for a job instance.</li>
+  <li>Nodes periodically claim leadership for a Task instance in case if it detects the node that currently claimed is no longer healthy.</li>
   <li>If current leader hasn't sent a heartbeat in 30 seconds (configurable), another node takes over.</li>
   <li>All partition status is stored in the database to ensure consistency.</li>
 </ul>
 
-## How to Run
-<ol>
-  <li>Set up the database schema.</li>
-  <li>Start multiple Spring Boot JVMs with this application.</li>
-  <li>Launch the partitioned job.</li>
-  <li>One JVM will take leadership and coordinate partitioning.</li>
-  <li>Other nodes will pick up work based on DB state.</li>
-</ol>
+
 
 ## License
 
