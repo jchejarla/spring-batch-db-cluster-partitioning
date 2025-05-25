@@ -48,13 +48,13 @@ public class DatabaseBackedClusterService {
 
     @Transactional
     public int markNodesUnreachable() {
-        Object[] params = new Object[]{NodeStatus.UNREACHABLE.name(), NodeStatus.ACTIVE.name(), batchClusterProperties.getWorkerMarkUnreachableTimeDiff()};
+        Object[] params = new Object[]{NodeStatus.UNREACHABLE.name(), NodeStatus.ACTIVE.name(), batchClusterProperties.getUnreachableNodeThreshold()};
         return jdbcTemplate.update(queryProvider.getMarkNodesUnreachableQuery(), params);
     }
 
     @Transactional
     public int deleteNodesUnreachable() {
-        Object[] params = new Object[]{NodeStatus.UNREACHABLE.name(), batchClusterProperties.getWorkerDeleteUnreachableTimeDiff()};
+        Object[] params = new Object[]{NodeStatus.UNREACHABLE.name(), batchClusterProperties.getNodeCleanupThreshold()};
         return jdbcTemplate.update(queryProvider.getDeleteNodesUnreachableQuery(), params);
     }
 

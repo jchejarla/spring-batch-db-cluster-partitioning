@@ -47,7 +47,7 @@ public class PartitionedWorkerNodeTasksRunner {
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         log.info("Starting monitoring task for partitions");
-        partitionPollingScheduler.scheduleAtFixedRate(this::pollAndExecute, Duration.ofMillis(batchClusterProperties.getPollForPartitionTasks()));
+        partitionPollingScheduler.scheduleAtFixedRate(this::pollAndExecute, Duration.ofMillis(batchClusterProperties.getTaskPollingInterval()));
         log.info("Started monitoring task for partitions");
 
     }

@@ -148,7 +148,6 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             if (batchClusterProperties.isTracingEnabled()) {
                 log.info("There are {} partition tasks waiting to be completed, master step execution id : {}", pending, masterStepExecutionId);
             }
-            Thread.sleep(batchClusterProperties.getMasterTaskStatusCheckInterval());
         } catch (Exception e) {
             log.error("Exception occurred while waiting for workload partitions executions", e);
             throw new JobExecutionException("Exception occurred while waiting for workload partitions executions", e);
