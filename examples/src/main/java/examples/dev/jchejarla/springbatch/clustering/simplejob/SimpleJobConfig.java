@@ -6,11 +6,13 @@ import dev.jchejarla.springbatch.clustering.api.PartitionStrategy;
 import dev.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import dev.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import dev.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
@@ -21,6 +23,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -40,7 +43,8 @@ public class SimpleJobConfig {
     Partitioner partitioner;
     @Autowired
     ClusterAwarePartitionHandler partitionHandler;
-
+    @Getter
+    SumAggregatorCallback sumAggregatorCallback;
 
     @Bean("clusteredJob")
     public Job clusteredJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager, @Qualifier("multiStepAggregator") StepExecutionAggregator clusterAwareAggregator) {
@@ -70,26 +74,8 @@ public class SimpleJobConfig {
 
     @Bean("multiStepAggregator")
     public StepExecutionAggregator aggregator(JobExplorer jobExplorer) {
-        ClusterAwareAggregatorCallback clusterAwareAggregatorCallback = new ClusterAwareAggregatorCallback() {
-
-            @Override
-            public void onSuccess(Collection<StepExecution> executions) {
-                AtomicLong sum = new AtomicLong(0);
-                executions.forEach(execution-> {
-                    Long resultFromPartitionedTask = execution.getExecutionContext().get("result", Long.class);
-                    if(Objects.nonNull(resultFromPartitionedTask)) {
-                        sum.addAndGet(resultFromPartitionedTask);
-                    }
-                });
-                log.info("Sum of number from 1...1000 is {} ", sum.longValue());
-            }
-
-            @Override
-            public void onFailure(Collection<StepExecution> executions) {
-
-            }
-        };
-        ClusterAwareAggregator clusterAwareAggregator = new ClusterAwareAggregator(clusterAwareAggregatorCallback);
+        sumAggregatorCallback = new SumAggregatorCallback();
+        ClusterAwareAggregator clusterAwareAggregator = new ClusterAwareAggregator(sumAggregatorCallback);
         clusterAwareAggregator.setJobExplorer(jobExplorer);
         return clusterAwareAggregator;
     }
@@ -102,20 +88,33 @@ public class SimpleJobConfig {
     }
 
     @Bean
-    public Partitioner partitioner() {
+    @StepScope
+    public Partitioner partitioner(@Value("#{jobParameters['taskSize']}") Long tasksSize, @Value("#{jobParameters['from']}") Long from, @Value("#{jobParameters['to']}") Long to) {
         return new ClusterAwarePartitioner() {
 
             @Override
             public List<ExecutionContext> splitIntoChunksForDistribution(int availableNodeCount) {
                 List<ExecutionContext> executionContexts = new ArrayList<>(availableNodeCount);
-                int start = 0;
-                for (int i=0; i<2; i++) {
+
+                long totalNumbers = to - from + 1;
+                long partitionSize = totalNumbers / tasksSize;
+                long remainder = totalNumbers % tasksSize;
+                long currentStart = from;
+                for (int i=0; i<tasksSize; i++) {
                     ExecutionContext context = new ExecutionContext();
                     context.putString("partitionKey", "partition-" + i);
-                    context.putInt("start", (i*start) + 1);
-                    context.putInt("end", (i*start) + 500);
-                    start = 500;
+                    long currentEnd = currentStart + partitionSize - 1;
+
+                    if (remainder > 0) {
+                        currentEnd++;
+                        remainder--;
+                    }
+
+                    currentEnd = Math.min(currentEnd, to);
+                    context.putLong("start", currentStart);
+                    context.putLong("end", currentEnd);
                     executionContexts.add(context);
+                    currentStart = currentEnd +1;
                 }
                 return executionContexts;
             }
@@ -132,5 +131,26 @@ public class SimpleJobConfig {
         };
 
 
+    }
+
+    @Getter
+    public static class SumAggregatorCallback implements ClusterAwareAggregatorCallback {
+
+        public AtomicLong sum = new AtomicLong(0);
+
+        @Override
+        public void onSuccess(Collection<StepExecution> executions) {
+            executions.forEach(execution-> {
+                Long resultFromPartitionedTask = execution.getExecutionContext().get("result", Long.class);
+                if(Objects.nonNull(resultFromPartitionedTask)) {
+                    sum.addAndGet(resultFromPartitionedTask);
+                }
+            });
+            log.info("Sum of number from 1...1000 is {} ", sum.longValue());
+        }
+
+        @Override
+        public void onFailure(Collection<StepExecution> executions) {
+        }
     }
 }
