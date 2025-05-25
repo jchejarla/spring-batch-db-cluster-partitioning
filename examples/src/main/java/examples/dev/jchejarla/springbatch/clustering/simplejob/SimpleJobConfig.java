@@ -146,7 +146,7 @@ public class SimpleJobConfig {
                     sum.addAndGet(resultFromPartitionedTask);
                 }
             });
-            log.info("Sum of number from 1...1000 is {} ", sum.longValue());
+            log.info("Sum of input range is {} ", sum.longValue());
         }
 
         @Override
