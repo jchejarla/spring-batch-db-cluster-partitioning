@@ -25,10 +25,9 @@ public class RestEndPoints {
 
     private final JobLauncher jobLauncher;
     private final ApplicationContext applicationContext;
-    private final SimpleJobConfig simpleJobConfig;
 
-    @GetMapping("/startjob/addition/taskSize/{taskSize}/from/{from}/to/{to}")
-    public ResponseEntity<String> startJob(@PathVariable("taskSize") Long taskSize, @PathVariable("from") Long from, @PathVariable("to") Long to) {
+    @GetMapping("/clusteredjob/addition/taskSize/{taskSize}/from/{from}/to/{to}")
+    public ResponseEntity<String> startJobNewSolution(@PathVariable("taskSize") Long taskSize, @PathVariable("from") Long from, @PathVariable("to") Long to) {
         JobParameters parameters = new JobParametersBuilder()
                 .addString("RUN_TIME", LocalDateTime.now().toString(), true)
                 .addLong("taskSize", taskSize)
@@ -40,8 +39,9 @@ public class RestEndPoints {
             long startTime = System.currentTimeMillis();
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             long endTime = System.currentTimeMillis();
+            SimpleJobConfig simpleJobConfig = applicationContext.getBean(SimpleJobConfig.class);
             String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
-                    "Output: " + "sum of number from " + from + " to " + to + " is " +
+                    "Output: " + "sum of number from " + from + " to " + to + " is "+
                     simpleJobConfig.getSumAggregatorCallback().getSum();
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
@@ -50,5 +50,27 @@ public class RestEndPoints {
         }
     }
 
+    @GetMapping("/singlenodejob/addition/taskSize/{taskSize}/from/{from}/to/{to}")
+    public ResponseEntity<String> startJobDefaultTaskPartitionHandler(@PathVariable("taskSize") Long taskSize, @PathVariable("from") Long from, @PathVariable("to") Long to) {
+        JobParameters parameters = new JobParametersBuilder()
+                .addString("RUN_TIME", LocalDateTime.now().toString(), true)
+                .addLong("taskSize", taskSize)
+                .addLong("from", from)
+                .addLong("to", to)
+                .toJobParameters();
+        Job job = applicationContext.getBean("rangeSumSingleNodeJob", Job.class);
+        try {
+            long startTime = System.currentTimeMillis();
+            JobExecution jobExecution = jobLauncher.run(job, parameters);
+            Long result = (Long) jobExecution.getExecutionContext().get("totalSum");
+            long endTime = System.currentTimeMillis();
+            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+                    "Output: " + "sum of number from " + from + " to " + to + " is " +result;
+            return ResponseEntity.ok(sb);
+        } catch(Exception e) {
+            log.error("Exception occurred when launching the Job", e);
+            throw new RuntimeException("Exception occurred when launching the Job", e);
+        }
+    }
 
 }

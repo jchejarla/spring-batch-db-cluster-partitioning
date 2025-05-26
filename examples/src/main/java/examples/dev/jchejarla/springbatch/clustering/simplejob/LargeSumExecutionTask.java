@@ -9,7 +9,7 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.repeat.RepeatStatus;
 
 @Slf4j
-public class MultiNodeExecutionTask implements Tasklet {
+public class LargeSumExecutionTask implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {

@@ -3,6 +3,7 @@ package examples.dev.jchejarla.springbatch.clustering.simplejob;
 import dev.jchejarla.springbatch.clustering.api.ClusterAwareAggregatorCallback;
 import dev.jchejarla.springbatch.clustering.api.ClusterAwareAggregator;
 import dev.jchejarla.springbatch.clustering.api.PartitionStrategy;
+import dev.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
 import dev.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import dev.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import dev.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @Configuration
 @EnableBatchProcessing
+@ConditionalOnClusterEnabled
 public class SimpleJobConfig {
 
     @Autowired
@@ -51,8 +53,8 @@ public class SimpleJobConfig {
         return new JobBuilder("clustered-job", jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .preventRestart()
-                .start(singleNodeExecStep(jobRepository, platformTransactionManager))
-                .next(multiNodeExecutionStep(jobRepository, platformTransactionManager, clusterAwareAggregator))
+                //.start(singleNodeExecStep(jobRepository, platformTransactionManager))
+                .start(multiNodeExecutionStep(jobRepository, platformTransactionManager, clusterAwareAggregator))
                 .build();
     }
 
@@ -83,7 +85,7 @@ public class SimpleJobConfig {
     @Bean
     public Step multiNodeWorkerStep(JobRepository jobRepository, PlatformTransactionManager txnManager) {
         return new StepBuilder("multiNodeWorkerStep", jobRepository)
-                .tasklet(new MultiNodeExecutionTask(), txnManager)
+                .tasklet(new LargeSumExecutionTask(), txnManager)
                 .build();
     }
 

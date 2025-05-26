@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -65,7 +66,7 @@ public class BatchClusterAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PartitionedWorkerNodeTasksRunner partitionWorkerTasksRunner(ApplicationContext applicationContext, JobExplorer jobExplorer, JobRepository jobRepository, TaskExecutor taskExecutor,
+    public PartitionedWorkerNodeTasksRunner partitionWorkerTasksRunner(ApplicationContext applicationContext, JobExplorer jobExplorer, JobRepository jobRepository, @Qualifier("clusteredStepsTasksExecutor") TaskExecutor taskExecutor,
                                                                        BatchClusterProperties batchClusterProperties, DatabaseBackedClusterService databaseBackedClusterService, @Qualifier("partitionPollingScheduler") TaskScheduler partitionPollingScheduler) {
         return new PartitionedWorkerNodeTasksRunner(applicationContext, jobExplorer, jobRepository, taskExecutor, batchClusterProperties, databaseBackedClusterService, partitionPollingScheduler);
     }
@@ -119,5 +120,13 @@ public class BatchClusterAutoConfiguration {
         partitionPollingScheduler.setThreadNamePrefix("partition-polling-task-");
         partitionPollingScheduler.initialize();
         return partitionPollingScheduler;
+    }
+
+    @Bean("clusteredStepsTasksExecutor")
+    public TaskExecutor clusteredStepsTasksExecutor(BatchClusterProperties batchClusterProperties) {
+        SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+        taskExecutor.setConcurrencyLimit(batchClusterProperties.getConcurrencyLimitPerNode());
+        taskExecutor.setThreadNamePrefix("Clustered-Task-Async-Executor");
+        return taskExecutor;
     }
 }

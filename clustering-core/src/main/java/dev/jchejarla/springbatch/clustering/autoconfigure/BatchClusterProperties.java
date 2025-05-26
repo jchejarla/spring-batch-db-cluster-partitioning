@@ -14,6 +14,7 @@ public class BatchClusterProperties {
     private HostIdentifier hostIdentifier = HostIdentifier.HOST_NAME;
     private boolean tracingEnabled = false;
     private String nodeId;
+    private int concurrencyLimitPerNode = 10;
     private long heartbeatInterval = 3000;
     private long unreachableNodeThreadInterval = 5000;
     private long nodeCleanupThreadInterval = 5000;
