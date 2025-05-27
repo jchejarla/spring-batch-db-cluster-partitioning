@@ -21,7 +21,7 @@ import java.util.Arrays;
 @ConditionalOnProperty(value = "spring.batch.msg-channel.enabled", havingValue = "true")
 public class ActiveMQConfig {
 
-    @Value("activemq.broker.url")
+    @Value("${activemq.broker.url}")
     String activeMQBrokerURL;
 
     @Bean

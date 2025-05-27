@@ -9,6 +9,8 @@ spring:
   batch:
     msg-channel:
       enabled: true
+      master-node: true
+      worker-node: false
     single-node:
       enabled: false
     jdbc:
