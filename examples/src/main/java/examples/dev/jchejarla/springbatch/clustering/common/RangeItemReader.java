@@ -1,4 +1,4 @@
-package examples.dev.jchejarla.springbatch.clustering.taskexec;
+package examples.dev.jchejarla.springbatch.clustering.common;
 
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;

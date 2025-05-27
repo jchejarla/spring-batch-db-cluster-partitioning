@@ -1,5 +1,9 @@
 package examples.dev.jchejarla.springbatch.clustering.taskexec;
 
+import examples.dev.jchejarla.springbatch.clustering.common.Range;
+import examples.dev.jchejarla.springbatch.clustering.common.RangeItemReader;
+import examples.dev.jchejarla.springbatch.clustering.common.RangeSumProcessor;
+import examples.dev.jchejarla.springbatch.clustering.common.RangeSumWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -27,7 +31,7 @@ import java.util.Map;
 @Slf4j
 @Configuration
 @EnableBatchProcessing
-@ConditionalOnProperty(value = "spring.batch.singlenode.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "spring.batch.single-node.enabled", havingValue = "true")
 public class TaskExecJobConfig {
 
 

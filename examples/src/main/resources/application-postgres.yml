@@ -3,16 +3,25 @@ spring:
     url: jdbc:postgresql://localhost:5432/dev_db?options=-c%20search_path=spring_batch,public
     username: dev_user
     password: dev_password
+    hikari:
+      maximum-pool-size: 20
 
   batch:
+    msg-channel:
+      enabled: true
+    single-node:
+      enabled: false
     jdbc:
       initialize-schema: "never"
     cluster:
-      enabled: true
+      enabled: false
       node-id: ${HOSTNAME:worker}-${random.uuid}
       grid-size: 4
       heartbeat-interval: 5000
   main:
     allow-circular-references: true
 
+activemq:
+  broker:
+    url:
 debug: true

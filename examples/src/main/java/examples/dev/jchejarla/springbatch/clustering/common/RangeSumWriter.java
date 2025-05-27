@@ -1,4 +1,4 @@
-package examples.dev.jchejarla.springbatch.clustering.taskexec;
+package examples.dev.jchejarla.springbatch.clustering.common;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.StepExecution;
