@@ -40,7 +40,7 @@ public class ClusterAwarePartitionerUnitTest extends BaseUnitTest {
             executionContexts.add(Mockito.mock(ExecutionContext.class));
             executionContexts.add(Mockito.mock(ExecutionContext.class));
             return executionContexts;
-        }).when(partitioner).splitIntoChunksForDistribution(Mockito.anyInt());
+        }).when(partitioner).createDistributedPartitions(Mockito.anyInt());
         Map<String, ExecutionContext> partitionContexts = partitioner.partition(2);
         Assertions.assertNotNull(partitionContexts);
         Assertions.assertEquals(2, partitionContexts.size());
@@ -65,7 +65,7 @@ public class ClusterAwarePartitionerUnitTest extends BaseUnitTest {
             executionContexts.add(new ExecutionContext());
             executionContexts.add(new ExecutionContext());
             return executionContexts;
-        }).when(partitioner).splitIntoChunksForDistribution(Mockito.anyInt());
+        }).when(partitioner).createDistributedPartitions(Mockito.anyInt());
         Mockito.doReturn(PartitionStrategy.builder().partitioningMode(PartitioningMode.FIXED_NODE_COUNT).fixedNodeCount(2).build())
                 .when(partitioner).buildPartitionStrategy();
         Map<String, ExecutionContext> partitionContexts = partitioner.partition(2);
@@ -87,7 +87,7 @@ public class ClusterAwarePartitionerUnitTest extends BaseUnitTest {
             executionContexts.add(new ExecutionContext());
             executionContexts.add(new ExecutionContext());
             return executionContexts;
-        }).when(partitioner).splitIntoChunksForDistribution(Mockito.anyInt());
+        }).when(partitioner).createDistributedPartitions(Mockito.anyInt());
         PartitionStrategy partitionStrategy = PartitionStrategy.builder().partitioningMode(PartitioningMode.FIXED_NODE_COUNT).build();
         Mockito.doReturn(partitionStrategy)
                 .when(partitioner).buildPartitionStrategy();

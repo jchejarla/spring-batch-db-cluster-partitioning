@@ -83,7 +83,7 @@ public class SimpleAdditionTestJobConfig {
         return new ClusterAwarePartitioner() {
 
             @Override
-            public List<ExecutionContext> splitIntoChunksForDistribution(int availableNodeCount) {
+            public List<ExecutionContext> createDistributedPartitions(int availableNodeCount) {
                 List<ExecutionContext> executionContexts = new ArrayList<>(availableNodeCount);
                 int start = 0;
                 for (int i=0; i<2; i++) {

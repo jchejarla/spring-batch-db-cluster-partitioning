@@ -95,7 +95,7 @@ public class SimpleJobConfig {
         return new ClusterAwarePartitioner() {
 
             @Override
-            public List<ExecutionContext> splitIntoChunksForDistribution(int availableNodeCount) {
+            public List<ExecutionContext> createDistributedPartitions(int availableNodeCount) {
                 List<ExecutionContext> executionContexts = new ArrayList<>(availableNodeCount);
 
                 long totalNumbers = to - from + 1;

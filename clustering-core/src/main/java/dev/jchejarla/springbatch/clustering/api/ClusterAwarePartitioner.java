@@ -9,7 +9,6 @@ import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.batch.core.partition.support.Partitioner;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNullApi;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
  * <li>Create a subclass of {@code ClusterAwarePartitioner}.</li>
  * <li>Implement the abstract methods:
  * <ul>
- * <li>{@link #splitIntoChunksForDistribution(int)}: Defines how data is split.</li>
+ * <li>{@link #createDistributedPartitions(int)}: Defines how data is split.</li>
  * <li>{@link #arePartitionsTransferableWhenNodeFailed()}:  Configures failover behavior.</li>
  * <li>{@link #buildPartitionStrategy()}:  Selects the partitioning strategy.</li>
  * </ul>
@@ -89,7 +88,7 @@ public abstract class ClusterAwarePartitioner implements Partitioner {
             log.error("Spring batch clustering is enabled, but nodes information is not available in the DB, something is not right with nodes registration/configuration, please check...");
             throw new BatchConfigurationException("Spring batch clustering is enabled, but nodes information is not available in the DB, something is not right with nodes registration/configuration, please check...");
         }
-        List<ExecutionContext> executionContexts = splitIntoChunksForDistribution(activeNodesOrderedByLoad.size());
+        List<ExecutionContext> executionContexts = createDistributedPartitions(activeNodesOrderedByLoad.size());
 
         List<String> activeNodes = activeNodesOrderedByLoad.stream().map(ClusterNode::nodeId).collect(Collectors.toList());
         PartitionStrategy partitionStrategy = buildPartitionStrategy();
@@ -119,7 +118,7 @@ public abstract class ClusterAwarePartitioner implements Partitioner {
      * @param availableNodeCount The number of nodes available in the cluster.
      * @return A list of {@link ExecutionContext} instances, each representing a chunk of data.
      */
-    public abstract List<ExecutionContext> splitIntoChunksForDistribution(int availableNodeCount);
+    public abstract List<ExecutionContext> createDistributedPartitions(int availableNodeCount);
 
     /**
      * Abstract method to be implemented by subclasses to specify whether partitions
