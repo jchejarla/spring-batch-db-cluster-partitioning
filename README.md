@@ -96,17 +96,30 @@ Add the following to your `pom.xml` (for Maven):
 
 ```xml
 <dependency>
-    <groupId>dev.jchejarla</groupId>
-    <artifactId>spring-batch-db-cluster-partitioning</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <groupId>io.github.jchejarla</groupId>
+    <artifactId>clustering-core</artifactId>
+    <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
+If you are using a SNAPSHOT version of the jar, then add below snapshot repository URL into pom.xml
+
+```xml
+    <repositories>
+        <repository>
+            <id>central-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <snapshots><enabled>true</enabled></snapshots>
+            <releases><enabled>false</enabled></releases>
+        </repository>
+    </repositories>
+```
+
 Or for Gradle:
 
 ```gradle
-implementation 'dev.jchejarla:spring-batch-db-cluster-partitioning:1.0.0-SNAPSHOT' // Use the latest version
+implementation 'io.github.jchejarla:clustering-core:1.0-SNAPSHOT' // Use the latest version
 ```
-> **_NOTE:_** The artifact needs to be deployed to Maven Central or a private repository for direct consumption. For local development, you might need to build and install it to your local Maven repository (<code>mvn clean install</code>).
+> **_NOTE:_** The artifact has been deployed to Maven Central for direct consumption. For local development, you might need to build and install it to your local Maven repository (<code>mvn clean install</code>).
 
 ### Database Setup
 
