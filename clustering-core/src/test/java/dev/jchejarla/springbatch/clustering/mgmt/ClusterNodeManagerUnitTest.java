@@ -23,12 +23,14 @@ public class ClusterNodeManagerUnitTest extends BaseUnitTest {
     BatchClusterProperties batchClusterProperties;
     @Mock
     TaskScheduler taskScheduler;
+    @Mock
+    ClusterNodeInfo clusterNodeInfo;
 
     ClusterNodeManager clusterNodeManager;
 
     @BeforeEach
     public void init() {
-        clusterNodeManager = new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, taskScheduler);
+        clusterNodeManager = new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, taskScheduler, clusterNodeInfo);
     }
 
     @Test

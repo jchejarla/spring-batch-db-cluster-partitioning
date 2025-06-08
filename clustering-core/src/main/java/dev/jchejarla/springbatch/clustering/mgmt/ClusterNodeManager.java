@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Duration;
+import java.util.Date;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,16 +21,19 @@ public class ClusterNodeManager {
     private final DatabaseBackedClusterService databaseBackedClusterService;
     private final BatchClusterProperties batchClusterProperties;
     private final TaskScheduler clusterMonitoringScheduler;
+    private final ClusterNodeInfo clusterNodeInfo;
 
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
         log.info("Registering the node with id {}", batchClusterProperties.getNodeId());
         long start = System.currentTimeMillis();
+        clusterNodeInfo.setStartTime(new Date());
         int rowsUpdated = databaseBackedClusterService.registerNode();
         if(rowsUpdated == 0) {
             log.error("Application failed to register the node with id {}", batchClusterProperties.getNodeId());
             throw new BatchConfigurationException("Application failed to register the node with id "+batchClusterProperties.getNodeId());
         }
+        clusterNodeInfo.setNodeStatus(NodeStatus.ACTIVE);
         log.info("Application registered the node with id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
         clusterMonitoringScheduler.scheduleAtFixedRate(this::updateHeartbeat, Duration.ofMillis(batchClusterProperties.getHeartbeatInterval()));
         clusterMonitoringScheduler.scheduleAtFixedRate(this::markNodesUnreachable, Duration.ofMillis(batchClusterProperties.getUnreachableNodeThreadInterval()));
@@ -44,12 +48,22 @@ public class ClusterNodeManager {
                 log.error("Application failed to update the heartbeat for node id {}, trying to one more time ", batchClusterProperties.getNodeId());
                  rowsUpdated = databaseBackedClusterService.registerNode();
                  if(rowsUpdated == 1) {
+                     clusterNodeInfo.setNodeStatus(NodeStatus.ACTIVE);
+                     clusterNodeInfo.setLastHeartbeatTime(new Date());
                      log.info("Application re-registered the node with id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+                 } else {
+                     log.error("Re-attempt to register the node is failed for node id {}", batchClusterProperties.getNodeId());
+                     clusterNodeInfo.setNodeStatus(NodeStatus.UNREACHABLE);
                  }
-            } else if (batchClusterProperties.isTracingEnabled()) {
-                log.info("Application updated heartbeat for node id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+            } else {
+                clusterNodeInfo.setNodeStatus(NodeStatus.ACTIVE);
+                clusterNodeInfo.setLastHeartbeatTime(new Date());
+                if(batchClusterProperties.isTracingEnabled()) {
+                    log.info("Application updated heartbeat for node id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
+                }
             }
         } catch(Exception e) {
+            clusterNodeInfo.setNodeStatus(NodeStatus.UNREACHABLE);
             log.error("Exception occurred while updating heart beat for node id : {}", batchClusterProperties.getNodeId(), e);
         }
     }

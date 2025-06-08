@@ -6,6 +6,7 @@ import dev.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.MySQLDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
+import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
 import dev.jchejarla.springbatch.clustering.polling.PartitionedWorkerNodeTasksRunner;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,7 @@ public class BatchClusterAutoConfigurationUnitTest extends BaseUnitTest {
     @Test
     public void testClusterNodeManager() {
         DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
-        ClusterNodeManager nodeManager = batchClusterAutoConfiguration.clusterNodeManager(databaseBackedClusterService, batchClusterProperties, mock(TaskScheduler.class));
+        ClusterNodeManager nodeManager = batchClusterAutoConfiguration.clusterNodeManager(databaseBackedClusterService, batchClusterProperties, mock(TaskScheduler.class), mock(ClusterNodeInfo.class));
         assertNotNull(nodeManager);
     }
 

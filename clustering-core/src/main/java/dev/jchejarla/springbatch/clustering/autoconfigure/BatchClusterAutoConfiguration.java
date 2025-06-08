@@ -1,11 +1,14 @@
 package dev.jchejarla.springbatch.clustering.autoconfigure;
 
+import dev.jchejarla.springbatch.clustering.actuate.BatchClusterNodeHealthIndicator;
+import dev.jchejarla.springbatch.clustering.actuate.BatchClusteringInfoContributor;
 import dev.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.H2DatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.MySQLDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
+import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
 import dev.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import dev.jchejarla.springbatch.clustering.polling.PartitionedWorkerNodeTasksRunner;
@@ -60,8 +63,11 @@ public class BatchClusterAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ClusterNodeManager clusterNodeManager(DatabaseBackedClusterService databaseBackedClusterService, BatchClusterProperties batchClusterProperties, @Qualifier("clusterHealthMonitoringScheduler") TaskScheduler clusterMonitoringScheduler) {
-        return new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, clusterMonitoringScheduler);
+    public ClusterNodeManager clusterNodeManager(DatabaseBackedClusterService databaseBackedClusterService,
+                                                 BatchClusterProperties batchClusterProperties,
+                                                 @Qualifier("clusterHealthMonitoringScheduler") TaskScheduler clusterMonitoringScheduler,
+                                                 ClusterNodeInfo clusterNodeInfo) {
+        return new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, clusterMonitoringScheduler, clusterNodeInfo);
     }
 
     @Bean
@@ -129,4 +135,20 @@ public class BatchClusterAutoConfiguration {
         taskExecutor.setThreadNamePrefix("Clustered-Task-Async-Executor");
         return taskExecutor;
     }
+
+    @Bean
+    public ClusterNodeInfo clusterNodeInfo(BatchClusterProperties batchClusterProperties) {
+        return new ClusterNodeInfo(batchClusterProperties.getNodeId());
+    }
+
+    @Bean
+    public BatchClusterNodeHealthIndicator batchClusterNodeHealthIndicator(ClusterNodeInfo clusterNodeInfo) {
+        return new BatchClusterNodeHealthIndicator(clusterNodeInfo);
+    }
+
+    @Bean
+    public BatchClusteringInfoContributor batchClusteringInfoContributor(BatchClusterProperties batchClusterProperties) {
+        return new BatchClusteringInfoContributor(batchClusterProperties);
+    }
+
 }
