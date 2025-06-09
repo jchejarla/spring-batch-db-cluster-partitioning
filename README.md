@@ -9,6 +9,8 @@ This project provides a novel solution for distributed partitioning in Spring Ba
 
 This approach simplifies the architecture, provides real-time visibility into job progress, and ensures robust task re-assignment upon node failures, all while minimizing changes to existing Spring Batch application logic.
 
+The core principles of this project is to know **number of available nodes** upfront, and **facilitate easy failover** in the event of any cluster node is not responding.
+
 ## ✨ Key Features
 
 * **Database-Driven Coordination:** Utilizes a common relational database (e.g., PostgreSQL, Oracle, MySQL) as the central hub for cluster state management.
