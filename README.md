@@ -103,7 +103,7 @@ Add the following to your `pom.xml` (for Maven):
     <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
-If you are using a SNAPSHOT version of the jar, then add below snapshot repository URL into pom.xml
+If you are using a SNAPSHOT version of the jar (snapshot version is not an official release, this is just for testing purpose), then add below snapshot repository URL into pom.xml
 
 ```xml
     <repositories>
