@@ -22,6 +22,7 @@ public class ClusterNodeManager {
     private final BatchClusterProperties batchClusterProperties;
     private final TaskScheduler clusterMonitoringScheduler;
     private final ClusterNodeInfo clusterNodeInfo;
+    private final ClusterNodeStatusChangeConditionNotifier clusterNodeStatusChangeConditionNotifier;
 
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
@@ -54,6 +55,7 @@ public class ClusterNodeManager {
                  } else {
                      log.error("Re-attempt to register the node is failed for node id {}", batchClusterProperties.getNodeId());
                      clusterNodeInfo.setNodeStatus(NodeStatus.UNREACHABLE);
+                     clusterNodeStatusChangeConditionNotifier.onClusterNodeHeartbeatFail();
                  }
             } else {
                 clusterNodeInfo.setNodeStatus(NodeStatus.ACTIVE);
@@ -63,8 +65,9 @@ public class ClusterNodeManager {
                 }
             }
         } catch(Exception e) {
-            clusterNodeInfo.setNodeStatus(NodeStatus.UNREACHABLE);
             log.error("Exception occurred while updating heart beat for node id : {}", batchClusterProperties.getNodeId(), e);
+            clusterNodeInfo.setNodeStatus(NodeStatus.UNREACHABLE);
+            clusterNodeStatusChangeConditionNotifier.onClusterNodeHeartbeatFail();
         }
     }
 

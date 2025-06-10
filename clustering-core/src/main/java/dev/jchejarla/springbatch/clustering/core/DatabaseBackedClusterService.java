@@ -104,7 +104,7 @@ public class DatabaseBackedClusterService {
 
     @Transactional
     public void updatePartitionsStatus(List<PartitionAssignmentTask> partitionAssignmentTasks, String status) {
-        List<Object[]> rows = partitionAssignmentTasks.stream().map(partitionAssignmentTask -> new Object[]{status, partitionAssignmentTask.stepExecutionId(), partitionAssignmentTask.jobExecutionId(), partitionAssignmentTask.masterStepExecutionId()}).toList();
+        List<Object[]> rows = partitionAssignmentTasks.stream().map(partitionAssignmentTask -> new Object[]{status, partitionAssignmentTask.stepExecutionId(), partitionAssignmentTask.jobExecutionId(), partitionAssignmentTask.masterStepExecutionId(), partitionAssignmentTask.assignedNode()}).toList();
         jdbcTemplate.batchUpdate(queryProvider.getUpdatePartitionStatusToQuery(), rows);
     }
 

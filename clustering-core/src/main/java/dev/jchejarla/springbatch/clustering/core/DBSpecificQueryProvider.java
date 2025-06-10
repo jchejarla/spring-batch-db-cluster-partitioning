@@ -41,7 +41,7 @@ public interface DBSpecificQueryProvider {
     }
 
     default String getUpdatePartitionStatusToQuery() {
-        return "update batch_partitions set status = ?, last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ?";
+        return "update batch_partitions set status = ?, last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ?";
     }
 
     default String getCheckForOrphanedTasksQuery() {

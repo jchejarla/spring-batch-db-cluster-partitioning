@@ -21,6 +21,7 @@ public class BatchClusterProperties {
     private long unreachableNodeThreshold = 10000;
     private long nodeCleanupThreshold = 30000;
     private long taskPollingInterval =1000;
+    private long completedTasksCleanupPollingInterval =5000;
     private long orphanedTasksPollingInterval =1000;
     private long masterTaskStatusCheckInterval = 500; //Thread sleep time between each check, when checking partition tasks status
 

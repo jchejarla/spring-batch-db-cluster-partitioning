@@ -8,6 +8,7 @@ import dev.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQuery
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
+import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeStatusChangeConditionNotifier;
 import dev.jchejarla.springbatch.clustering.polling.PartitionedWorkerNodeTasksRunner;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -59,15 +60,20 @@ public class BatchClusterAutoConfigurationUnitTest extends BaseUnitTest {
     @Test
     public void testClusterNodeManager() {
         DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
-        ClusterNodeManager nodeManager = batchClusterAutoConfiguration.clusterNodeManager(databaseBackedClusterService, batchClusterProperties, mock(TaskScheduler.class), mock(ClusterNodeInfo.class));
+        ClusterNodeManager nodeManager = batchClusterAutoConfiguration.clusterNodeManager(databaseBackedClusterService, batchClusterProperties,
+                mock(TaskScheduler.class),
+                mock(ClusterNodeInfo.class),
+                mock(ClusterNodeStatusChangeConditionNotifier.class));
         assertNotNull(nodeManager);
     }
 
     @Test
     public void testPartitionWorkerTasksRunner() {
         DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
-        PartitionedWorkerNodeTasksRunner tasksRunner = batchClusterAutoConfiguration.partitionWorkerTasksRunner(mock(ApplicationContext.class), mock(JobExplorer.class), mock(JobRepository.class), mock(TaskExecutor.class),
-                batchClusterProperties, databaseBackedClusterService, mock(TaskScheduler.class));
+        PartitionedWorkerNodeTasksRunner tasksRunner = batchClusterAutoConfiguration.partitionWorkerTasksRunner(mock(ApplicationContext.class),
+                mock(JobExplorer.class), mock(JobRepository.class), mock(TaskExecutor.class),
+                batchClusterProperties, databaseBackedClusterService, mock(TaskScheduler.class),
+                mock(TaskScheduler.class), mock(ClusterNodeInfo.class));
         assertNotNull(tasksRunner);
     }
 

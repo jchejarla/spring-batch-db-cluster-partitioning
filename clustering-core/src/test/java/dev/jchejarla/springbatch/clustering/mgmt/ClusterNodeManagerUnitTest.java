@@ -25,12 +25,14 @@ public class ClusterNodeManagerUnitTest extends BaseUnitTest {
     TaskScheduler taskScheduler;
     @Mock
     ClusterNodeInfo clusterNodeInfo;
+    @Mock
+    ClusterNodeStatusChangeConditionNotifier clusterNodeStatusChangeConditionNotifier;
 
     ClusterNodeManager clusterNodeManager;
 
     @BeforeEach
     public void init() {
-        clusterNodeManager = new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, taskScheduler, clusterNodeInfo);
+        clusterNodeManager = new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, taskScheduler, clusterNodeInfo, clusterNodeStatusChangeConditionNotifier);
     }
 
     @Test

@@ -10,6 +10,7 @@ import dev.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQuery
 import dev.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
+import dev.jchejarla.springbatch.clustering.mgmt.ClusterNodeStatusChangeConditionNotifier;
 import dev.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import dev.jchejarla.springbatch.clustering.polling.PartitionedWorkerNodeTasksRunner;
 import lombok.RequiredArgsConstructor;
@@ -66,15 +67,31 @@ public class BatchClusterAutoConfiguration {
     public ClusterNodeManager clusterNodeManager(DatabaseBackedClusterService databaseBackedClusterService,
                                                  BatchClusterProperties batchClusterProperties,
                                                  @Qualifier("clusterHealthMonitoringScheduler") TaskScheduler clusterMonitoringScheduler,
-                                                 ClusterNodeInfo clusterNodeInfo) {
-        return new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, clusterMonitoringScheduler, clusterNodeInfo);
+                                                 ClusterNodeInfo clusterNodeInfo,
+                                                 ClusterNodeStatusChangeConditionNotifier clusterNodeStatusChangeConditionNotifier) {
+        return new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, clusterMonitoringScheduler, clusterNodeInfo, clusterNodeStatusChangeConditionNotifier);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public PartitionedWorkerNodeTasksRunner partitionWorkerTasksRunner(ApplicationContext applicationContext, JobExplorer jobExplorer, JobRepository jobRepository, @Qualifier("clusteredStepsTasksExecutor") TaskExecutor taskExecutor,
-                                                                       BatchClusterProperties batchClusterProperties, DatabaseBackedClusterService databaseBackedClusterService, @Qualifier("partitionPollingScheduler") TaskScheduler partitionPollingScheduler) {
-        return new PartitionedWorkerNodeTasksRunner(applicationContext, jobExplorer, jobRepository, taskExecutor, batchClusterProperties, databaseBackedClusterService, partitionPollingScheduler);
+    public PartitionedWorkerNodeTasksRunner partitionWorkerTasksRunner(ApplicationContext applicationContext,
+                                                                       JobExplorer jobExplorer,
+                                                                       JobRepository jobRepository,
+                                                                       @Qualifier("clusteredStepsTasksExecutor") TaskExecutor taskExecutor,
+                                                                       BatchClusterProperties batchClusterProperties,
+                                                                       DatabaseBackedClusterService databaseBackedClusterService,
+                                                                       @Qualifier("partitionPollingScheduler") TaskScheduler partitionPollingScheduler,
+                                                                       @Qualifier("completedTasksCleanupScheduler") TaskScheduler completedTasksCleanupScheduler,
+                                                                       ClusterNodeInfo clusterNodeInfo) {
+        return new PartitionedWorkerNodeTasksRunner(applicationContext,
+                                                    jobExplorer,
+                                                    jobRepository,
+                                                    taskExecutor,
+                                                    batchClusterProperties,
+                                                    databaseBackedClusterService,
+                                                    partitionPollingScheduler,
+                                                    completedTasksCleanupScheduler,
+                                                    clusterNodeInfo);
     }
 
     @Bean
@@ -126,6 +143,15 @@ public class BatchClusterAutoConfiguration {
         partitionPollingScheduler.setThreadNamePrefix("partition-polling-task-");
         partitionPollingScheduler.initialize();
         return partitionPollingScheduler;
+    }
+
+    @Bean(name = "completedTasksCleanupScheduler")
+    public TaskScheduler completedTasksCleanupScheduler() {
+        ThreadPoolTaskScheduler completedTasksCleanupScheduler = new ThreadPoolTaskScheduler();
+        completedTasksCleanupScheduler.setPoolSize(1);
+        completedTasksCleanupScheduler.setThreadNamePrefix("completed-tasks-cleanup-");
+        completedTasksCleanupScheduler.initialize();
+        return completedTasksCleanupScheduler;
     }
 
     @Bean("clusteredStepsTasksExecutor")
