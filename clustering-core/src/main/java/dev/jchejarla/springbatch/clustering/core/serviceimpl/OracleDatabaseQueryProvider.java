@@ -12,4 +12,9 @@ public class OracleDatabaseQueryProvider implements DBSpecificQueryProvider {
     public String getDeleteNodesUnreachableQuery() {
         return "DELETE from batch_nodes where status = ? and ((CAST(SYSTIMESTAMP AS DATE) - CAST(LAST_UPDATED_TIME AS DATE)) * 24 * 60 * 60 * 1000) >= ?";
     }
+
+    @Override
+    public String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName) {
+        return "((CAST(SYSTIMESTAMP AS DATE) - CAST("+columnName+" AS DATE)) * 24 * 60 * 60 * 1000)";
+    }
 }

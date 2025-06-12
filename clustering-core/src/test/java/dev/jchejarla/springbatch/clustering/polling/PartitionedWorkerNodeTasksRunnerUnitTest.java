@@ -45,6 +45,8 @@ public class PartitionedWorkerNodeTasksRunnerUnitTest extends BaseUnitTest {
     @Mock
     TaskScheduler completedTasksCleanupScheduler;
     @Mock
+    TaskScheduler updateBatchPartitionsScheduler;
+    @Mock
     ClusterNodeInfo clusterNodeInfo;
 
     PartitionedWorkerNodeTasksRunner partitionedWorkerNodeTasksRunner;
@@ -55,7 +57,7 @@ public class PartitionedWorkerNodeTasksRunnerUnitTest extends BaseUnitTest {
                 jobExplorer, jobRepository,taskExecutor,
                 batchClusterProperties, databaseBackedClusterService,
                 partitionPollingScheduler, completedTasksCleanupScheduler,
-                clusterNodeInfo));
+                updateBatchPartitionsScheduler, clusterNodeInfo));
         doReturn(NodeStatus.ACTIVE).when(clusterNodeInfo).getNodeStatus();
     }
 

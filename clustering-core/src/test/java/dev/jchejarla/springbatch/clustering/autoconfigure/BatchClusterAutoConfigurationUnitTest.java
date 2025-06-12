@@ -73,7 +73,7 @@ public class BatchClusterAutoConfigurationUnitTest extends BaseUnitTest {
         PartitionedWorkerNodeTasksRunner tasksRunner = batchClusterAutoConfiguration.partitionWorkerTasksRunner(mock(ApplicationContext.class),
                 mock(JobExplorer.class), mock(JobRepository.class), mock(TaskExecutor.class),
                 batchClusterProperties, databaseBackedClusterService, mock(TaskScheduler.class),
-                mock(TaskScheduler.class), mock(ClusterNodeInfo.class));
+                mock(TaskScheduler.class), mock(TaskScheduler.class), mock(ClusterNodeInfo.class));
         assertNotNull(tasksRunner);
     }
 

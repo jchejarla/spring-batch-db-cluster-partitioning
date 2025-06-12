@@ -82,6 +82,7 @@ public class BatchClusterAutoConfiguration {
                                                                        DatabaseBackedClusterService databaseBackedClusterService,
                                                                        @Qualifier("partitionPollingScheduler") TaskScheduler partitionPollingScheduler,
                                                                        @Qualifier("completedTasksCleanupScheduler") TaskScheduler completedTasksCleanupScheduler,
+                                                                       @Qualifier("updateBatchPartitionsScheduler") TaskScheduler updateBatchPartitionsScheduler,
                                                                        ClusterNodeInfo clusterNodeInfo) {
         return new PartitionedWorkerNodeTasksRunner(applicationContext,
                                                     jobExplorer,
@@ -91,6 +92,7 @@ public class BatchClusterAutoConfiguration {
                                                     databaseBackedClusterService,
                                                     partitionPollingScheduler,
                                                     completedTasksCleanupScheduler,
+                                                    updateBatchPartitionsScheduler,
                                                     clusterNodeInfo);
     }
 
@@ -153,6 +155,16 @@ public class BatchClusterAutoConfiguration {
         completedTasksCleanupScheduler.initialize();
         return completedTasksCleanupScheduler;
     }
+
+    @Bean(name = "updateBatchPartitionsScheduler")
+    public TaskScheduler updateBatchPartitionsScheduler() {
+        ThreadPoolTaskScheduler completedTasksCleanupScheduler = new ThreadPoolTaskScheduler();
+        completedTasksCleanupScheduler.setPoolSize(1);
+        completedTasksCleanupScheduler.setThreadNamePrefix("update-batch-partitions-");
+        completedTasksCleanupScheduler.initialize();
+        return completedTasksCleanupScheduler;
+    }
+
 
     @Bean("clusteredStepsTasksExecutor")
     public TaskExecutor clusteredStepsTasksExecutor(BatchClusterProperties batchClusterProperties) {

@@ -107,7 +107,7 @@ public class DatabaseBackedClusterServiceUnitTest extends BaseUnitTest {
     @Test
     public void testCheckForOrphanedTasks() {
         databaseBackedClusterService.checkForOrphanedTasks(124L);
-        verify(jdbcTemplate, times(1)).query(anyString(), any(RowMapper.class), anyLong());
+        verify(jdbcTemplate, times(1)).query(anyString(), any(RowMapper.class), anyLong(), anyLong());
     }
 
     @Test

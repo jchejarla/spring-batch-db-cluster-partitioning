@@ -44,12 +44,17 @@ public interface DBSpecificQueryProvider {
         return "update batch_partitions set status = ?, last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ?";
     }
 
+    default String getUpdateLastUpdateTimeQuery() {
+        return "update batch_partitions set last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ?";
+    }
+
     default String getCheckForOrphanedTasksQuery() {
         return "select bp.job_execution_id, bp.partition_key, bp.step_execution_id, bp.master_step_execution_id, bp.is_transferable, bp.assigned_node, bc.master_step_name " +
                 "from batch_partitions bp, batch_job_coordination bc " +
                 "where bp.master_step_execution_id = bc.master_step_execution_id " +
                 "and bp.master_step_execution_id = ? " +
                 "and bp.status in ('PENDING','CLAIMED') " +
+                "and "+getTimeStampColumnWithDiffInMillisToCurrentTime("bp.last_updated")+ " >= ? "+
                 "and not exists (select 1 from batch_nodes bn where bn.node_id = bp.assigned_node)";
     }
 
@@ -59,4 +64,5 @@ public interface DBSpecificQueryProvider {
 
     String getMarkNodesUnreachableQuery();
     String getDeleteNodesUnreachableQuery();
+    String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName);
 }

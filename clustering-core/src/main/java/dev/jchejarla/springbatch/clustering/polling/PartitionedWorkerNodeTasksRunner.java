@@ -20,12 +20,8 @@ import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * This class is responsible for polling the database for partition tasks assigned to the current node
@@ -47,8 +43,10 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
     private final DatabaseBackedClusterService databaseBackedClusterService;
     private final TaskScheduler partitionPollingScheduler;
     private final TaskScheduler completedTasksCleanupScheduler;
+    private final TaskScheduler updateBatchPartitionsScheduler;
     private final ClusterNodeInfo currentNodeInfo;
-    private final ConcurrentLinkedQueue<Future<Void>> tasksSubmitted = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Future<PartitionAssignmentTask>> tasksSubmitted = new ConcurrentLinkedQueue<>();
+    private final Set<PartitionAssignmentTask> inProgressAssignments = new CopyOnWriteArraySet<>();
 
     /**
      * Starts the partition task polling and execution process when the application is ready.
@@ -61,6 +59,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
         log.info("Starting monitoring task for partitions");
         partitionPollingScheduler.scheduleAtFixedRate(this::pollAndExecute, Duration.ofMillis(batchClusterProperties.getTaskPollingInterval()));
         completedTasksCleanupScheduler.scheduleAtFixedRate(this::cleanupCompletedTasks, Duration.ofMillis(batchClusterProperties.getCompletedTasksCleanupPollingInterval()));
+        updateBatchPartitionsScheduler.scheduleAtFixedRate(this::updateLastUpdateTimeForInProgressTasks, Duration.ofMillis(batchClusterProperties.getHeartbeatInterval()));
         log.info("Started monitoring task for partitions");
     }
 
@@ -87,7 +86,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
      * </ol>
      */
     public void pollAndExecute() {
-        if(NodeStatus.ACTIVE != currentNodeInfo.getNodeStatus()) {
+        if (NodeStatus.ACTIVE != currentNodeInfo.getNodeStatus()) {
             return;
         }
         List<PartitionAssignmentTask> partitionsToRun = databaseBackedClusterService.fetchPartitionAssignedTasks();
@@ -96,30 +95,32 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
             databaseBackedClusterService.updatePartitionsStatus(partitionsToRun, "CLAIMED");
             log.info("Updating tasks status to CLAIMED is completed");
         }
+
         for (PartitionAssignmentTask partitionAssignmentTask : partitionsToRun) {
-            if(taskExecutor instanceof AsyncTaskExecutor asyncTaskExecutor) {
-                Callable<Void> wrapperTask = createWrapperTaskAroundExecutionTask(partitionAssignmentTask);
-                Future<Void> taskSubmitted = asyncTaskExecutor.submit(wrapperTask);
+            if (taskExecutor instanceof AsyncTaskExecutor asyncTaskExecutor) {
+                Callable<PartitionAssignmentTask> wrapperTask = createWrapperTaskAroundExecutionTask(partitionAssignmentTask);
+                Future<PartitionAssignmentTask> taskSubmitted = asyncTaskExecutor.submit(wrapperTask);
                 tasksSubmitted.add(taskSubmitted);
+                inProgressAssignments.add(partitionAssignmentTask);
             }
         }
     }
 
-    private Callable<Void> createWrapperTaskAroundExecutionTask(PartitionAssignmentTask partitionAssignmentTask) {
-        Callable<Void> stepTask = () -> {
+    private Callable<PartitionAssignmentTask> createWrapperTaskAroundExecutionTask(PartitionAssignmentTask partitionAssignmentTask) {
+        Callable<PartitionAssignmentTask> stepTask = () -> {
             executeStep(partitionAssignmentTask);
-            return null;
+            return partitionAssignmentTask;
         };
 
         return () -> {
             try {
-                stepTask.call();
+                return stepTask.call();
             } catch (InterruptedException | CancellationException interruptedException) {
                 log.error("Current Task execution thread is interrupted by Node health monitor", interruptedException);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            return null;
+            return partitionAssignmentTask;
         };
     }
 
@@ -135,7 +136,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
             // (assumes each partition runs same Step implementation)
             Step step = applicationContext.getBean(partitionAssignmentTask.masterStepName(), Step.class);
 
-            if(NodeStatus.ACTIVE != currentNodeInfo.getNodeStatus()) {
+            if (NodeStatus.ACTIVE != currentNodeInfo.getNodeStatus()) {
                 log.error("Current node status show not active, possibly heartbeat update failed, stopping proceeding with task execution, " +
                         "jobExecutionId : {}, masterStepExecutionId: {}, stepExecutionId: {}", jobExecutionId, partitionAssignmentTask.masterStepExecutionId(), stepExecutionId);
                 return;
@@ -154,6 +155,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
             } finally {
                 stepExecution.setEndTime(LocalDateTime.now());
                 jobRepository.update(stepExecution);
+                inProgressAssignments.remove(partitionAssignmentTask);
             }
         } catch (Exception e) {
             log.error("Error occurred while running the tasks on node {}", batchClusterProperties.getNodeId(), e);
@@ -163,13 +165,31 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
 
 
     private void cleanupCompletedTasks() {
-        tasksSubmitted.removeIf(Future::isDone);
+        Iterator<Future<PartitionAssignmentTask>> tasksSubmittedIte = tasksSubmitted.iterator();
+        while(tasksSubmittedIte.hasNext()) {
+            Future<PartitionAssignmentTask> futureTask = tasksSubmittedIte.next();
+            if (futureTask.isDone()) {
+                try {
+                    PartitionAssignmentTask partitionAssignmentTask = futureTask.get();
+                    inProgressAssignments.remove(partitionAssignmentTask);
+                    tasksSubmittedIte.remove();
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void updateLastUpdateTimeForInProgressTasks() {
+        if(!inProgressAssignments.isEmpty()) {
+            databaseBackedClusterService.updatePartitionsLastUpdatedTime(inProgressAssignments);
+        }
     }
 
     //Hook to interrupt currently in-progress tasks for future implementation, scenario where updating of Node heartbeat itself failed.
     private void interruptInProgressTasksWhenHeartbeatFailed() {
-        tasksSubmitted.forEach(taskSubmitted-> {
-            if(!taskSubmitted.isDone()) {
+        tasksSubmitted.forEach(taskSubmitted -> {
+            if (!taskSubmitted.isDone()) {
                 log.warn("Node heartbeat update seem to have failed and it triggered event to cancel currently in-progress tasks, if the task is set is_assignable=true, this will get transferred to another node in the cluster  ");
                 taskSubmitted.cancel(true);
             }
@@ -180,5 +200,6 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
     public void onClusterNodeHeartbeatFail() {
         //interruptInProgressTasksWhenHeartbeatFailed();
     }
+
 }
 

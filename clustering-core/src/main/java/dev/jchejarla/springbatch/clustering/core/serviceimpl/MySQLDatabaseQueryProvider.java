@@ -15,4 +15,9 @@ public class MySQLDatabaseQueryProvider implements DBSpecificQueryProvider {
     public String getDeleteNodesUnreachableQuery() {
         return "DELETE from batch_nodes where status = ? and (TIMESTAMPDIFF(SECOND, last_updated_time, NOW()) * 1000) >= ?";
     }
+
+    @Override
+    public String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName) {
+        return "(TIMESTAMPDIFF(SECOND, "+columnName+", NOW()) * 1000)";
+    }
 }

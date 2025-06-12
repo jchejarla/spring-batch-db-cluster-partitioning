@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.InetAddress;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -103,9 +104,15 @@ public class DatabaseBackedClusterService {
     }
 
     @Transactional
-    public void updatePartitionsStatus(List<PartitionAssignmentTask> partitionAssignmentTasks, String status) {
+    public void updatePartitionsStatus(Collection<PartitionAssignmentTask> partitionAssignmentTasks, String status) {
         List<Object[]> rows = partitionAssignmentTasks.stream().map(partitionAssignmentTask -> new Object[]{status, partitionAssignmentTask.stepExecutionId(), partitionAssignmentTask.jobExecutionId(), partitionAssignmentTask.masterStepExecutionId(), partitionAssignmentTask.assignedNode()}).toList();
         jdbcTemplate.batchUpdate(queryProvider.getUpdatePartitionStatusToQuery(), rows);
+    }
+
+    @Transactional
+    public void updatePartitionsLastUpdatedTime(Collection<PartitionAssignmentTask> partitionAssignmentTasks) {
+        List<Object[]> rows = partitionAssignmentTasks.stream().map(partitionAssignmentTask -> new Object[]{partitionAssignmentTask.stepExecutionId(), partitionAssignmentTask.jobExecutionId(), partitionAssignmentTask.masterStepExecutionId(), partitionAssignmentTask.assignedNode()}).toList();
+        jdbcTemplate.batchUpdate(queryProvider.getUpdateLastUpdateTimeQuery(), rows);
     }
 
     @Transactional
@@ -124,7 +131,7 @@ public class DatabaseBackedClusterService {
                         rs.getBoolean("is_transferable"),
                         rs.getString("master_step_name"),
                         rs.getString("assigned_node")
-                ), masterStepExecutionId
+                ), masterStepExecutionId, batchClusterProperties.getNodeCleanupThreshold()
         );
     }
 

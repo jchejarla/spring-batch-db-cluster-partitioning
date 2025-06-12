@@ -12,4 +12,9 @@ public class PostgreSQLDatabaseQueryProvider implements DBSpecificQueryProvider 
     public String getDeleteNodesUnreachableQuery() {
         return "DELETE from batch_nodes where status = ? and (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - LAST_UPDATED_TIME)) * 1000) >= ?";
     }
+
+    @Override
+    public String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName) {
+        return "(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - "+columnName+")) * 1000) ";
+    }
 }
