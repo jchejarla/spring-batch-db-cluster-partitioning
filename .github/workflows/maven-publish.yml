@@ -14,7 +14,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      dependency-graph: write
 
     steps:
     - uses: actions/checkout@v4
@@ -27,9 +26,9 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package -Ddepgraph.skip=true --file pom.xml
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn deploy -Ddepgraph.skip=true -s $GITHUB_WORKSPACE/settings.xml
       env:
         GITHUB_TOKEN: ${{ github.token }}
