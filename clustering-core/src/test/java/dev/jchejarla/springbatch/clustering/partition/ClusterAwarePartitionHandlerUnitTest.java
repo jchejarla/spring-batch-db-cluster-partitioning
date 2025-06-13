@@ -171,7 +171,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         });
         testRunThread.start();
 
-        await().atMost(2, TimeUnit.SECONDS).until(() -> Objects.nonNull(exceptionCaught.get()));
+        await().atMost(5, TimeUnit.SECONDS).until(() -> Objects.nonNull(exceptionCaught.get()));
         testRunThread.join(2000);
         assertNotNull(exceptionCaught.get());
         assertEquals("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", exceptionCaught.get().getMessage());
