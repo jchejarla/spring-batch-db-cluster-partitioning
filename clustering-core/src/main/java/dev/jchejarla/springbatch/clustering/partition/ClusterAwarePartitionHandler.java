@@ -132,7 +132,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
                     pollForOrphanedTasksAndReArrange(masterStepExecutionId);
                 }
             } catch (Exception e) {
-                log.error("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes");
+                log.error("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
                 throw new CompletionException("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
             }
         });
