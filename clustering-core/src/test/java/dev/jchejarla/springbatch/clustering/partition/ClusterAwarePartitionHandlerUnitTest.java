@@ -79,19 +79,24 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         doReturn(executionContext).when(stepExecution).getExecutionContext();
         doReturn("Test-Node-123").when(executionContext).getString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER);
         doReturn(stepExecutions).when(stepSplitter).split(any(), anyInt());
-        doReturn(1, 0).when(databaseBackedClusterService).getPendingTasksCount(anyLong());
+        doReturn(1,  0).when(databaseBackedClusterService).getPendingTasksCount(anyLong());
         doReturn(true).when(batchClusterProperties).isTracingEnabled();
         List<PartitionAssignmentTask> orphanedTasks = new ArrayList<>();
         orphanedTasks.add(mock(PartitionAssignmentTask.class));
         orphanedTasks.add(mock(PartitionAssignmentTask.class));
         doReturn(orphanedTasks, Collections.emptyList()).when(databaseBackedClusterService).checkForOrphanedTasks(anyLong());
         doReturn(List.of(mock(ClusterNode.class))).when(databaseBackedClusterService).getActiveNodes();
+        doReturn(new int[]{1}).when(databaseBackedClusterService).updateBatchPartitionsToReAssignedNodes(any());
         Collection<StepExecution> stepExecutionCollections = clusterAwarePartitionHandler.handle(stepSplitter, managerStepExecution);
+        await().atMost(5, TimeUnit.SECONDS).until(()->{
+            int[] result = databaseBackedClusterService.updateBatchPartitionsToReAssignedNodes(any());
+            return result != null;
+        });
         assertEquals(1, stepExecutionCollections.size());
         verify(databaseBackedClusterService, times(1)).saveBatchJobCoordinationInfo(anyLong(), anyLong(), any());
         verify(databaseBackedClusterService, times(1)).saveBatchPartitions(any());
         verify(databaseBackedClusterService, times(2)).updateBatchJobCoordinationStatus(anyLong(), anyLong(), anyString());
-        verify(databaseBackedClusterService, times(1)).updateBatchPartitionsToReAssignedNodes(any());
+        verify(databaseBackedClusterService, times(2)).updateBatchPartitionsToReAssignedNodes(any());
     }
 
     @Test

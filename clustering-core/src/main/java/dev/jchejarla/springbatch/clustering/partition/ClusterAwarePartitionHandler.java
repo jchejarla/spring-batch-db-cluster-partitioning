@@ -119,7 +119,6 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
                 }
             } catch (Exception e) {
                 log.error("Exception occurred while waiting for all tasks to be completed" , e);
-                areAllTasksCompleted.set(true);
                 throw new CompletionException(e);
             } finally {
                 areAllTasksCompleted.set(true);
