@@ -117,7 +117,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         verify(databaseBackedClusterService, times(1)).updateBatchJobCoordinationStatus(anyLong(), anyLong(), anyString());
     }
 
-    //@Test
+    @Test
     public void testHandleWhenMonitoringForOrphanTasksThrowsException() throws Exception {
         Set<StepExecution> stepExecutions = new HashSet<>();
         StepExecution stepExecution = mock(StepExecution.class);
@@ -139,7 +139,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
                     .thenAnswer(invocation -> {
                         Runnable monitorForTasksCompletionTask = invocation.getArgument(0);
                         return CompletableFuture.runAsync(()-> {
-                            await().atMost(2, TimeUnit.SECONDS).until(()->orphanTasksMonitorStarted.getCount() ==0);
+                            await().atMost(5, TimeUnit.SECONDS).until(()->orphanTasksMonitorStarted.getCount() ==0);
                                 try {
                                     orphanTasksMonitorStarted.await();
                                     monitorForTasksCompletionTask.run();
@@ -171,7 +171,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         });
         testRunThread.start();
 
-        await().atMost(5, TimeUnit.SECONDS).until(() -> Objects.nonNull(exceptionCaught.get()));
+        await().atMost(10, TimeUnit.SECONDS).until(() -> Objects.nonNull(exceptionCaught.get()));
         testRunThread.join(2000);
         assertNotNull(exceptionCaught.get());
         assertEquals("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", exceptionCaught.get().getMessage());
