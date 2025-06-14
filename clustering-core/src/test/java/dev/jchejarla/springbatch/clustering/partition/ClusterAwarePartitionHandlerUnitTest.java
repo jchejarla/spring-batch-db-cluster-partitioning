@@ -128,6 +128,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         doReturn(stepExecutions).when(stepSplitter).split(any(), anyInt());
         doReturn(1, 0).when(databaseBackedClusterService).getPendingTasksCount(anyLong());
         doReturn(true).when(batchClusterProperties).isTracingEnabled();
+        doReturn(100L).when(batchClusterProperties).getMasterTaskStatusCheckInterval();
         doThrow(RuntimeException.class).when(databaseBackedClusterService).checkForOrphanedTasks(anyLong());
         doReturn(List.of(mock(ClusterNode.class))).when(databaseBackedClusterService).getActiveNodes();
 
