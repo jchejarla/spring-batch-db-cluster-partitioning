@@ -28,16 +28,7 @@ jobs:
       - name: Generate dependency graph
         run: mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
 
-      - name: Submit dependency graph
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.DEPENDENCY_GRAPH_PAT }}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "Content-Type: application/json" \
-            https://api.github.com/repos/${{ github.repository }}/dependency-graph/snapshots \
-            --data-binary @target/bom.json
-
       - name: Publish to GitHub Packages
         run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPENDENCY_GRAPH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
