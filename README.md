@@ -100,7 +100,7 @@ Add the following to your `pom.xml` (for Maven):
 <dependency>
     <groupId>io.github.jchejarla</groupId>
     <artifactId>clustering-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 If you are using a SNAPSHOT version of the jar (snapshot version is not an official release, this is just for testing purpose), then add below snapshot repository URL into pom.xml
