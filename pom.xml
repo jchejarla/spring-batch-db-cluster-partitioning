@@ -4,9 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>spring-batch-db-cluster-partitioning</name>
+    <description>Spring Batch DB-based cluster partitioning with dynamic node coordination</description>
+    <url>https://github.com/jchejarla/spring-batch-db-cluster-partitioning</url>
+
     <groupId>io.github.jchejarla</groupId>
     <artifactId>spring-batch-db-cluster-partitioning</artifactId>
-    <version>${revision}</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
     <modules>
         <module>clustering-core</module>
@@ -31,7 +35,7 @@
         <version.org.awaitility>4.3.0</version.org.awaitility>
         <version.org.junit.jupiter-engine>5.10.2</version.org.junit.jupiter-engine>
         <version.org.awaitability>4.3.0</version.org.awaitability>
-        <gpg.keyname>6302639F6FADA6EA4E04073131C6316E48A4C932</gpg.keyname>
+        <gpg.keyname>B35BEB20ED044228AB3C5C1C0EE4B27825C2EDDF</gpg.keyname>
     </properties>
 
 
@@ -51,6 +55,26 @@
             <email>janardhan.chejarla@googlemail.com</email>
         </developer>
     </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <name>OSSRH Releases</name>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <name>OSSRH Snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <scm>
+        <connection>scm:git:https://github.com/jchejarla/spring-batch-db-cluster-partitioning.git</connection>
+        <developerConnection>scm:git:https://github.com/jchejarla/spring-batch-db-cluster-partitioning.git</developerConnection>
+        <url>https://github.com/jchejarla/spring-batch-db-cluster-partitioning</url>
+    </scm>
+
 
     <dependencies>
         <dependency>
@@ -182,6 +206,7 @@
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
