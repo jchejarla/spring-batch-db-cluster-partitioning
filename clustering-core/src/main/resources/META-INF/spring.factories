@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-dev.jchejarla.springbatch.clustering.autoconfigure.BatchClusterAutoConfiguration
+io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterAutoConfiguration

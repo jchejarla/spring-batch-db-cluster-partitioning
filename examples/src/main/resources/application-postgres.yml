@@ -8,7 +8,7 @@ spring:
 
   batch:
     msg-channel:
-      enabled: true
+      enabled: false
       master-node: true
       worker-node: false
     single-node:
@@ -16,10 +16,12 @@ spring:
     jdbc:
       initialize-schema: "never"
     cluster:
-      enabled: false
+      enabled: true
       node-id: ${HOSTNAME:worker}-${random.uuid}
       grid-size: 4
       heartbeat-interval: 5000
+      task-polling-interval: 2000
+
   main:
     allow-circular-references: true
 
