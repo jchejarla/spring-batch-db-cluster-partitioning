@@ -100,7 +100,7 @@ Add the following to your `pom.xml` (for Maven):
 <dependency>
     <groupId>io.github.jchejarla</groupId>
     <artifactId>clustering-core</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 If you are using a SNAPSHOT version of the jar (snapshot version is not an official release, this is just for testing purpose), then add below snapshot repository URL into pom.xml
@@ -119,7 +119,7 @@ If you are using a SNAPSHOT version of the jar (snapshot version is not an offic
 Or for Gradle:
 
 ```gradle
-implementation 'io.github.jchejarla:clustering-core:1.0.0' // Use the latest version
+implementation 'io.github.jchejarla:clustering-core:1.0.1' // Use the latest version
 ```
 > **_NOTE:_** The artifact has been deployed to Maven Central for direct consumption. For local development, you might need to build and install it to your local Maven repository (<code>mvn clean install</code>).
 
