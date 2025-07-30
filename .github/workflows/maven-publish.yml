@@ -1,8 +1,9 @@
-name: Maven Package
-
-on:
-  release:
-    types: [created]
+# DISABLED: We now publish from local
+#name: Maven Package
+#
+#on:
+#  release:
+#    types: [created]
 
 jobs:
   build:
