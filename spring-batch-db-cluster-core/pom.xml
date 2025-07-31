@@ -6,11 +6,11 @@
     <parent>
         <groupId>io.github.jchejarla</groupId>
         <artifactId>spring-batch-db-cluster-partitioning</artifactId>
-        <version>1.0.1</version>
+        <version>${project.version}</version>
     </parent>
 
-    <artifactId>clustering-core</artifactId>
-    <name>clustering-core</name>
+    <artifactId>spring-batch-db-cluster-core</artifactId>
+    <name>spring-batch-db-cluster-core</name>
     <description>Core module for Spring Batch DB clustering framework</description>
 
     <properties>
