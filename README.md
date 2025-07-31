@@ -99,7 +99,7 @@ Add the following to your `pom.xml` (for Maven):
 ```xml
 <dependency>
     <groupId>io.github.jchejarla</groupId>
-    <artifactId>clustering-core</artifactId>
+    <artifactId>spring-batch-db-cluster-core</artifactId>
     <version>1.0.1</version>
 </dependency>
 ```
@@ -119,13 +119,13 @@ If you are using a SNAPSHOT version of the jar (snapshot version is not an offic
 Or for Gradle:
 
 ```gradle
-implementation 'io.github.jchejarla:clustering-core:1.0.1' // Use the latest version
+implementation 'io.github.jchejarla:spring-batch-db-cluster-core:1.0.1' // Use the latest version
 ```
 > **_NOTE:_** The artifact has been deployed to Maven Central for direct consumption. For local development, you might need to build and install it to your local Maven repository (<code>mvn clean install</code>).
 
 ### Database Setup
 
-The solution requires three new tables in your Spring Batch schema. SQL scripts for PostgreSQL, Oracle, MySQL, and H2 will be provided in the <code>clustering-core/src/main/resources/schema.schema-*.sql</code> directory.
+The solution requires three new tables in your Spring Batch schema. SQL scripts for PostgreSQL, Oracle, MySQL, and H2 will be provided in the <code>spring-batch-db-cluster-core/src/main/resources/schema.schema-*.sql</code> directory.
 
 ### PostgreSQL Example Schema:
 
