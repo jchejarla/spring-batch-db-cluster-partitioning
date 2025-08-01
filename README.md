@@ -13,7 +13,7 @@ This approach simplifies the architecture, provides real-time visibility into jo
 The core principles of this project is to know **number of available nodes** upfront so that the efficient tasks partitioning and distribution strategy can be determined at runtime, and **facilitate easy failover** in the event of any cluster node is not responding.
 
 ## ✨ Key Features
-
+* **Decentralized Master Election:** No central master node required — the node that initiates the job automatically becomes the master for that execution, enabling fully autonomous job launches across the cluster.
 * **Database-Driven Coordination:** Utilizes a common relational database (e.g., PostgreSQL, Oracle, MySQL) as the central hub for cluster state management.
 * **Dynamic Node Awareness:** Master nodes discover and assign partitions to active worker nodes in real-time by querying the database.
 * **Flexible Partitioning Strategies:**
