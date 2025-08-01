@@ -14,6 +14,7 @@ The core principles of this project is to know **number of available nodes** upf
 
 ## ✨ Key Features
 * **Decentralized Master Election:** No central master node required — the node that initiates the job automatically becomes the master for that execution, enabling fully autonomous job launches across the cluster.
+* **Proactive Node Awareness:** Before partitioning, the master node dynamically queries the cluster state to **identify all currently active nodes**. This enables smarter distribution strategies (e.g., round-robin, fixed-node allocation) based on **real-time availability**, avoiding delays or imbalance caused by late-arriving workers. Importantly, **the number of available nodes is also passed to the task builder logic**, empowering end users to construct task partitions that are tailored to the **current cluster size**. This allows for more **efficient execution planning** and better resource utilization.
 * **Database-Driven Coordination:** Utilizes a common relational database (e.g., PostgreSQL, Oracle, MySQL) as the central hub for cluster state management.
 * **Dynamic Node Awareness:** Master nodes discover and assign partitions to active worker nodes in real-time by querying the database.
 * **Flexible Partitioning Strategies:**
