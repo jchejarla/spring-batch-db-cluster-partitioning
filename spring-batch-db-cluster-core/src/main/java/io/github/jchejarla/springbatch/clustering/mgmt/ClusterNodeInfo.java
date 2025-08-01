@@ -11,8 +11,9 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ClusterNodeInfo {
     private final String nodeId;
+    private String hostIdentifier;
     private Date startTime;
-    private int currentLoad;
+    private long currentLoad;
     private Date lastHeartbeatTime;
     private NodeStatus nodeStatus;
 }

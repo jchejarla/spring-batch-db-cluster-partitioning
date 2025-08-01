@@ -39,7 +39,7 @@ public class ClusterNodeManagerUnitTest extends BaseUnitTest {
     public void testStartSuccess() {
         doReturn(1).when(databaseBackedClusterService).registerNode();
         clusterNodeManager.start();
-        verify(taskScheduler, times(3)).scheduleAtFixedRate(Mockito.any(), Mockito.any());
+        verify(taskScheduler, times(4)).scheduleAtFixedRate(Mockito.any(), Mockito.any());
     }
 
     @Test

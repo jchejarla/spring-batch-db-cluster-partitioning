@@ -1,6 +1,8 @@
 package io.github.jchejarla.springbatch.clustering.autoconfigure;
 
+import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterHealthIndicator;
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterNodeHealthIndicator;
+import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterNodesEndpoint;
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusteringInfoContributor;
 import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
@@ -132,7 +134,7 @@ public class BatchClusterAutoConfiguration {
     @Bean(name = "clusterHealthMonitoringScheduler")
     public TaskScheduler clusterMonitoringScheduler() {
         ThreadPoolTaskScheduler clusterMonitoringScheduler = new ThreadPoolTaskScheduler();
-        clusterMonitoringScheduler.setPoolSize(3);
+        clusterMonitoringScheduler.setPoolSize(4);
         clusterMonitoringScheduler.setThreadNamePrefix("cluster-monitoring-task-");
         clusterMonitoringScheduler.initialize();
         return clusterMonitoringScheduler;
@@ -185,8 +187,19 @@ public class BatchClusterAutoConfiguration {
     }
 
     @Bean
+    public BatchClusterHealthIndicator batchClusterHealthIndicator(ClusterNodeManager clusterNodeManager) {
+        return new BatchClusterHealthIndicator(clusterNodeManager);
+    }
+
+    @Bean
     public BatchClusteringInfoContributor batchClusteringInfoContributor(BatchClusterProperties batchClusterProperties) {
         return new BatchClusteringInfoContributor(batchClusterProperties);
     }
+
+    @Bean
+    public BatchClusterNodesEndpoint batchClusterNodesEndpoint(ClusterNodeManager clusterNodeManager) {
+        return new BatchClusterNodesEndpoint(clusterNodeManager);
+    }
+
 
 }

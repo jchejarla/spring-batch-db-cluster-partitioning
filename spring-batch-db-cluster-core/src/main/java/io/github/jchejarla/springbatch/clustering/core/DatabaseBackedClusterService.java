@@ -3,6 +3,7 @@ package io.github.jchejarla.springbatch.clustering.core;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties.HostIdentifier;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeLoad;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeStatus;
 import io.github.jchejarla.springbatch.clustering.polling.PartitionAssignmentTask;
@@ -142,6 +143,19 @@ public class DatabaseBackedClusterService {
                         rs.getLong("current_load")
                 )
         );
+    }
+
+    public List<ClusterNodeInfo> getNodesInCluster() {
+        return jdbcTemplate.query(queryProvider.getAllNodesInClusterQuery(), (rs, rowNum) -> {
+            String nodeId = rs.getString("node_id");
+            ClusterNodeInfo clusterNodeInfo = new ClusterNodeInfo(nodeId);
+            clusterNodeInfo.setStartTime(rs.getTimestamp("created_time"));
+            clusterNodeInfo.setLastHeartbeatTime(rs.getTimestamp("last_updated_time"));
+            clusterNodeInfo.setNodeStatus(NodeStatus.valueOf(rs.getString("status")));
+            clusterNodeInfo.setHostIdentifier(rs.getString("host_identifier"));
+            clusterNodeInfo.setCurrentLoad(rs.getLong("current_load"));
+            return clusterNodeInfo;
+        });
     }
 
 }

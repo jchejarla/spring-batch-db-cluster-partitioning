@@ -2,6 +2,7 @@ package io.github.jchejarla.springbatch.clustering.actuate;
 
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeLoad;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeStatus;
 import lombok.RequiredArgsConstructor;

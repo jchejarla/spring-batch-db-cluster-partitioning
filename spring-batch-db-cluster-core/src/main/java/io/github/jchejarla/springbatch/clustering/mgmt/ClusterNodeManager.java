@@ -3,6 +3,7 @@ package io.github.jchejarla.springbatch.clustering.mgmt;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
@@ -12,6 +13,8 @@ import org.springframework.scheduling.TaskScheduler;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,6 +26,8 @@ public class ClusterNodeManager {
     private final TaskScheduler clusterMonitoringScheduler;
     private final ClusterNodeInfo clusterNodeInfo;
     private final ClusterNodeStatusChangeConditionNotifier clusterNodeStatusChangeConditionNotifier;
+    @Getter
+    private final List<ClusterNodeInfo> currentNodes = new CopyOnWriteArrayList<>();
 
     @EventListener(ApplicationReadyEvent.class)
     public void start() {
@@ -37,6 +42,7 @@ public class ClusterNodeManager {
         clusterNodeInfo.setNodeStatus(NodeStatus.ACTIVE);
         log.info("Application registered the node with id {}, and it took {} milli seconds", batchClusterProperties.getNodeId(), (System.currentTimeMillis() - start));
         clusterMonitoringScheduler.scheduleAtFixedRate(this::updateHeartbeat, Duration.ofMillis(batchClusterProperties.getHeartbeatInterval()));
+        clusterMonitoringScheduler.scheduleAtFixedRate(this::updateCurrentActiveNodes, Duration.ofMillis(batchClusterProperties.getHeartbeatInterval()));
         clusterMonitoringScheduler.scheduleAtFixedRate(this::markNodesUnreachable, Duration.ofMillis(batchClusterProperties.getUnreachableNodeThreadInterval()));
         clusterMonitoringScheduler.scheduleAtFixedRate(this::removeNodesUnreachable, Duration.ofMillis(batchClusterProperties.getNodeCleanupThreadInterval()));
     }
@@ -92,6 +98,16 @@ public class ClusterNodeManager {
             }
         } catch(Exception e) {
             log.error("Exception occurred while removing node id : {} from cluster", batchClusterProperties.getNodeId(), e);
+        }
+    }
+
+    protected void updateCurrentActiveNodes() {
+        try {
+            List<ClusterNodeInfo> clusterNodeInfos = databaseBackedClusterService.getNodesInCluster();
+            currentNodes.clear();
+            currentNodes.addAll(clusterNodeInfos);
+        } catch(Exception e) {
+            log.error("Exception occurred while fetching nodes info in the cluster");
         }
     }
 

@@ -18,7 +18,6 @@ The core principles of this project is to know **number of available nodes** upf
 * **Flexible Partitioning Strategies:**
     * **Round-Robin:** Evenly distributes partitions across available nodes.
     * **Fixed Node Count:** Assigns partitions to a specified number of nodes.
-    * **Scale-Up:** Leverages all active nodes for dynamic scaling.
 * **Explicit Task State Tracking:** Every partition's lifecycle (PENDING, CLAIMED, COMPLETED, FAILED) is transactionally recorded, offering unparalleled visibility.
 * **Robust Fault Tolerance:**
     * **Node Heartbeats:** Worker nodes periodically update their liveness, enabling master nodes to detect unresponsive instances.
@@ -82,6 +81,18 @@ sequenceDiagram
     Master->>Worker1: Reassign Partition if Needed
 
 ```
+## 📚 Featured In
+* [TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution) (76+ views, 20+ downloads)
+* [Dev.to Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4) (138+ views)
+* [Medium Article](https://medium.com/@jchejarla/how-i-built-a-fault-tolerant-spring-batch-clustering-framework-with-just-a-database-10fca611aff4)
+
+## 🔍 Actuator Endpoints
+
+| Endpoint                            | Description                                  |
+|-------------------------------------|----------------------------------------------|
+| `/actuator/health`                 | Shows cluster-aware health status            |
+| `/actuator/batch-cluster`         | Cluster overview of node executions         |
+| `/actuator/batch-cluster/{nodeId}`| Details of a specific node        |
 
 
 ## 📦 Getting Started
@@ -90,7 +101,7 @@ sequenceDiagram
 
 * Java 17+
 * Maven 3.x or Gradle 7.x+
-* A relational database (e.g., PostgreSQL, MySQL, H2 for development)
+* A relational database (e.g., PostgreSQL, MySQL, Oracle, H2 for development)
 
 ### Installation (as a Maven/Gradle dependency)
 
@@ -100,7 +111,7 @@ Add the following to your `pom.xml` (for Maven):
 <dependency>
     <groupId>io.github.jchejarla</groupId>
     <artifactId>spring-batch-db-cluster-core</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 If you are using a SNAPSHOT version of the jar (snapshot version is not an official release, this is just for testing purpose), then add below snapshot repository URL into pom.xml
@@ -119,7 +130,7 @@ If you are using a SNAPSHOT version of the jar (snapshot version is not an offic
 Or for Gradle:
 
 ```gradle
-implementation 'io.github.jchejarla:spring-batch-db-cluster-core:1.0.1' // Use the latest version
+implementation 'io.github.jchejarla:spring-batch-db-cluster-core:2.0.0' // Use the latest version
 ```
 > **_NOTE:_** The artifact has been deployed to Maven Central for direct consumption. For local development, you might need to build and install it to your local Maven repository (<code>mvn clean install</code>).
 

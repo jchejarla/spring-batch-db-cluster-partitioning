@@ -62,6 +62,10 @@ public interface DBSpecificQueryProvider {
         return "select node_id, current_load from batch_nodes where status='ACTIVE' order by current_load asc";
     }
 
+    default String getAllNodesInClusterQuery() {
+        return "select node_id, created_time, last_updated_time, status, host_identifier, current_load from batch_nodes";
+    }
+
     String getMarkNodesUnreachableQuery();
     String getDeleteNodesUnreachableQuery();
     String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName);
