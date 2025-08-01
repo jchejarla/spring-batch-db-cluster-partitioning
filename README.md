@@ -4,6 +4,28 @@
 [![Java CI with Maven](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml/badge.svg)](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.jchejarla/spring-batch-db-cluster-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.jchejarla/spring-batch-db-cluster-core)
 
+## 🧭 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [How It Works](#-how-it-works)
+- [Architecture](#-architecture)
+- [Sequence diagram](#-sequence-diagram)
+- [Featured In](#featured-in)
+- [Actuator Endpoints](#-actuator-endpoints)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation (as a Maven/Gradle dependency)](#installation-as-a-mavengradle-dependency)
+  - [Database Setup](#database-setup)
+  - [PostgreSQL Example Schema](#postgresql-example-schema)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+- [Performance and Scalability](#-performance-and-scalability)
+- [Fault Tolerance](#-fault-tolerance)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+
 ## 🚀 Overview
 
 This project provides a novel solution for distributed partitioning in Spring Batch, enabling scalable and fault-tolerant execution of batch jobs across multiple JVM instances (nodes). Unlike traditional Spring Batch remote partitioning methods that rely on external messaging systems (e.g., Kafka, RabbitMQ) or complex orchestrators, this solution leverages a **shared relational database** for all cluster coordination, dynamic task assignment, explicit state tracking, and reliable fault detection and recovery.
@@ -326,22 +348,22 @@ public class MyJobConfig {
 ```
 3. Run Multiple Instances: Start multiple instances of your Spring Boot application, each configured with a unique <code>spring.batch.cluster.node-id</code>. One instance will act as the master (initiating the job), and others will automatically register as workers.
 
-### 📈 Performance and Scalability
+## 📈 Performance and Scalability
 
 This solution enables true horizontal scalability by distributing batch workloads across distinct physical or virtual machines. Performance benchmarks demonstrate significant reductions in job execution time as more worker nodes are added, effectively leveraging distributed computing resources.
 
-### 🛡️ Fault Tolerance
+## 🛡️ Fault Tolerance
 
 The database-centric approach provides robust fault tolerance. In the event of a worker node failure, its assigned tasks (if marked as transferable) are identified via the database and re-assigned to other active nodes, ensuring job completion without manual intervention or data loss.
 
-### 🤝 Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to open issues, submit pull requests, or suggest improvements.
 
-### 📄 License
+## 📄 License
 This project is licensed under the Apache 2.0 License - see the LICENSE file for details.
 
-### 📧 Contact
+## 📧 Contact
 Janardhan Chejarla - janardhan.chejarla@googlemail.com
 
 
