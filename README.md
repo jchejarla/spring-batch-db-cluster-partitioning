@@ -9,9 +9,9 @@
 - [Overview](#-overview)
 - [Key Features](#-key-features)
 - [How It Works](#-how-it-works)
-- [Architecture](#-architecture)
-- [Sequence diagram](#-sequence-diagram)
-- [Featured In](#featured-in)
+- [Architecture](#architecture)
+- [Sequence diagram](#sequence-diagram)
+- [Featured In](#-featured-in)
 - [Actuator Endpoints](#-actuator-endpoints)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
@@ -24,6 +24,7 @@
 - [Fault Tolerance](#-fault-tolerance)
 - [Contributing](#-contributing)
 - [License](#-license)
+- [Contact](#-contact)
 
 
 ## 🚀 Overview
@@ -49,7 +50,7 @@ The core principles of this project is to know **number of available nodes** upf
 * **Simplified Architecture:** Reduces operational overhead by eliminating the need for complex message queues or dedicated cluster management tools.
 * **Customizable Callbacks:** Provides interfaces for custom logic upon overall job success or failure.
 
-## 🛠️ How it Works
+## 🛠 How it Works
 
 1.  **Node Registration:** Each Spring Batch instance (master and worker) registers itself in the `BATCH_NODES` table upon startup and sends periodic heartbeats.
 2.  **Partitioning (Master Node):**
@@ -352,7 +353,7 @@ public class MyJobConfig {
 
 This solution enables true horizontal scalability by distributing batch workloads across distinct physical or virtual machines. Performance benchmarks demonstrate significant reductions in job execution time as more worker nodes are added, effectively leveraging distributed computing resources.
 
-## 🛡️ Fault Tolerance
+## 🛡 Fault Tolerance
 
 The database-centric approach provides robust fault tolerance. In the event of a worker node failure, its assigned tasks (if marked as transferable) are identified via the database and re-assigned to other active nodes, ensuring job completion without manual intervention or data loss.
 
