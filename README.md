@@ -107,8 +107,13 @@ sequenceDiagram
 
 ```
 ## 📚 Featured In
-* [TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution) (76+ views, 20+ downloads)
-* [Dev.to Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4) (138+ views)
+* [📝 TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution)
+  *Spring Batch Database-Backed Clustered Partitioning* — 85+ views, 21+ downloads
+* [✍️ Dev.to Overview Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4)
+  *Introduction to the coordination framework* — 144+ views
+* [📘 Article Series: Distributed Spring Batch Coordination](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4)
+  [Part 1: The Problem with Traditional Spring Batch Scaling](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4)
+  *(More parts coming soon)*
 * [Medium Article](https://medium.com/@jchejarla/how-i-built-a-fault-tolerant-spring-batch-clustering-framework-with-just-a-database-10fca611aff4)
 
 ## 🔍 Actuator Endpoints
