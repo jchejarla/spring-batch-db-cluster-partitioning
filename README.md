@@ -124,7 +124,6 @@ sequenceDiagram
 | `/actuator/batch-cluster`         | Cluster overview of node executions         |
 | `/actuator/batch-cluster/{nodeId}`| Details of a specific node        |
 
-
 ## 📦 Getting Started
 
 ### Prerequisites
@@ -234,6 +233,7 @@ spring.batch.cluster.unreachable-node-threshold=15000 # 15 seconds
 # Time in milliseconds after which an unreachable node's entry is removed from BATCH_NODES
 spring.batch.cluster.node-cleanup-threshold=60000 # 60 seconds (after becoming unreachable)
 ```
+
 ### Usage
 1. Define your <code>ClusterAwarePartitioner</code>: Extend the <code>ClusterAwarePartitioner</code> abstract class.
 

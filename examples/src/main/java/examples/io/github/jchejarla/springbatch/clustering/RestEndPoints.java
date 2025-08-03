@@ -26,6 +26,31 @@ public class RestEndPoints {
     private final JobLauncher jobLauncher;
     private final ApplicationContext applicationContext;
 
+    private static final String ETL_JOB_INPUT_FILE = "/Users/jchejarla/Documents/springbatch-cluster-test-data/customers_large.csv";
+    private static final String ETL_JOB_OUTPUT_DIR = "/Users/jchejarla/Documents/springbatch-cluster-test-data/output";
+
+    @GetMapping("/etljob/rows/{rows}")
+    public ResponseEntity<String> etlJob(@PathVariable("rows") Long rows) {
+        JobParameters parameters = new JobParametersBuilder()
+                .addString("RUN_TIME", LocalDateTime.now().toString(), true)
+                .addLong("rows", rows)
+                .addString("inputFile", ETL_JOB_INPUT_FILE)
+                .addString("outputDir", ETL_JOB_OUTPUT_DIR)
+                .toJobParameters();
+        Job job = applicationContext.getBean("etlClusteredJob", Job.class);
+        try {
+            long startTime = System.currentTimeMillis();
+            JobExecution jobExecution = jobLauncher.run(job, parameters);
+            long endTime = System.currentTimeMillis();
+            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+                    "Output: " + "converted "+rows +" rows CSV data into XML format";
+            return ResponseEntity.ok(sb);
+        } catch(Exception e) {
+            log.error("Exception occurred when launching the Job", e);
+            throw new RuntimeException("Exception occurred when launching the Job", e);
+        }
+    }
+
     @GetMapping("/clusteredjob/addition/taskSize/{taskSize}/from/{from}/to/{to}")
     public ResponseEntity<String> startJobNewSolution(@PathVariable("taskSize") Long taskSize, @PathVariable("from") Long from, @PathVariable("to") Long to) {
         JobParameters parameters = new JobParametersBuilder()
@@ -95,5 +120,6 @@ public class RestEndPoints {
             throw new RuntimeException("Exception occurred when launching the Job", e);
         }
     }
+
 
 }
