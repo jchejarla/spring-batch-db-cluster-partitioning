@@ -26,8 +26,8 @@ public class RestEndPoints {
     private final JobLauncher jobLauncher;
     private final ApplicationContext applicationContext;
 
-    private static final String ETL_JOB_INPUT_FILE = "/Users/jchejarla/Documents/springbatch-cluster-test-data/customers_large.csv";
-    private static final String ETL_JOB_OUTPUT_DIR = "/Users/jchejarla/Documents/springbatch-cluster-test-data/output";
+    private static final String ETL_JOB_INPUT_FILE = "<INPUT_DIR>/customers_large.csv";
+    private static final String ETL_JOB_OUTPUT_DIR = "<OUTPUT_DIR>/output";
 
     @GetMapping("/etljob/rows/{rows}")
     public ResponseEntity<String> etlJob(@PathVariable("rows") Long rows) {
