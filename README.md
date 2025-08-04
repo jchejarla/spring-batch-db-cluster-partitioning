@@ -108,13 +108,15 @@ sequenceDiagram
 ```
 ## 📚 Featured In
 * [📝 TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution)
-  *Spring Batch Database-Backed Clustered Partitioning* — 85+ views, 21+ downloads
+  *Spring Batch Database-Backed Clustered Partitioning* — 98+ views, 27+ downloads
 * [✍️ Dev.to Overview Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4)
-  *Introduction to the coordination framework* — 144+ views
+  *Introduction to the coordination framework* — 171+ views
 * [📘 Article Series: Distributed Spring Batch Coordination](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4)
-  [Part 1: The Problem with Traditional Spring Batch Scaling](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4)
-  *(More parts coming soon)*
-* [Medium Article](https://medium.com/@jchejarla/how-i-built-a-fault-tolerant-spring-batch-clustering-framework-with-just-a-database-10fca611aff4)
+  * Distributed Spring Batch Coordination: Lightweight, Database-Driven, and Cloud-Native Series' Articles
+* [📚 Differ.blog Feature](https://differ.blog/p/distributed-spring-batch-clustering-a-lightweight-alternative-to-heav-8225f3)
+  * Distributed Spring Batch Clustering: A Lightweight Alternative to Heavy Orchestration
+* ✨ Coming Soon
+  Medium/In Plain English article on production usage patterns and lessons learned.
 
 ## 🔍 Actuator Endpoints
 
