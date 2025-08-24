@@ -13,76 +13,81 @@ authors:
 affiliations:
   - name: Independent Researcher
     index: 1
-date: 2025-08-23
+date: 2025-08-24
 bibliography: paper.bib
 ---
 
 # Summary
 
-`spring-batch-db-cluster-partitioning` is an open-source library that adds **database-driven clustering** to Spring Batch [@springbatch].
-It provides **node heartbeats, explicit partition lifecycle, and automatic failover** using only a shared relational database.
-This enables **horizontal scale** and **fault tolerance** for partitioned steps across multiple JVMs or machines **without external messaging middleware**, while remaining idiomatic to Spring Batch.
+`spring-batch-db-cluster-partitioning` is an open-source extension for Spring Batch [@springbatch].
+It introduces **database-driven clustering** that provides **node heartbeats, partition lifecycle tracking, and automatic failover** using a shared relational database.
+The framework enables **horizontal scale-out and fault tolerance** for partitioned jobs while remaining fully compatible with the Spring Batch programming model.
 
 # Statement of Need
 
-Spring Batch offers local parallelism within a single JVM [@springbatch_scaling] and remote partitioning that depends on messaging middleware [@spring_integration_remote_partitioning].
-Neither option supplies a **DB-first** coordination model with **node liveness tracking** and **transactional partition state** suitable for simple, predictable operations.
-Many Spring Batch deployments already include a relational database; leveraging it as the cluster’s coordination plane removes extra moving parts while improving visibility and recoverability.
-This library fills that gap: it integrates **heartbeats, partition assignment, status tracking, and safe re-assignment** directly into Spring Batch workflows.
+Spring Batch supports local parallelism [@springbatch_scaling] and remote partitioning through a messaging layer [@spring_integration_remote_partitioning].
+While effective, these modes require either execution within a single JVM or the addition of messaging infrastructure for coordination.  
+This framework instead uses the relational database itself as the coordination plane.  
+Nodes register with heartbeats, so the set of available workers is explicit and continuously visible, simplifying operations while improving **reproducibility, observability, and resilience**.
+
+Typical use cases include **ETL (Extract–Transform–Load) workflows** where large datasets must be cleaned, transformed, or aggregated in parallel.
+By coordinating work through the database, this framework allows such pipelines to be executed across multiple machines in a cluster without requiring brokers or external schedulers.
 
 # Functionality
 
-The main capabilities of the library include:
+The framework provides:
 
-- **Cluster node registry & heartbeats** in a `BATCH_NODES` table with configurable timeouts.
-- **Partition lifecycle management** tracked in `BATCH_PARTITIONS` (PENDING/CLAIMED/COMPLETED/FAILED).
-- **Automatic failover**: incomplete, `is_transferable` partitions are safely re-assigned on node failure.
-- **Master-per-job** design: the launcher of a job acts as its master; no global controller/election.
-- **Flexible distribution strategies**: round-robin, fixed-node, and dynamic.
-- **Database compatibility**: Oracle, PostgreSQL, MySQL, H2 (for testing).
-- **Spring-native integration**: jobs/steps defined using Spring Batch APIs remain unchanged.
+- **Cluster node registry**: active nodes register in a `BATCH_NODES` table with periodic heartbeats.
+- **Two-phase liveness detection**: nodes are first marked `UNREACHABLE`, then removed after a cleanup threshold, reducing false positives.
+- **Partition lifecycle management**: partitions tracked in `BATCH_PARTITIONS` with states `PENDING`, `CLAIMED`, `COMPLETED`, `FAILED`.
+- **Automatic failover**: transferable partitions from failed nodes are reassigned to healthy ones.
+- **Distribution strategies**: round-robin, fixed-node, and dynamic assignment.
+- **Spring-native integration**: no changes required to job or step definitions.
 
-# Example Usage
+# Architecture
 
-A partitioned step can be defined using standard Spring Batch APIs.  
-The cluster coordination is enabled and configured entirely through Spring Boot properties:
+Coordination state is persisted in three relational tables:
+
+- **`BATCH_NODES`** records active cluster nodes and their heartbeats.
+- **`BATCH_PARTITIONS`** tracks partition ownership and lifecycle transitions (pending, claimed, completed, failed).
+- **`BATCH_JOB_COORDINATION`** manages per-step coordination metadata within a job.
+
+These tables collectively enable liveness detection, partition assignment, and safe failover.  
+Full DDL schemas and examples are provided in the project repository.
+
+# Failure handling
+
+- **Heartbeats** ensure each node regularly updates its liveness.
+- **Two-phase detection** separates *marking unreachable* from *deletion and reassignment*.
+- **Transactional partition claims** prevent double execution.
+- **Automatic recovery** reassigns incomplete partitions from failed nodes to available ones.
+- **Idempotent transitions** allow safe retries without duplicate processing.
+
+# Configuration
+
+Example Spring Boot properties:
 
 ```yaml
-# Enable the cluster partitioning feature
 spring.batch.cluster.enabled=true
-
-# Unique identifier for this node instance
-spring.batch.cluster.node-id=${HOSTNAME:my-batch-node-01}
-
-# How often this node sends a heartbeat to the database (in milliseconds)
-spring.batch.cluster.heartbeat-interval=3000 # 3 seconds
-
-# How often worker nodes poll for new tasks (in milliseconds)
-spring.batch.cluster.task-polling-interval=1000 # 1 second
-
-# Time in milliseconds after which a node is considered unreachable if no heartbeat is received
-spring.batch.cluster.unreachable-node-threshold=15000 # 15 seconds
-
-# Time in milliseconds after which an unreachable node's entry is removed from BATCH_NODES
-spring.batch.cluster.node-cleanup-threshold=60000 # 60 seconds (after becoming unreachable)
+spring.batch.cluster.node-id=${HOSTNAME:my-node-01}
+spring.batch.cluster.heartbeat-interval=3000
+spring.batch.cluster.task-polling-interval=1000
+spring.batch.cluster.unreachable-node-threshold=15000
+spring.batch.cluster.node-cleanup-threshold=60000
 ```
 
-With this configuration, all active nodes in the cluster register themselves, send periodic heartbeats, and poll for partitions.
-If a node becomes unreachable, its partitions are re-assigned to healthy nodes, ensuring job completion without manual intervention.
+# State of the field
 
-# State of the Field
+Scientific workflow systems such as Pegasus [@deelman2015pegasus], Kepler [@ludascher2006kepler], and Taverna [@wolstencroft2013taverna] emphasize reproducibility and durable state.  
+Spring Batch provides a lightweight framework for batch workloads within the Java ecosystem [@springbatch].  
+This extension adds **cluster coordination and failover** directly within Spring Batch, using only a relational database.  
+It complements external schedulers (e.g., Spring Cloud Data Flow [@scdf]) and coordination services (e.g., ZooKeeper [@hunt2010zookeeper], Chubby [@burrows2006chubby], Raft [@ongaro2014raft]) by embedding coordination at the framework level.
 
-Spring Batch’s `TaskExecutorPartitionHandler` parallelizes only within one JVM [@springbatch_scaling];
-`MessageChannelPartitionHandler` uses Spring Integration with brokers for remote partitioning [@spring_integration_remote_partitioning].
+# Limitations
 
-Tools like Spring Cloud Data Flow [@scdf] or external orchestrators (e.g., Kubernetes) can schedule and launch Spring Batch jobs,
-but they operate at the **deployment and scheduling layer**, not at the **partition coordination layer inside Spring Batch**.
-In contrast, this library adds a **database-driven heartbeat and partition-state model directly within Spring Batch** itself.
-
-Alternative distributed engines such as Spark [@zaharia2012spark] and Flink [@carbone2015flink] provide their own runtime models,
-but adopting them requires significant architectural migration away from Spring Batch.
-Our contribution is intentionally pragmatic: to strengthen Spring Batch by providing **built-in, database-backed cluster coordination**
-without additional middleware or platform migration.
+- Targets **small-to-medium clusters** where database throughput is sufficient.
+- Relies on a highly available database; replication and backup are required in production.
+- Not optimized for ultra-large clusters or sub-second coordination latency, where external services may be more appropriate.
 
 # Diagram
 
@@ -92,16 +97,16 @@ flowchart TD
     B --> C[Worker Node 1]
     B --> D[Worker Node 2]
     B --> E[Worker Node N]
-    C -->|Heartbeat + Updates| B
-    D -->|Heartbeat + Updates| B
-    E -->|Heartbeat + Updates| B
-    B -->|Reassign on failure| C
-    B -->|Reassign on failure| D
+    C -->|Heartbeat + State Updates| B
+    D -->|Heartbeat + State Updates| B
+    E -->|Heartbeat + State Updates| B
+    B -->|Reassign on Failure| C
+    B -->|Reassign on Failure| D
 ```
 
 # Acknowledgements
 
-Built on the Spring Batch/Spring Boot ecosystem; informed by practical needs in enterprise batch processing.
-The full source code is available at [@project_repo].
+Built on Spring Batch / Spring Boot.  
+Source code: [@project_repo].
 
 # References
