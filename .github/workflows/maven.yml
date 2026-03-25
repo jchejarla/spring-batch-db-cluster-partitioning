@@ -30,7 +30,7 @@ jobs:
         cache: maven
 
     - name: Build and run unit tests
-      run: mvn -B clean verify --file pom.xml
+      run: mvn -B clean verify --file pom.xml -Dgpg.skip=true
 
     - name: Upload test reports
       if: always()
