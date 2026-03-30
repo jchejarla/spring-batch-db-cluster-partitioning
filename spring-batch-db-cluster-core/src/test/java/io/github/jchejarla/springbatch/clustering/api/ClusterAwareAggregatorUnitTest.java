@@ -4,10 +4,11 @@ import io.github.jchejarla.springbatch.clustering.BaseUnitTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.StepExecution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +22,15 @@ public class ClusterAwareAggregatorUnitTest extends BaseUnitTest {
     @Mock
     JobExecution jobExecution;
     @Mock
-    JobExplorer jobExplorer;
-    @Mock
     ClusterAwareAggregatorCallback aggregatorCallback;
+    @Mock
+    JobRepository jobRepository;
     ClusterAwareAggregator clusterAwareAggregator;
 
     @BeforeEach
     public void init() {
-        clusterAwareAggregator = spy(new ClusterAwareAggregator(aggregatorCallback));
-        clusterAwareAggregator.setJobExplorer(jobExplorer);
+        Mockito.doReturn(jobExecution).when(jobRepository).getJobExecution(anyLong());
+        clusterAwareAggregator = spy(new ClusterAwareAggregator(jobRepository, aggregatorCallback));
     }
 
     @Test
@@ -37,7 +38,6 @@ public class ClusterAwareAggregatorUnitTest extends BaseUnitTest {
         List<StepExecution> stepExecutions = new ArrayList<>();
         StepExecution stepExecutionResult = new StepExecution("masterStep", jobExecution);
         stepExecutionResult.setStatus(BatchStatus.COMPLETED);
-        doReturn(jobExecution).when(jobExplorer).getJobExecution(anyLong());
         clusterAwareAggregator.aggregate(stepExecutionResult, stepExecutions);
         verify(aggregatorCallback, times(1)).onSuccess(anyCollection());
     }
@@ -47,7 +47,6 @@ public class ClusterAwareAggregatorUnitTest extends BaseUnitTest {
         List<StepExecution> stepExecutions = new ArrayList<>();
         StepExecution stepExecutionResult = new StepExecution("masterStep", jobExecution);
         stepExecutionResult.setStatus(BatchStatus.FAILED);
-        doReturn(jobExecution).when(jobExplorer).getJobExecution(anyLong());
         clusterAwareAggregator.aggregate(stepExecutionResult, stepExecutions);
         verify(aggregatorCallback, times(1)).onFailure(anyCollection());
     }

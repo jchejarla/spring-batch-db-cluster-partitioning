@@ -8,8 +8,8 @@ import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.polling.PartitionAssignmentTask;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.JobExecutionException;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.job.JobExecutionException;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.partition.PartitionHandler;
 import org.springframework.batch.core.partition.StepExecutionSplitter;
 

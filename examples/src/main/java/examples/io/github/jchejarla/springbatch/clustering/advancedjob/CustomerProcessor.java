@@ -1,6 +1,6 @@
 package examples.io.github.jchejarla.springbatch.clustering.advancedjob;
 
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

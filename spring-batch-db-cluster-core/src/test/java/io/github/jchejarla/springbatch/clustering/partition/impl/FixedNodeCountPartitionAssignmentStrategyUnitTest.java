@@ -5,7 +5,7 @@ import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 import java.util.ArrayList;
 import java.util.List;
