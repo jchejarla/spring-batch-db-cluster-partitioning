@@ -3,6 +3,8 @@ package io.github.jchejarla.springbatch.clustering.api;
 import io.github.jchejarla.springbatch.clustering.BaseIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.web.server.LocalServerPort;

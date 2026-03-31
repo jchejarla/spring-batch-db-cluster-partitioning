@@ -1,6 +1,6 @@
 package io.github.jchejarla.springbatch.clustering.api;
 
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 
 import java.util.Collection;
 

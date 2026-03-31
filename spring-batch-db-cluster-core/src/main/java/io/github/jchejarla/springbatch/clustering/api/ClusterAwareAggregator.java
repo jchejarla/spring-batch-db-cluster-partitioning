@@ -1,7 +1,8 @@
 package io.github.jchejarla.springbatch.clustering.api;
 
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.partition.support.DefaultStepExecutionAggregator;
 import org.springframework.batch.core.partition.support.RemoteStepExecutionAggregator;
 
@@ -29,9 +30,11 @@ public class ClusterAwareAggregator extends RemoteStepExecutionAggregator {
     /**
      * Constructs a new {@code ClusterAwareAggregator} with the specified callback.
      *
+     * @param jobRepository
      * @param clusterAwareAggregatorCallback The callback to be invoked on success or failure.
      */
-    public ClusterAwareAggregator(ClusterAwareAggregatorCallback clusterAwareAggregatorCallback) {
+    public ClusterAwareAggregator(JobRepository jobRepository, ClusterAwareAggregatorCallback clusterAwareAggregatorCallback) {
+        super(jobRepository);
         this.clusterAwareAggregatorCallback = clusterAwareAggregatorCallback;
         setDelegate(new ClusterAwareClusterAwareAggregatorInternal());
     }

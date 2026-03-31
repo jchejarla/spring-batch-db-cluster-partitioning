@@ -5,14 +5,14 @@ import examples.io.github.jchejarla.springbatch.clustering.common.RangeItemReade
 import examples.io.github.jchejarla.springbatch.clustering.common.RangeSumProcessor;
 import examples.io.github.jchejarla.springbatch.clustering.common.RangeSumWriter;
 import jakarta.jms.ConnectionFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.launch.JobOperator;
+import org.springframework.batch.core.repository.explore.JobExplorer;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.integration.launch.JobLaunchingMessageHandler;
@@ -54,21 +54,21 @@ public class WorkerConfig {
     @Bean
     public IntegrationFlow stepExecutionRequestListener(
             ConnectionFactory connectionFactory,
-            JobLauncher jobLauncher,
+            JobOperator jobOperator,
             JobRegistry jobRegistry) {
         return IntegrationFlow.from(
                         Jms.messageDrivenChannelAdapter(connectionFactory)
                                 .destination("partition.requests"))
                 .handle(m->{
-                    jobLaunchingMessageHandler(jobLauncher);
+                    jobLaunchingMessageHandler(jobOperator);
                 })
                 .get();
     }
 
 
     @Bean
-    public JobLaunchingMessageHandler jobLaunchingMessageHandler(JobLauncher jobLauncher) {
-        JobLaunchingMessageHandler handler = new JobLaunchingMessageHandler(jobLauncher);
+    public JobLaunchingMessageHandler jobLaunchingMessageHandler(JobOperator jobOperator) {
+        JobLaunchingMessageHandler handler = new JobLaunchingMessageHandler(jobOperator);
         return handler;
     }
 
