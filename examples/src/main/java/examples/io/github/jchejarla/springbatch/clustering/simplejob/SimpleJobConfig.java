@@ -48,6 +48,9 @@ public class SimpleJobConfig {
     @Getter
     SumAggregatorCallback sumAggregatorCallback;
 
+    @Value("${spring.batch.cluster.node-id:unknown}")
+    private String nodeId;
+
     @Bean("clusteredJob")
     public Job clusteredJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager, @Qualifier("multiStepAggregator") StepExecutionAggregator clusterAwareAggregator) {
         return new JobBuilder("clustered-job", jobRepository)
@@ -85,13 +88,14 @@ public class SimpleJobConfig {
     @Bean
     public Step multiNodeWorkerStep(JobRepository jobRepository, PlatformTransactionManager txnManager) {
         return new StepBuilder("multiNodeWorkerStep", jobRepository)
-                .tasklet(new LargeSumExecutionTask(), txnManager)
+                .tasklet(new LargeSumExecutionTask(nodeId), txnManager)
                 .build();
     }
 
     @Bean
     @StepScope
-    public Partitioner partitioner(@Value("#{jobParameters['taskSize']}") Long tasksSize, @Value("#{jobParameters['from']}") Long from, @Value("#{jobParameters['to']}") Long to) {
+    public Partitioner partitioner(@Value("#{jobParameters['taskSize']}") Long tasksSize, @Value("#{jobParameters['from']}") Long from, @Value("#{jobParameters['to']}") Long to,
+                                    @Value("${spring.batch.cluster.node-id:unknown}") String nodeId) {
         return new ClusterAwarePartitioner() {
 
             @Override
@@ -118,6 +122,9 @@ public class SimpleJobConfig {
                     executionContexts.add(context);
                     currentStart = currentEnd +1;
                 }
+                System.out.println(">>> [" + nodeId + "] (master) partitioner created " + executionContexts.size()
+                        + " partitions for range " + from + ".." + to
+                        + " across " + availableNodeCount + " active worker node(s)");
                 return executionContexts;
             }
 
@@ -142,17 +149,22 @@ public class SimpleJobConfig {
 
         @Override
         public void onSuccess(Collection<StepExecution> executions) {
+            // Reset between job runs so demos do not bleed state across submissions.
+            sum.set(0);
             executions.forEach(execution-> {
                 Long resultFromPartitionedTask = execution.getExecutionContext().get("result", Long.class);
                 if(Objects.nonNull(resultFromPartitionedTask)) {
                     sum.addAndGet(resultFromPartitionedTask);
                 }
             });
+            System.out.println(">>> (master) aggregated " + executions.size()
+                    + " partition result(s); total sum=" + sum.longValue());
             log.info("Sum of input range is {} ", sum.longValue());
         }
 
         @Override
         public void onFailure(Collection<StepExecution> executions) {
+            System.err.println(">>> (master) job FAILED; some partitions did not complete");
         }
     }
 }

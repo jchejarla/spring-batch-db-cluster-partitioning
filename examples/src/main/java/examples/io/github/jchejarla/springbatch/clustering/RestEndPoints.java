@@ -8,6 +8,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,9 @@ public class RestEndPoints {
 
     private final JobLauncher jobLauncher;
     private final ApplicationContext applicationContext;
+
+    @Value("${spring.batch.cluster.node-id:unknown}")
+    private String nodeId;
 
     private static final String ETL_JOB_INPUT_FILE = "<INPUT_DIR>/customers_large.csv";
     private static final String ETL_JOB_OUTPUT_DIR = "<OUTPUT_DIR>/output";
@@ -53,6 +57,8 @@ public class RestEndPoints {
 
     @GetMapping("/clusteredjob/addition/taskSize/{taskSize}/from/{from}/to/{to}")
     public ResponseEntity<String> startJobNewSolution(@PathVariable("taskSize") Long taskSize, @PathVariable("from") Long from, @PathVariable("to") Long to) {
+        System.out.println(">>> [" + nodeId + "] (master) received job request: clustered-job"
+                + " taskSize=" + taskSize + " range=" + from + ".." + to);
         JobParameters parameters = new JobParametersBuilder()
                 .addString("RUN_TIME", LocalDateTime.now().toString(), true)
                 .addLong("taskSize", taskSize)
@@ -65,9 +71,11 @@ public class RestEndPoints {
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             long endTime = System.currentTimeMillis();
             SimpleJobConfig simpleJobConfig = applicationContext.getBean(SimpleJobConfig.class);
+            long sumValue = simpleJobConfig.getSumAggregatorCallback().getSum().longValue();
+            System.out.println(">>> [" + nodeId + "] (master) job " + jobExecution.getJobId()
+                    + " finished in " + (endTime - startTime) + " ms; total sum=" + sumValue);
             String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
-                    "Output: " + "sum of number from " + from + " to " + to + " is "+
-                    simpleJobConfig.getSumAggregatorCallback().getSum();
+                    "Output: " + "sum of number from " + from + " to " + to + " is " + sumValue;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
             log.error("Exception occurred when launching the Job", e);

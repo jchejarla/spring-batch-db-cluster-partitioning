@@ -11,19 +11,29 @@ import org.springframework.batch.repeat.RepeatStatus;
 @Slf4j
 public class LargeSumExecutionTask implements Tasklet {
 
+    private final String nodeId;
+
+    public LargeSumExecutionTask(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-        log.info("Executing MultiNode Task - START");
-        StepExecution stepExecution =chunkContext.getStepContext().getStepExecution();
+        StepExecution stepExecution = chunkContext.getStepContext().getStepExecution();
         ExecutionContext executionContext = stepExecution.getExecutionContext();
         long start = executionContext.getLong("start");
         long end = executionContext.getLong("end");
-        //long result = (end- start +1) * (start + end) /2;
+        String stepName = stepExecution.getStepName();
+        System.out.println(">>> [" + nodeId + "] (worker) picked up partition "
+                + stepName + " (range " + start + ".." + end + ")");
+        log.info("Executing MultiNode Task - START");
         long result = 0;
         for(long i=start; i<=end; i++) {
             result += i;
         }
         executionContext.putLong("result", result);
+        System.out.println(">>> [" + nodeId + "] (worker) completed partition "
+                + stepName + " result=" + result);
         log.info("Executing MultiNode Task - END");
         return RepeatStatus.FINISHED;
     }
