@@ -167,7 +167,27 @@ implementation 'io.github.jchejarla:spring-batch-db-cluster-core:2.0.0' // Use t
 
 ### Database Setup
 
-The solution requires three new tables in your Spring Batch schema. SQL scripts for PostgreSQL, Oracle, MySQL, and H2 will be provided in the <code>spring-batch-db-cluster-core/src/main/resources/schema.schema-*.sql</code> directory.
+This library extends Spring Batch, so two layers of schema need to exist in your database:
+
+**1. Spring Batch core schema** (required prerequisite)
+
+The standard Spring Batch metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, etc.) must exist. You have two options:
+
+- **Recommended for development:** let Spring Boot create them on startup by setting:
+  ```properties
+  spring.batch.jdbc.initialize-schema=always
+  ```
+- **For production** (or if you prefer to manage schema manually): apply the official Spring Batch DDL script for your database from the [Spring Batch repository](https://github.com/spring-projects/spring-batch/tree/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core). Direct links per database:
+    - [PostgreSQL](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-postgresql.sql)
+    - [MySQL](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-mysql.sql)
+    - [Oracle](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-oracle.sql)
+    - [H2](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-h2.sql)
+
+  Use the Spring Batch version that matches the one this library depends on (currently 5.2.x).
+
+**2. Cluster partitioning tables** (provided by this library)
+
+This library adds three additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`) for cluster state, partition assignment, and heartbeat tracking. SQL scripts for PostgreSQL, Oracle, MySQL, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
 
 ### PostgreSQL Example Schema:
 
@@ -355,6 +375,12 @@ public class MyJobConfig {
 }
 ```
 3. Run Multiple Instances: Start multiple instances of your Spring Boot application, each configured with a unique <code>spring.batch.cluster.node-id</code>. One instance will act as the master (initiating the job), and others will automatically register as workers.
+
+### Running the Bundled Examples
+
+The `examples/` module contains a runnable Spring Boot application that demonstrates simple, advanced (ETL), and task-executor jobs against a real cluster of two or more JVMs.
+
+**See [`examples/README.md`](examples/README.md)** for the complete step-by-step quick start — provisioning PostgreSQL, applying both schemas, building, starting multiple workers, triggering jobs, observing partition state, and testing failover. The example module also documents how to switch to MySQL or Oracle, and includes a zero-setup H2 profile for users who want to verify functionality without provisioning an external database.
 
 ## 📈 Performance and Scalability
 

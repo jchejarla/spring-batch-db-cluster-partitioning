@@ -1,0 +1,53 @@
+# Zero-setup profile for trying the example locally.
+#
+# This profile uses H2 in file-mode with AUTO_SERVER=TRUE, which means:
+#   - No external database is required.
+#   - Multiple JVMs on the same machine (i.e. multiple cluster nodes)
+#     can share the same database file — the first JVM auto-acts as an
+#     embedded TCP server for the rest.
+#   - State persists across runs in ./build/h2-cluster-demo*.
+#     To start fresh, stop all nodes and remove that directory.
+spring:
+  datasource:
+    url: jdbc:h2:file:./build/h2-cluster-demo;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  batch:
+    jdbc:
+      # We initialize the schema explicitly via spring.sql.init below so we
+      # can control ordering (Spring Batch core tables must exist before
+      # this library's cluster tables, which have FKs to them).
+      initialize-schema: never
+    cluster:
+      enabled: true
+      node-id: ${HOSTNAME:node}-${random.uuid}
+      heartbeat-interval: 3000
+      task-polling-interval: 1000
+      unreachable-node-threshold: 15000
+      node-cleanup-threshold: 60000
+  sql:
+    init:
+      mode: always
+      platform: h2
+      # Order matters: Spring Batch core tables first, then this library's
+      # cluster tables (which reference BATCH_JOB_EXECUTION / BATCH_STEP_EXECUTION).
+      schema-locations:
+        - classpath:org/springframework/batch/core/schema-h2.sql
+        - classpath:schema/schema-h2.sql
+      # CREATE TABLE ... IF NOT EXISTS isn't used here; tolerate "already exists"
+      # on subsequent runs so the example doesn't fail on restart.
+      continue-on-error: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,batch-cluster"
