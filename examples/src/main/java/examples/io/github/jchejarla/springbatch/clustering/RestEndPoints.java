@@ -14,8 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -30,24 +34,44 @@ public class RestEndPoints {
     @Value("${spring.batch.cluster.node-id:unknown}")
     private String nodeId;
 
-    private static final String ETL_JOB_INPUT_FILE = "<INPUT_DIR>/customers_large.csv";
-    private static final String ETL_JOB_OUTPUT_DIR = "<OUTPUT_DIR>/output";
+    // Defaults point at the bundled CSV under examples/data and a writable
+    // output directory under ./build. Override via query parameters if needed.
+    private static final String DEFAULT_ETL_INPUT_FILE = "examples/data/customers_example_data.csv";
+    private static final String DEFAULT_ETL_OUTPUT_DIR = "./build/etl-output";
 
     @GetMapping("/etljob/rows/{rows}")
-    public ResponseEntity<String> etlJob(@PathVariable("rows") Long rows) {
+    public ResponseEntity<String> etlJob(@PathVariable("rows") Long rows,
+                                         @RequestParam(value = "inputFile", required = false) String inputFile,
+                                         @RequestParam(value = "outputDir", required = false) String outputDir) {
+        String resolvedInput = (inputFile != null) ? inputFile : DEFAULT_ETL_INPUT_FILE;
+        String resolvedOutput = (outputDir != null) ? outputDir : DEFAULT_ETL_OUTPUT_DIR;
+
+        // Make sure the output directory exists; StaxEventItemWriter won't create it.
+        try {
+            Files.createDirectories(Path.of(resolvedOutput));
+        } catch (IOException ioe) {
+            log.error("Could not create output directory {}", resolvedOutput, ioe);
+            throw new RuntimeException("Could not create output directory: " + resolvedOutput, ioe);
+        }
+
+        System.out.println(">>> [" + nodeId + "] (master) received job request: etl-clustered-job"
+                + " rows=" + rows + " input=" + resolvedInput + " output=" + resolvedOutput);
+
         JobParameters parameters = new JobParametersBuilder()
                 .addString("RUN_TIME", LocalDateTime.now().toString(), true)
                 .addLong("rows", rows)
-                .addString("inputFile", ETL_JOB_INPUT_FILE)
-                .addString("outputDir", ETL_JOB_OUTPUT_DIR)
+                .addString("inputFile", resolvedInput)
+                .addString("outputDir", resolvedOutput)
                 .toJobParameters();
         Job job = applicationContext.getBean("etlClusteredJob", Job.class);
         try {
             long startTime = System.currentTimeMillis();
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             long endTime = System.currentTimeMillis();
+            System.out.println(">>> [" + nodeId + "] (master) etl job " + jobExecution.getJobId()
+                    + " finished in " + (endTime - startTime) + " ms with status " + jobExecution.getStatus());
             String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
-                    "Output: " + "converted "+rows +" rows CSV data into XML format";
+                    "Output: converted " + rows + " rows CSV data into XML format under " + resolvedOutput;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
             log.error("Exception occurred when launching the Job", e);
