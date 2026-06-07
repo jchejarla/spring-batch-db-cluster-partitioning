@@ -14,11 +14,7 @@ public class StartApp {
 
         try {
             SpringApplication app = new SpringApplication(StartApp.class);
-            // Demo-only: when the h2 profile is active and the user supplied a
-            // fixed --spring.batch.cluster.node-id, append a short hex suffix so
-            // consecutive restarts do not collide on BATCH_NODES. Inactive for
-            // postgres/mysql/oracle profiles.
-            app.addListeners(new H2NodeIdSuffixListener());
+            app.addListeners(new DemoNodeIdSuffixListener());
             app.run(args);
         } catch (Exception e) {
            log.error("Exception occurred when starting the application", e);
