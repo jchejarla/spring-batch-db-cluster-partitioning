@@ -79,7 +79,7 @@ public class SimpleJobConfig {
 
     @Bean("multiStepAggregator")
     public StepExecutionAggregator aggregator(JobExplorer jobExplorer) {
-        sumAggregatorCallback = new SumAggregatorCallback();
+        sumAggregatorCallback = new SumAggregatorCallback(nodeId);
         ClusterAwareAggregator clusterAwareAggregator = new ClusterAwareAggregator(sumAggregatorCallback);
         clusterAwareAggregator.setJobExplorer(jobExplorer);
         return clusterAwareAggregator;
@@ -146,25 +146,36 @@ public class SimpleJobConfig {
     public static class SumAggregatorCallback implements ClusterAwareAggregatorCallback {
 
         public AtomicLong sum = new AtomicLong(0);
+        private final String nodeId;
+
+        public SumAggregatorCallback(String nodeId) {
+            this.nodeId = nodeId;
+        }
 
         @Override
         public void onSuccess(Collection<StepExecution> executions) {
             // Reset between job runs so demos do not bleed state across submissions.
             sum.set(0);
-            executions.forEach(execution-> {
+            int contributedResults = 0;
+            for (StepExecution execution : executions) {
                 Long resultFromPartitionedTask = execution.getExecutionContext().get("result", Long.class);
-                if(Objects.nonNull(resultFromPartitionedTask)) {
+                if (Objects.nonNull(resultFromPartitionedTask)) {
                     sum.addAndGet(resultFromPartitionedTask);
+                    contributedResults++;
                 }
-            });
-            System.out.println(">>> (master) aggregated " + executions.size()
-                    + " partition result(s); total sum=" + sum.longValue());
-            log.info("Sum of input range is {} ", sum.longValue());
+            }
+            if (contributedResults > 0) {
+                System.out.println(">>> [" + nodeId + "] (master) aggregated " + executions.size()
+                        + " partition result(s); total sum=" + sum.longValue());
+                log.info("Sum of input range is {} ", sum.longValue());
+            } else {
+                System.out.println(">>> [" + nodeId + "] (master) aggregated " + executions.size() + " partition result(s)");
+            }
         }
 
         @Override
         public void onFailure(Collection<StepExecution> executions) {
-            System.err.println(">>> (master) job FAILED; some partitions did not complete");
+            System.err.println(">>> [" + nodeId + "] (master) job FAILED; some partitions did not complete");
         }
     }
 }
