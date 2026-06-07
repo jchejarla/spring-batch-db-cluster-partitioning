@@ -26,10 +26,16 @@ spring:
     cluster:
       enabled: true
       node-id: ${HOSTNAME:node}-${random.uuid}
-      heartbeat-interval: 3000
+      # Tight timings for the demo: a dead node's row is removed in roughly
+      # 8 seconds (3s to be marked UNREACHABLE + 5s cleanup), so a reviewer
+      # who kills and restarts can re-run a job within a few seconds rather
+      # than waiting for the library's production defaults (~75s). Postgres,
+      # MySQL, and Oracle profiles intentionally keep the library defaults so
+      # they show realistic production recovery semantics.
+      heartbeat-interval: 1000
       task-polling-interval: 1000
-      unreachable-node-threshold: 15000
-      node-cleanup-threshold: 60000
+      unreachable-node-threshold: 3000
+      node-cleanup-threshold: 5000
   sql:
     init:
       mode: always
