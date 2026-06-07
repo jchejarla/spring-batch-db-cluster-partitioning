@@ -14,7 +14,7 @@ import java.util.Map;
 @Configuration
 public class WriterFactory {
 
-    @Bean
+    @Bean(destroyMethod = "")  // Spring Batch already closes the writer
     @StepScope
     public StaxEventItemWriter<Customer> createWriter(@Value("#{stepExecutionContext['partitionId']}") String partitionId,
                                                       @Value("#{jobParameters['outputDir']}") String outputDir) {
