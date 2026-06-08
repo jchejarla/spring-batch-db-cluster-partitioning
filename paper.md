@@ -19,7 +19,7 @@ bibliography: paper.bib
 
 # Summary
 
-Batch processing of large datasets — transforming, validating, or migrating millions of records in a single run — is a routine requirement across scientific and enterprise computing, with well-documented use in bioinformatics and clinical informatics [@wolstencroft2013taverna], in the earth and climate sciences [@cinquini2014esgf], and in financial services [@cogoluegnes2011springbatch]. Spring Batch [@springbatch] is a widely used Java framework for these workloads, providing transactional chunk processing, restart semantics, and a rich programming model. When a single machine cannot process the data fast enough, Spring Batch supports *remote partitioning*: the work is split into partitions and dispatched to worker nodes through a messaging layer such as RabbitMQ or Apache Kafka [@spring_integration_remote_partitioning].
+Batch processing of large datasets — transforming, validating, or migrating millions of records in a single run — is a routine requirement across scientific and enterprise computing, with well-documented use in bioinformatics and clinical informatics [@wolstencroft2013taverna], in the Earth and climate sciences [@cinquini2014esgf], and in financial services [@cogoluegnes2011springbatch]. Spring Batch [@springbatch] is a widely used Java framework for these workloads, providing transactional chunk processing, restart semantics, and a rich programming model. When a single machine cannot process the data fast enough, Spring Batch supports *remote partitioning*: the work is split into partitions and dispatched to worker nodes through a messaging layer such as RabbitMQ or Apache Kafka [@spring_integration_remote_partitioning].
 
 However, operating a highly available message broker solely for partition coordination adds significant infrastructure overhead — deployment, monitoring, and failure handling for a component that is incidental to the batch workload itself. More critically, the message-based model provides no built-in mechanism for the master node to discover how many workers are actually available, or to detect and recover from a worker crash after a partition has been dispatched.
 
@@ -27,7 +27,7 @@ However, operating a highly available message broker solely for partition coordi
 
 # Statement of Need
 
-Spring Batch is used in research-adjacent and enterprise contexts where reproducible, auditable processing of large datasets is essential. In bioinformatics, workflow-based pipelines process sequencing data and clinical datasets at scale [@wolstencroft2013taverna]. In the earth and climate sciences, federated infrastructures coordinate the ingestion and processing of model output across petabyte-scale archives [@cinquini2014esgf]. In financial services, batch processing underpins end-of-day reconciliation, payment processing, and regulatory reporting [@cogoluegnes2011springbatch]. In each case, horizontal scale-out — distributing partitions across multiple worker nodes — is a common strategy for meeting processing-time targets.
+Spring Batch is used in research-adjacent and enterprise contexts where reproducible, auditable processing of large datasets is essential. In bioinformatics, workflow-based pipelines process sequencing data and clinical datasets at scale [@wolstencroft2013taverna]. In the Earth and climate sciences, federated infrastructures coordinate the ingestion and processing of model output across petabyte-scale archives [@cinquini2014esgf]. In financial services, batch processing underpins end-of-day reconciliation, payment processing, and regulatory reporting [@cogoluegnes2011springbatch]. In each case, horizontal scale-out — distributing partitions across multiple worker nodes — is a common strategy for meeting processing-time targets.
 
 Spring Batch offers two parallelism models [@springbatch_scaling]: local multi-threaded partitioning within a single JVM, and remote partitioning across multiple JVMs via a messaging middleware [@spring_integration_remote_partitioning]. Local partitioning is bounded by the resources of a single machine. Remote partitioning removes this ceiling but introduces a critical operational challenge: the master node dispatches partitions through a message queue and has no direct knowledge of how many workers are active, or whether a worker that received a partition has completed, failed, or silently died. If a worker crashes after claiming a partition but before acknowledging completion, the master has no reliable mechanism to detect this and reassign the work. Timeout-based recovery requires careful tuning and still introduces indefinite blocking during failure scenarios [@tanenbaum2007distributed].
 
@@ -74,6 +74,6 @@ The author confirms that no generative AI or AI-assisted technologies (such as L
 
 This work builds on the Spring Batch and Spring Boot frameworks. The author thanks the JOSS reviewers for their constructive feedback.
 
-Source code: [@project_repo].
+Source code: @project_repo.
 
 # References
