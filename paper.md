@@ -11,7 +11,7 @@ authors:
     orcid: 0009-0002-4876-802X
     affiliation: "1"
 affiliations:
-  - name: Independent Researcher
+  - name: Independent Researcher, United States
     index: 1
 date: 2025-08-24
 bibliography: paper.bib
