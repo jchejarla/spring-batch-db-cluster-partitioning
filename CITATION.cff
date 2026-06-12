@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite our paper in the Journal of Open Source Software."
+title: "spring-batch-db-cluster-partitioning"
+authors:
+  - family-names: Chejarla
+    given-names: Janardhan Reddy
+    orcid: "https://orcid.org/0009-0002-4876-802X"
+repository-code: "https://github.com/jchejarla/spring-batch-db-cluster-partitioning"
+license: Apache-2.0
+preferred-citation:
+  type: article
+  title: "spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch"
+  authors:
+    - family-names: Chejarla
+      given-names: Janardhan Reddy
+      orcid: "https://orcid.org/0009-0002-4876-802X"
+  journal: "Journal of Open Source Software"
+  year: 2026
+  volume: 11
+  issue: 122
+  start: 9460
+  doi: "10.21105/joss.09460"
+  url: "https://doi.org/10.21105/joss.09460"

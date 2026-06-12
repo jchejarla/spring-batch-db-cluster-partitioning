@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java CI with Maven](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml/badge.svg)](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.jchejarla/spring-batch-db-cluster-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.jchejarla/spring-batch-db-cluster-core)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.09460/status.svg)](https://doi.org/10.21105/joss.09460)
 
 ## 🧭 Table of Contents
 
@@ -23,6 +24,7 @@
 - [Performance and Scalability](#-performance-and-scalability)
 - [Fault Tolerance](#-fault-tolerance)
 - [Contributing](#-contributing)
+- [Citation](#-citation)
 - [License](#-license)
 - [Contact](#-contact)
 
@@ -393,6 +395,26 @@ The database-centric approach provides robust fault tolerance. In the event of a
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to open issues, submit pull requests, or suggest improvements.
+
+## 📖 Citation
+
+If you use this software in your work, please cite the JOSS paper:
+
+> Chejarla, J. R., (2026). spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch. *Journal of Open Source Software*, 11(122), 9460, https://doi.org/10.21105/joss.09460
+
+```bibtex
+@article{Chejarla2026,
+  author  = {Chejarla, Janardhan Reddy},
+  title   = {spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch},
+  journal = {Journal of Open Source Software},
+  year    = {2026},
+  volume  = {11},
+  number  = {122},
+  pages   = {9460},
+  doi     = {10.21105/joss.09460},
+  url     = {https://doi.org/10.21105/joss.09460}
+}
+```
 
 ## 📄 License
 This project is licensed under the Apache 2.0 License - see the LICENSE file for details.
