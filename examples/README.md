@@ -56,13 +56,14 @@ The `h2` profile uses an embedded H2 database in file-mode with `AUTO_SERVER=TRU
 mvn clean package -pl examples -am
 ```
 
+Each node generates its own unique `node-id` automatically (from the configured `${HOSTNAME}-${random.uuid}` default), so you do not need to set one. The `>>>` lifecycle output will show the generated id for each terminal.
+
 #### A.2 Start Worker Node 1
 
 ```bash
 java -jar examples/target/examples-2.0.0.jar \
   --spring.profiles.active=h2 \
-  --server.port=8081 \
-  --spring.batch.cluster.node-id=worker-1
+  --server.port=8081
 ```
 
 #### A.3 Start Worker Node 2 (in a separate terminal)
@@ -70,8 +71,7 @@ java -jar examples/target/examples-2.0.0.jar \
 ```bash
 java -jar examples/target/examples-2.0.0.jar \
   --spring.profiles.active=h2 \
-  --server.port=8082 \
-  --spring.batch.cluster.node-id=worker-2
+  --server.port=8082
 ```
 
 The H2 web console is available at `http://localhost:8081/h2-console` (JDBC URL: `jdbc:h2:file:./build/h2-cluster-demo`, user `sa`, no password).
@@ -144,20 +144,20 @@ From the repository root:
 mvn clean package -pl examples -am
 ```
 
+Each node generates its own unique `node-id` automatically (from the configured `${HOSTNAME}-${random.uuid}` default), so you do not need to set one. The `>>>` lifecycle output will show the generated id for each terminal.
+
 #### B.4 Start Worker Node 1
 
 ```bash
 java -jar examples/target/examples-2.0.0.jar \
-  --server.port=8081 \
-  --spring.batch.cluster.node-id=worker-1
+  --server.port=8081
 ```
 
 #### B.5 Start Worker Node 2 (in a separate terminal)
 
 ```bash
 java -jar examples/target/examples-2.0.0.jar \
-  --server.port=8082 \
-  --spring.batch.cluster.node-id=worker-2
+  --server.port=8082
 ```
 
 You can start additional workers on different ports the same way.
@@ -190,26 +190,26 @@ The REST response shows the job ID, execution time, and computed result.
 
 ## What You'll See in the Console
 
-The example prints a lifecycle trace prefixed with `>>>` on each node so you can watch the partition flow in real time. After triggering the small job above (`taskSize/4/from/1/to/100`), the terminal running **worker-1** (which received the request and acts as master) shows:
+The example prints a lifecycle trace prefixed with `>>>` on each node so you can watch the partition flow in real time. Each node-id is generated automatically (the auto-generated value combines the host name with a random UUID; the exact value will differ on your machine). After triggering the small job above (`taskSize/4/from/1/to/100`), the terminal running the **first node** (which received the request and acts as master) shows something like:
 
 ```
->>> [worker-1] (master) received job request: clustered-job taskSize=4 range=1..100
->>> [worker-1] (master) partitioner created 4 partitions for range 1..100 across 2 active worker node(s)
->>> [worker-1] (worker) picked up partition multiNodeWorkerStep:0 (range 1..25)
->>> [worker-1] (worker) picked up partition multiNodeWorkerStep:2 (range 51..75)
->>> [worker-1] (worker) completed partition multiNodeWorkerStep:0 result=325
->>> [worker-1] (worker) completed partition multiNodeWorkerStep:2 result=1575
->>> (master) aggregated 4 partition result(s); total sum=5050
->>> [worker-1] (master) job 1 finished in 1060 ms; total sum=5050
+>>> [host-a1b2c3d4-...] (master) received job request: clustered-job taskSize=4 range=1..100
+>>> [host-a1b2c3d4-...] (master) partitioner created 4 partitions for range 1..100 across 2 active worker node(s)
+>>> [host-a1b2c3d4-...] (worker) picked up partition multiNodeWorkerStep:0 (range 1..25)
+>>> [host-a1b2c3d4-...] (worker) picked up partition multiNodeWorkerStep:2 (range 51..75)
+>>> [host-a1b2c3d4-...] (worker) completed partition multiNodeWorkerStep:0 result=325
+>>> [host-a1b2c3d4-...] (worker) completed partition multiNodeWorkerStep:2 result=1575
+>>> [host-a1b2c3d4-...] (master) aggregated 4 partition result(s); total sum=5050
+>>> [host-a1b2c3d4-...] (master) job 1 finished in 1060 ms; total sum=5050
 ```
 
-The terminal running **worker-2** shows the two partitions it claimed and computed:
+The terminal running the **second node** shows the two partitions it claimed and computed:
 
 ```
->>> [worker-2] (worker) picked up partition multiNodeWorkerStep:1 (range 26..50)
->>> [worker-2] (worker) picked up partition multiNodeWorkerStep:3 (range 76..100)
->>> [worker-2] (worker) completed partition multiNodeWorkerStep:1 result=950
->>> [worker-2] (worker) completed partition multiNodeWorkerStep:3 result=2200
+>>> [host-f5e6d7c8-...] (worker) picked up partition multiNodeWorkerStep:1 (range 26..50)
+>>> [host-f5e6d7c8-...] (worker) picked up partition multiNodeWorkerStep:3 (range 76..100)
+>>> [host-f5e6d7c8-...] (worker) completed partition multiNodeWorkerStep:1 result=950
+>>> [host-f5e6d7c8-...] (worker) completed partition multiNodeWorkerStep:3 result=2200
 ```
 
 The four partition results (`325 + 950 + 1575 + 2200 = 5050`) match the closed-form sum of integers from 1 to 100. Note that the master/worker distinction is per-job: the node that received the REST request acts as master for that job, while every active node — including the master — also executes worker tasks.
@@ -258,8 +258,9 @@ curl http://localhost:8081/actuator/health
 # Cluster overview — all nodes and their current executions
 curl http://localhost:8081/actuator/batch-cluster
 
-# Details for a specific node
-curl http://localhost:8081/actuator/batch-cluster/worker-1
+# Details for a specific node (replace {node-id} with one of the ids
+# from the cluster overview above)
+curl http://localhost:8081/actuator/batch-cluster/{node-id}
 ```
 
 ---
@@ -332,6 +333,5 @@ Path B above uses PostgreSQL because it most closely resembles production deploy
    ```bash
    java -jar examples/target/examples-2.0.0.jar \
      --spring.profiles.active=mysql \
-     --server.port=8081 \
-     --spring.batch.cluster.node-id=worker-1
+     --server.port=8081
    ```
