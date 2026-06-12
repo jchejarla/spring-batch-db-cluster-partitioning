@@ -130,6 +130,13 @@ sequenceDiagram
 
 ## 📦 Getting Started
 
+### Version Compatibility
+
+| Library version | Spring Boot | Branch | Status |
+|---|---|---|---|
+| 3.x (in development) | 4.x | `main` | Active development |
+| 2.x | 3.x | `2.x` | Maintenance (bug and security fixes; feature backports considered on request) |
+
 ### Prerequisites
 
 * Java 17+

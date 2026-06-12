@@ -10,7 +10,7 @@
 
     <groupId>io.github.jchejarla</groupId>
     <artifactId>spring-batch-db-cluster-partitioning</artifactId>
-    <version>${project.version}</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>spring-batch-db-cluster-core</module>
@@ -24,7 +24,6 @@
     </parent>
 
     <properties>
-        <project.version>2.0.0</project.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
