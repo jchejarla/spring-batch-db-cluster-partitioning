@@ -403,16 +403,19 @@ If you use this software in your work, please cite the JOSS paper:
 > Chejarla, J. R., (2026). spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch. *Journal of Open Source Software*, 11(122), 9460, https://doi.org/10.21105/joss.09460
 
 ```bibtex
-@article{Chejarla2026,
-  author  = {Chejarla, Janardhan Reddy},
-  title   = {spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch},
-  journal = {Journal of Open Source Software},
-  year    = {2026},
-  volume  = {11},
-  number  = {122},
-  pages   = {9460},
-  doi     = {10.21105/joss.09460},
-  url     = {https://doi.org/10.21105/joss.09460}
+@article{Chejarla_2026,
+  author    = {Chejarla, Janardhan Reddy},
+  title     = {spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch},
+  journal   = {Journal of Open Source Software},
+  publisher = {The Open Journal},
+  year      = {2026},
+  month     = jun,
+  volume    = {11},
+  number    = {122},
+  pages     = {9460},
+  issn      = {2475-9066},
+  doi       = {10.21105/joss.09460},
+  url       = {https://doi.org/10.21105/joss.09460}
 }
 ```
 
