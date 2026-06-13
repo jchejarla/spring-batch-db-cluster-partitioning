@@ -69,6 +69,10 @@ section .sub{text-align:center;color:var(--muted);max-width:600px;margin:0 auto 
 pre{background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:20px;overflow-x:auto;
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;
   max-width:640px;margin:0 auto}
+.usage-step{max-width:680px;margin:0 auto 10px;color:var(--muted);font-size:14.5px}
+.usage-step strong{color:var(--text);font-weight:600}
+pre + .usage-step{margin-top:24px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.9em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
 .cite{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
 .cite p{margin:0 0 12px;font-size:15px}
 .cite .ref{color:var(--muted)}
@@ -86,7 +90,8 @@ footer a{color:var(--muted)}
     <nav>
       <a href="#features">Features</a>
       <a href="#how">How it works</a>
-      <a href="#install">Install</a>
+      <a href="#usage">Usage</a>
+      <a href="#examples">Examples</a>
       <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">GitHub</a>
     </nav>
   </div>
@@ -142,6 +147,63 @@ footer a{color:var(--muted)}
     &lt;artifactId&gt;spring-batch-db-cluster-core&lt;/artifactId&gt;
     &lt;version&gt;2.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
+  </section>
+
+  <section id="usage">
+    <h2>Using it in your job</h2>
+    <p class="sub">Turn on clustering in configuration, then write a partitioner. Your existing steps stay exactly as they are.</p>
+
+    <p class="usage-step"><strong>1. Enable clustering</strong> in <code>application.yml</code>:</p>
+<pre>spring:
+  batch:
+    cluster:
+      enabled: true
+      node-id: ${HOSTNAME:batch-node-01}
+      heartbeat-interval: 3000
+      task-polling-interval: 1000
+      unreachable-node-threshold: 15000
+      node-cleanup-threshold: 60000</pre>
+
+    <p class="usage-step"><strong>2. Define a partitioner</strong> by extending <code>ClusterAwarePartitioner</code>. You receive the live node count and pick a distribution strategy:</p>
+<pre>@Configuration
+public class MyJobPartitioner extends ClusterAwarePartitioner {
+
+    @Override
+    public List&lt;ExecutionContext&gt; splitIntoChunksForDistribution(int availableNodeCount) {
+        List&lt;ExecutionContext&gt; partitions = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; 10; i++) {
+            ExecutionContext ctx = new ExecutionContext();
+            ctx.putLong("startRange", i * 100000L);
+            ctx.putLong("endRange", (i + 1) * 100000L - 1);
+            partitions.add(ctx);
+        }
+        return partitions;
+    }
+
+    @Override
+    public PartitionTransferableProp arePartitionsTransferableWhenNodeFailed() {
+        return PartitionTransferableProp.YES;
+    }
+
+    @Override
+    public PartitionBuilder buildPartitionStrategy() {
+        return PartitionBuilder.builder()
+            .partitioningMode(PartitioningMode.ROUND_ROBIN)
+            .build();
+    }
+}</pre>
+
+    <p class="usage-step"><strong>3. Wire it into a partitioned step</strong> exactly as you would with standard Spring Batch — pass your partitioner to <code>.partitioner(...)</code>, and the library handles distribution, claiming, and failover across the cluster. The full job configuration is in the <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#-usage">README usage guide</a>.</p>
+  </section>
+
+  <section id="examples">
+    <h2>Runnable examples</h2>
+    <p class="sub">The examples module ships two end-to-end demos you can run locally in minutes — the bundled H2 profile needs no external database or broker.</p>
+    <div class="grid">
+      <div class="card"><h3>Range-sum job</h3><p>Splits a numeric range into partitions, sums each on a different worker, and aggregates the result — the quickest way to watch distribution and failover happen.</p></div>
+      <div class="card"><h3>ETL job</h3><p>Reads rows from a CSV, distributes chunks across workers round-robin, and writes XML — a full chunk-oriented reader, processor, and writer pipeline.</p></div>
+    </div>
+    <p style="text-align:center;margin-top:28px"><a class="btn" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples">Browse the examples module</a></p>
   </section>
 
   <section id="cite">
