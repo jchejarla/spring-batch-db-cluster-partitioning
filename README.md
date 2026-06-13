@@ -4,6 +4,9 @@
 [![Java CI with Maven](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml/badge.svg)](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/actions/workflows/maven.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.jchejarla/spring-batch-db-cluster-core.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.jchejarla/spring-batch-db-cluster-core)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.09460/status.svg)](https://doi.org/10.21105/joss.09460)
+[![Project Website](https://img.shields.io/badge/Website-Project%20Page-1d9e75)](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/)
+
+📖 **[Project website →](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/)**
 
 ## 🧭 Table of Contents
 
