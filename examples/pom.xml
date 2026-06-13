@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
+            <version>42.7.11</version>
         </dependency>
 
         <!-- JDBC driver: H2. Used by the default "h2" profile so the example
