@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spring Batch DB Cluster Partitioning — distributed partitioning with no message broker</title>
+<meta name="description" content="An open-source Spring Batch extension for distributed, fault-tolerant partitioned job execution coordinated entirely through your relational database — no Kafka, RabbitMQ, or ZooKeeper. Published in the Journal of Open Source Software.">
+<meta name="author" content="Janardhan Reddy Chejarla">
+<link rel="canonical" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Spring Batch DB Cluster Partitioning">
+<meta property="og:description" content="Distributed, fault-tolerant Spring Batch partitioning coordinated through your relational database — no message broker. JOSS-published.">
+<meta property="og:url" content="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/">
+<meta property="og:image" content="https://raw.githubusercontent.com/jchejarla/spring-batch-db-cluster-partitioning/main/docs/architecture.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Spring Batch DB Cluster Partitioning">
+<meta name="twitter:description" content="Distributed, fault-tolerant Spring Batch partitioning coordinated through your relational database — no message broker. JOSS-published.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/jchejarla/spring-batch-db-cluster-partitioning/main/docs/architecture.png">
+<style>
+:root{
+  --bg:#ffffff; --surface:#f6f7f9; --surface-2:#eef0f3; --border:#e2e5ea;
+  --text:#1c2024; --muted:#5b6470; --faint:#8b95a1;
+  --accent:#1d9e75; --accent-ink:#0f6e56; --code-bg:#0d1117; --code-text:#e6edf3;
+  --max:980px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0d1117; --surface:#161b22; --surface-2:#1c232c; --border:#2a313c;
+    --text:#e6edf3; --muted:#9aa5b1; --faint:#6e7781;
+    --accent:#3ddc97; --accent-ink:#3ddc97; --code-bg:#010409; --code-text:#e6edf3;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:10}
+header.site .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font-weight:600;font-size:15px}
+nav a{color:var(--muted);font-size:14px;margin-left:20px}
+nav a:hover{color:var(--text);text-decoration:none}
+.hero{text-align:center;padding:72px 0 48px}
+.hero h1{font-size:42px;line-height:1.15;margin:0 0 16px;letter-spacing:-0.02em}
+.hero p.lead{font-size:19px;color:var(--muted);max-width:620px;margin:0 auto 28px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px}
+.badges img{height:22px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.btn{display:inline-block;font-size:15px;font-weight:500;padding:11px 22px;border-radius:8px;border:1px solid var(--border)}
+.btn:hover{text-decoration:none;border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#04201a;border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.05)}
+section{padding:48px 0;border-top:1px solid var(--border)}
+section h2{font-size:28px;letter-spacing:-0.01em;margin:0 0 8px;text-align:center}
+section .sub{text-align:center;color:var(--muted);max-width:600px;margin:0 auto 36px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.card h3{margin:0 0 8px;font-size:17px}
+.card p{margin:0;color:var(--muted);font-size:14.5px}
+.steps{counter-reset:step;max-width:680px;margin:0 auto;display:grid;gap:16px}
+.step{display:flex;gap:16px;align-items:flex-start}
+.step .n{flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#04201a;
+  display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
+.step h3{margin:2px 0 4px;font-size:16px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+pre{background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:20px;overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.6;
+  max-width:640px;margin:0 auto}
+.cite{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.cite p{margin:0 0 12px;font-size:15px}
+.cite .ref{color:var(--muted)}
+.cite code{font-size:13px;color:var(--accent-ink)}
+footer{border-top:1px solid var(--border);padding:32px 0;text-align:center;color:var(--faint);font-size:13.5px}
+footer a{color:var(--muted)}
+@media (max-width:600px){.hero h1{font-size:32px}.hero p.lead{font-size:17px}nav{display:none}}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <span class="brand">Spring Batch DB Cluster Partitioning</span>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <section class="hero" style="border-top:none">
+    <h1>Distributed Spring Batch,<br>coordinated by your database</h1>
+    <p class="lead">An open-source extension for scalable, fault-tolerant partitioned job execution across JVM nodes — using the relational database you already run. No Kafka, no RabbitMQ, no ZooKeeper.</p>
+    <div class="badges">
+      <a href="https://central.sonatype.com/artifact/io.github.jchejarla/spring-batch-db-cluster-core"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/io.github.jchejarla/spring-batch-db-cluster-core.svg?label=Maven%20Central"></a>
+      <a href="https://doi.org/10.21105/joss.09460"><img alt="JOSS DOI" src="https://joss.theoj.org/papers/10.21105/joss.09460/status.svg"></a>
+      <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#-getting-started">Get started</a>
+      <a class="btn" href="https://doi.org/10.21105/joss.09460">Read the JOSS paper</a>
+      <a class="btn" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">View on GitHub</a>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>Why this extension</h2>
+    <p class="sub">Standard Spring Batch remote partitioning needs a message broker and can't tell when a worker has silently died. This replaces that with the database — gaining visibility and recovery for free.</p>
+    <div class="grid">
+      <div class="card"><h3>Decentralized master election</h3><p>The node that launches a job becomes its master — no dedicated coordinator or single point of orchestration.</p></div>
+      <div class="card"><h3>Proactive node awareness</h3><p>The master queries the live worker count before partitioning, so work is split to match the cluster you actually have.</p></div>
+      <div class="card"><h3>Database-driven coordination</h3><p>All cluster state lives in standard SQL tables. Works with PostgreSQL, MySQL, Oracle, and H2.</p></div>
+      <div class="card"><h3>Flexible partition strategies</h3><p>Round-robin, fixed-node-count, or scale-up assignment — chosen to fit the workload at runtime.</p></div>
+      <div class="card"><h3>Explicit state tracking</h3><p>Every partition's lifecycle — pending, claimed, completed, failed — is recorded transactionally. No silently lost work.</p></div>
+      <div class="card"><h3>Automatic failover</h3><p>Missed heartbeats mark a node unreachable; its transferable partitions are reassigned to healthy workers.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="sub">Coordination flows through three tables that augment Spring Batch's existing schema.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><h3>Nodes register and heartbeat</h3><p>Each instance records itself in <code>BATCH_NODES</code> on startup and refreshes a heartbeat timestamp on an interval.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>The master partitions the work</h3><p>It reads the active worker count, splits the step, and writes assignments to <code>BATCH_PARTITIONS</code> with a pending status.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>Workers claim and execute</h3><p>Each worker polls for its assigned partitions, claims them transactionally, runs the Spring Batch step, and updates status.</p></div></div>
+      <div class="step"><div class="n">4</div><div><h3>Failures are detected and recovered</h3><p>If heartbeats stop, the node is marked unreachable and its incomplete, transferable partitions are reassigned automatically.</p></div></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <p class="sub">Available on Maven Central. Add the dependency and configure your datasource — no changes to your existing job or step definitions.</p>
+<pre>&lt;dependency&gt;
+    &lt;groupId&gt;io.github.jchejarla&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-batch-db-cluster-core&lt;/artifactId&gt;
+    &lt;version&gt;2.0.1&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+  </section>
+
+  <section id="cite">
+    <h2>Cite this work</h2>
+    <p class="sub">Published, peer-reviewed, and citable in the Journal of Open Source Software.</p>
+    <div class="cite">
+      <p class="ref">Chejarla, J. R. (2026). spring-batch-db-cluster-partitioning: Database-driven clustering with heartbeats and failover for Spring Batch. <em>Journal of Open Source Software</em>, 11(122), 9460. <a href="https://doi.org/10.21105/joss.09460">https://doi.org/10.21105/joss.09460</a></p>
+      <p style="margin-bottom:0"><a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/blob/main/CITATION.cff">BibTeX &amp; CITATION.cff →</a></p>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Apache License 2.0 · Maintained by Janardhan Reddy Chejarla · <a href="https://orcid.org/0009-0002-4876-802X">ORCID 0009-0002-4876-802X</a></p>
+    <p><a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">github.com/jchejarla/spring-batch-db-cluster-partitioning</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
