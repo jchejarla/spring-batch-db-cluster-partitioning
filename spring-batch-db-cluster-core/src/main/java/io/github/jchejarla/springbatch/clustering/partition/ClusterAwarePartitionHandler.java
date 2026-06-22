@@ -130,7 +130,10 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             try {
                 while (!areAllTasksCompleted.get() && !taskCompletionMonitorTask.isDone()) {
                     pollForOrphanedTasksAndReArrange(masterStepExecutionId);
+                    Thread.sleep(batchClusterProperties.getOrphanedTasksPollingInterval());
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             } catch (Exception e) {
                 log.error("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
                 throw new CompletionException("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
@@ -172,7 +175,8 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             List<Object[]> params = new ArrayList<>();
             int index = 0;
             for (PartitionAssignmentTask originTask : orphanedTasks) {
-                String assignedToNode = activeNodes.get(index).nodeId();
+                String assignedToNode = activeNodes.get(index % activeNodes.size()).nodeId();
+                index++;
                 params.add(new Object[]{assignedToNode, new Date(), originTask.jobExecutionId(), originTask.masterStepExecutionId(), originTask.stepExecutionId()});
             }
             databaseBackedClusterService.updateBatchPartitionsToReAssignedNodes(params);
