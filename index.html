@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Spring Batch DB Cluster Partitioning — distributed partitioning with no message broker</title>
-<meta name="description" content="An open-source Spring Batch extension for distributed, fault-tolerant partitioned job execution coordinated entirely through your relational database — no Kafka, RabbitMQ, or ZooKeeper. Published in the Journal of Open Source Software.">
+<title>Spring Batch DB Cluster Partitioning — database-coordinated distributed partitioning</title>
+<meta name="description" content="An open-source Spring Batch extension for scalable, fault-tolerant distributed partitioned job execution, coordinated entirely through your relational database — no separate messaging or coordination infrastructure (Kafka, RabbitMQ, ZooKeeper) to operate. Published in the Journal of Open Source Software.">
 <meta name="author" content="Janardhan Reddy Chejarla">
 <link rel="canonical" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Spring Batch DB Cluster Partitioning">
-<meta property="og:description" content="Distributed, fault-tolerant Spring Batch partitioning coordinated through your relational database — no message broker. JOSS-published.">
+<meta property="og:description" content="Distributed, fault-tolerant Spring Batch partitioning, coordinated through your relational database. JOSS-published.">
 <meta property="og:url" content="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/">
 <meta property="og:image" content="https://raw.githubusercontent.com/jchejarla/spring-batch-db-cluster-partitioning/main/docs/architecture.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Spring Batch DB Cluster Partitioning">
-<meta name="twitter:description" content="Distributed, fault-tolerant Spring Batch partitioning coordinated through your relational database — no message broker. JOSS-published.">
+<meta name="twitter:description" content="Distributed, fault-tolerant Spring Batch partitioning, coordinated through your relational database. JOSS-published.">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/jchejarla/spring-batch-db-cluster-partitioning/main/docs/architecture.png">
 <style>
 :root{
@@ -102,7 +102,7 @@ footer a{color:var(--muted)}
 
   <section class="hero" style="border-top:none">
     <h1>Distributed Spring Batch,<br>coordinated by your database</h1>
-    <p class="lead">An open-source extension for scalable, fault-tolerant partitioned job execution across JVM nodes — using the relational database you already run. No Kafka, no RabbitMQ, no ZooKeeper.</p>
+    <p class="lead">An open-source extension for scalable, fault-tolerant partitioned job execution across JVM nodes — coordinated entirely through the relational database you already run. No extra messaging or coordination infrastructure to deploy or monitor.</p>
     <div class="badges">
       <a href="https://central.sonatype.com/artifact/io.github.jchejarla/spring-batch-db-cluster-core"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/io.github.jchejarla/spring-batch-db-cluster-core.svg?label=Maven%20Central"></a>
       <a href="https://doi.org/10.21105/joss.09460"><img alt="JOSS DOI" src="https://joss.theoj.org/papers/10.21105/joss.09460/status.svg"></a>
@@ -117,7 +117,7 @@ footer a{color:var(--muted)}
 
   <section id="features">
     <h2>Why this extension</h2>
-    <p class="sub">Standard Spring Batch remote partitioning needs a message broker and can't tell when a worker has silently died. This replaces that with the database — gaining visibility and recovery for free.</p>
+    <p class="sub">Standard Spring Batch remote partitioning dispatches work through a message broker, but has no built-in way to know how many workers are live — or whether one has silently died after receiving a partition. This adds that coordination layer — proactive node awareness, partition lifecycle tracking, and automatic recovery — through your database.</p>
     <div class="grid">
       <div class="card"><h3>Decentralized master election</h3><p>The node that launches a job becomes its master — no dedicated coordinator or single point of orchestration.</p></div>
       <div class="card"><h3>Proactive node awareness</h3><p>The master queries the live worker count before partitioning, so work is split to match the cluster you actually have.</p></div>
