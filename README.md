@@ -34,7 +34,7 @@
 
 ## 🚀 Overview
 
-This project provides a novel solution for distributed partitioning in Spring Batch, enabling scalable and fault-tolerant execution of batch jobs across multiple JVM instances (nodes). Unlike traditional Spring Batch remote partitioning methods that rely on external messaging systems (e.g., Kafka, RabbitMQ) or complex orchestrators, this solution leverages a **shared relational database** for all cluster coordination, dynamic task assignment, explicit state tracking, and reliable fault detection and recovery.
+This project delivers **database-coordinated distributed partitioning for Spring Batch** — scalable, fault-tolerant execution of batch jobs across multiple JVM instances (nodes), with all cluster coordination handled through the **relational database you already operate**. It provides dynamic task assignment, explicit partition-state tracking, and reliable fault detection and recovery, while keeping deployment lightweight — no additional messaging or coordination infrastructure to stand up, scale, or monitor.
 
 This approach simplifies the architecture, provides real-time visibility into job progress, and ensures robust task re-assignment upon node failures, all while minimizing changes to existing Spring Batch application logic.
 
@@ -52,7 +52,7 @@ The core principles of this project is to know **number of available nodes** upf
 * **Robust Fault Tolerance:**
     * **Node Heartbeats:** Worker nodes periodically update their liveness, enabling master nodes to detect unresponsive instances.
     * **Configurable Task Re-assignment:** Uncompleted tasks from failed nodes can be automatically re-assigned to healthy nodes, ensuring job completion.
-* **Simplified Architecture:** Reduces operational overhead by eliminating the need for complex message queues or dedicated cluster management tools.
+* **Self-Contained Coordination:** All cluster state lives in your existing relational database, keeping the deployment lightweight — no separate messaging or cluster-management service to operate.
 * **Customizable Callbacks:** Provides interfaces for custom logic upon overall job success or failure.
 
 ## 🛠 How it Works
