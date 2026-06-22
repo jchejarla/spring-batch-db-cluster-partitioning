@@ -62,6 +62,28 @@ public interface DBSpecificQueryProvider {
         return "select node_id, current_load from batch_nodes where status='ACTIVE' order by current_load asc";
     }
 
+    /**
+     * Finds jobs whose master node has left the cluster: coordination rows still marked {@code STARTED}
+     * whose {@code master_node_id} no longer exists in {@code batch_nodes} (i.e. the master was marked
+     * unreachable and then removed by the node-cleanup phase). These are candidates for recovery.
+     */
+    default String getOrphanedMasterJobsQuery() {
+        return "select bc.job_execution_id, bc.master_node_id, bc.master_step_execution_id, bc.master_step_name " +
+                "from batch_job_coordination bc " +
+                "where bc.status = 'STARTED' " +
+                "and not exists (select 1 from batch_nodes bn where bn.node_id = bc.master_node_id)";
+    }
+
+    /**
+     * Atomically claims an orphaned coordination row for recovery, transitioning it from {@code STARTED}
+     * to a caller-supplied transient status, guarded by the (job execution, dead master) pair. Exactly one
+     * surviving node wins the claim (the database transaction arbitrates), so a job is reaped only once.
+     */
+    default String getClaimOrphanedMasterJobQuery() {
+        return "update batch_job_coordination set status = ?, last_updated = ? " +
+                "where job_execution_id = ? and status = 'STARTED' and master_node_id = ?";
+    }
+
     default String getAllNodesInClusterQuery() {
         return "select node_id, created_time, last_updated_time, status, host_identifier, current_load from batch_nodes";
     }

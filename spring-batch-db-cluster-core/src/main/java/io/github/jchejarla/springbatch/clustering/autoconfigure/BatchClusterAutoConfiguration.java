@@ -10,6 +10,7 @@ import io.github.jchejarla.springbatch.clustering.core.serviceimpl.H2DatabaseQue
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.MySQLDatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterJobRecoveryManager;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeStatusChangeConditionNotifier;
@@ -72,6 +73,16 @@ public class BatchClusterAutoConfiguration {
                                                  ClusterNodeInfo clusterNodeInfo,
                                                  ClusterNodeStatusChangeConditionNotifier clusterNodeStatusChangeConditionNotifier) {
         return new ClusterNodeManager(databaseBackedClusterService, batchClusterProperties, clusterMonitoringScheduler, clusterNodeInfo, clusterNodeStatusChangeConditionNotifier);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ClusterJobRecoveryManager clusterJobRecoveryManager(DatabaseBackedClusterService databaseBackedClusterService,
+                                                              BatchClusterProperties batchClusterProperties,
+                                                              JobExplorer jobExplorer,
+                                                              JobRepository jobRepository,
+                                                              @Qualifier("clusterHealthMonitoringScheduler") TaskScheduler clusterMonitoringScheduler) {
+        return new ClusterJobRecoveryManager(databaseBackedClusterService, batchClusterProperties, jobExplorer, jobRepository, clusterMonitoringScheduler);
     }
 
     @Bean

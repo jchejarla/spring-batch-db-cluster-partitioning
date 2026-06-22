@@ -5,6 +5,7 @@ import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProp
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeLoad;
+import io.github.jchejarla.springbatch.clustering.mgmt.OrphanedMasterJob;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeStatus;
 import io.github.jchejarla.springbatch.clustering.polling.PartitionAssignmentTask;
 import lombok.RequiredArgsConstructor;
@@ -134,6 +135,32 @@ public class DatabaseBackedClusterService {
                         rs.getString("assigned_node")
                 ), masterStepExecutionId, batchClusterProperties.getNodeCleanupThreshold()
         );
+    }
+
+    /**
+     * Returns jobs whose master node has left the cluster (coordination row still {@code STARTED},
+     * master node no longer registered). These jobs cannot make progress and are candidates for recovery.
+     */
+    public List<OrphanedMasterJob> findOrphanedMasterJobs() {
+        return jdbcTemplate.query(queryProvider.getOrphanedMasterJobsQuery(),
+                (rs, rowNum) -> new OrphanedMasterJob(
+                        rs.getLong("job_execution_id"),
+                        rs.getString("master_node_id"),
+                        rs.getLong("master_step_execution_id"),
+                        rs.getString("master_step_name")
+                ));
+    }
+
+    /**
+     * Atomically claims an orphaned job for recovery by transitioning its coordination row from
+     * {@code STARTED} to {@code recoveringStatus}, guarded by the dead master's node id. Returns
+     * {@code true} only for the single node that wins the claim, so a stranded job is reaped exactly once.
+     */
+    @Transactional
+    public boolean claimOrphanedMasterJob(long jobExecutionId, String deadMasterNode, String recoveringStatus) {
+        int rowsUpdated = jdbcTemplate.update(queryProvider.getClaimOrphanedMasterJobQuery(),
+                recoveringStatus, new Date(), jobExecutionId, deadMasterNode);
+        return rowsUpdated == 1;
     }
 
     public List<ClusterNode> getActiveNodes() {
