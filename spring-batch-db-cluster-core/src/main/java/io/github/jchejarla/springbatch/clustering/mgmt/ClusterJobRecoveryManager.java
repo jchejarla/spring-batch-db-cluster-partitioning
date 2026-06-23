@@ -39,8 +39,8 @@ import java.util.List;
  *
  * <p>This is the detection-and-reaping phase of master failover. It does not (yet) automatically
  * resume the job on another node; it makes recovery a clean, operator- or client-driven restart.
- * The scan cadence is controlled by
- * {@link BatchClusterProperties#getOrphanedMasterScanInterval()}.</p>
+ * The scan cadence is controlled by the {@code spring.batch.cluster.orphaned-master-scan-interval}
+ * property (see {@link BatchClusterProperties}).</p>
  *
  * @author Janardhan Chejarla
  */
