@@ -26,6 +26,7 @@
   - [Usage](#usage)
 - [Performance and Scalability](#-performance-and-scalability)
 - [Fault Tolerance](#-fault-tolerance)
+- [FAQ](#-faq)
 - [Contributing](#-contributing)
 - [Citation](#-citation)
 - [License](#-license)
@@ -401,6 +402,29 @@ This solution enables true horizontal scalability by distributing batch workload
 ## 🛡 Fault Tolerance
 
 The database-centric approach provides robust fault tolerance. In the event of a worker node failure, its assigned tasks (if marked as transferable) are identified via the database and re-assigned to other active nodes, ensuring job completion without manual intervention or data loss.
+
+## ❓ FAQ
+
+**Why coordinate through the database instead of a message broker like Kafka or RabbitMQ?**
+The limitation was never in the brokers — they deliver messages reliably. The gap is in how Spring Batch's standard remote partitioning *uses* them: as a fire-and-forget dispatch channel. The master can't tell how many workers are alive before partitioning, and once a partition is dispatched there's no built-in way to detect a worker that died after receiving it. Those are coordination concerns a broker was never meant to address. This extension adds that coordination layer — proactive node awareness, transactional partition lifecycle tracking, and heartbeat-based failover — using the relational database Spring Batch already requires, so there's no additional infrastructure to deploy or operate.
+
+**How is this different from Spring Cloud Task's `DeployerPartitionHandler`?**
+`DeployerPartitionHandler` is also broker-free and coordinates through the job repository, but it *provisions a worker per partition* via a deployment platform (Kubernetes, Cloud Foundry, etc.). This extension instead coordinates a **standing cluster of peer JVM nodes** that poll for work — no deployment platform required — and it queries how many nodes are actually live before partitioning, sizing the workload to the cluster you already have.
+
+**Do I have to launch jobs a particular way (synchronous vs. asynchronous)?**
+No. How you define and launch jobs is entirely yours and remains standard Spring Batch. If you trigger jobs over HTTP and don't want the request thread blocked for the job's duration, configure an asynchronous `JobLauncher` (a `TaskExecutor`) and poll execution status — that's a native Spring Batch capability, nothing extra here.
+
+**What happens when a worker node dies mid-job?**
+Its heartbeat stops, so it is marked unreachable and then removed. Its incomplete partitions — if marked transferable — are detected via the database and reassigned to healthy nodes. Partitions marked non-transferable are not moved (a deliberate safety contract for work with node-local state or non-idempotent side effects).
+
+**What happens when the master node dies?**
+Because mastership is per-job-execution, only that one job is affected — the rest of the cluster keeps running. A surviving node detects the lost master and marks the stranded job execution failed so it becomes cleanly restartable (rather than hanging forever). Automatic resumption of such a job on another node is on the roadmap.
+
+**Which databases are supported?**
+PostgreSQL, MySQL, Oracle, and H2, via per-database query providers. H2 (file mode) is handy for local multi-node demos; the others for production.
+
+**How large a cluster does this target?**
+Small-to-medium clusters — roughly 2–20 nodes — where database throughput comfortably handles heartbeat and partition-tracking traffic. For far larger clusters or sub-second coordination needs, a dedicated coordination service or broker-based architecture may fit better.
 
 ## 🤝 Contributing
 
