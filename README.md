@@ -202,7 +202,7 @@ The standard Spring Batch metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXEC
 
 **2. Cluster partitioning tables** (provided by this library)
 
-This library adds three additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`) for cluster state, partition assignment, and heartbeat tracking. SQL scripts for PostgreSQL, Oracle, MySQL, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
+This library adds three additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`) for cluster state, partition assignment, and heartbeat tracking. SQL scripts for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
 
 ### PostgreSQL Example Schema:
 
@@ -424,7 +424,7 @@ Its heartbeat stops, so it is marked unreachable and then removed. Its incomplet
 Because mastership is per-job-execution, only that one job is affected — the rest of the cluster keeps running. A surviving node detects the lost master and marks the stranded job execution failed so it becomes cleanly restartable (rather than hanging forever). Automatic resumption of such a job on another node is on the roadmap.
 
 **Which databases are supported?**
-PostgreSQL, MySQL, Oracle, and H2, via per-database query providers. H2 (file mode) is handy for local multi-node demos; the others for production.
+PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2, via per-database query providers. H2 (file mode) is handy for local multi-node demos; the others for production.
 
 **How large a cluster does this target?**
 Small-to-medium clusters — roughly 2–20 nodes — where database throughput comfortably handles heartbeat and partition-tracking traffic. For far larger clusters or sub-second coordination needs, a dedicated coordination service or broker-based architecture may fit better.

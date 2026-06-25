@@ -6,10 +6,12 @@ import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterNodesEndpo
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusteringInfoContributor;
 import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
+import io.github.jchejarla.springbatch.clustering.core.serviceimpl.DB2DatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.H2DatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.MySQLDatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.OracleDatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.PostgreSQLDatabaseQueryProvider;
+import io.github.jchejarla.springbatch.clustering.core.serviceimpl.SQLServerDatabaseQueryProvider;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterJobRecoveryManager;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeManager;
@@ -115,7 +117,7 @@ public class BatchClusterAutoConfiguration {
         String url = getDatabaseURL(dataSource);
         DatabaseDriver driver = DatabaseDriver.fromJdbcUrl(url);
         switch(driver) {
-            case MYSQL -> {
+            case MYSQL, MARIADB -> {
                 return new MySQLDatabaseQueryProvider();
             }
             case ORACLE ->  {
@@ -123,6 +125,12 @@ public class BatchClusterAutoConfiguration {
             }
             case POSTGRESQL -> {
                 return new PostgreSQLDatabaseQueryProvider();
+            }
+            case SQLSERVER -> {
+                return new SQLServerDatabaseQueryProvider();
+            }
+            case DB2 -> {
+                return new DB2DatabaseQueryProvider();
             }
             case H2 -> {
                 return new H2DatabaseQueryProvider();

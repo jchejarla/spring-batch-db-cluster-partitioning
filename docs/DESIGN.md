@@ -65,7 +65,7 @@ Today, a node detects a job whose master has left the cluster (a `BATCH_JOB_COOR
 
 ## Supported databases
 
-PostgreSQL, MySQL, Oracle, and H2, via per-database query providers (`DBSpecificQueryProvider`). Database-specific SQL is isolated there; the rest is standard SQL shared across all four.
+PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2, via per-database query providers (`DBSpecificQueryProvider`). Database-specific SQL is isolated there; the rest is standard SQL shared across all of them.
 
 ## Scope and limitations
 
