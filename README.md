@@ -41,6 +41,8 @@ This approach simplifies the architecture, provides real-time visibility into jo
 
 The core principles of this project is to know **number of available nodes** upfront so that the efficient tasks partitioning and distribution strategy can be determined at runtime, and **facilitate easy failover** in the event of any cluster node is not responding.
 
+> 📐 For the full design rationale, fault-tolerance model, and a comparison with related approaches, see **[docs/DESIGN.md](docs/DESIGN.md)**.
+
 ## ✨ Key Features
 * **Decentralized Master Election:** No central master node required — the node that initiates the job automatically becomes the master for that execution, enabling fully autonomous job launches across the cluster.
 * **Proactive Node Awareness:** Before partitioning, the master node dynamically queries the cluster state to **identify all currently active nodes**. This enables smarter distribution strategies (e.g., round-robin, fixed-node allocation) based on **real-time availability**, avoiding delays or imbalance caused by late-arriving workers. Importantly, **the number of available nodes is also passed to the task builder logic**, empowering end users to construct task partitions that are tailored to the **current cluster size**. This allows for more **efficient execution planning** and better resource utilization.
