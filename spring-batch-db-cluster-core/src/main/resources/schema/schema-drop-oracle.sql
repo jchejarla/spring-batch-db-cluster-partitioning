@@ -1,0 +1,5 @@
+-- Oracle (pre-23c) has no DROP TABLE IF EXISTS; run with continue-on-error,
+-- the same way Spring Batch ships its own Oracle drop script.
+DROP TABLE BATCH_PARTITIONS CASCADE CONSTRAINTS;
+DROP TABLE BATCH_JOB_COORDINATION CASCADE CONSTRAINTS;
+DROP TABLE BATCH_NODES CASCADE CONSTRAINTS;

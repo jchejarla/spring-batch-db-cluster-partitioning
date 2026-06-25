@@ -36,3 +36,7 @@ CREATE TABLE BATCH_PARTITIONS (
         REFERENCES BATCH_STEP_EXECUTION(step_execution_id)
         ON DELETE CASCADE
 );
+
+-- Indexes for hot coordination queries (worker polling, completion checks, orphan scans)
+CREATE INDEX IDX_BATCH_PART_NODE_STATUS ON BATCH_PARTITIONS (assigned_node, status);
+CREATE INDEX IDX_BATCH_PART_MASTER_STATUS ON BATCH_PARTITIONS (master_step_execution_id, status);

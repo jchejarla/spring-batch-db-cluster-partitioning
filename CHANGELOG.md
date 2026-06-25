@@ -15,6 +15,8 @@
   healthy nodes rather than piling onto one.
 - **Configurable orphan-detection cadence** — `orphaned-tasks-polling-interval` and
   `orphaned-master-scan-interval` keep coordination-database traffic light during long-running jobs.
+- **Schema improvements** — bundled `schema-drop-<db>.sql` teardown scripts and indexes on the hot
+  partition-query columns; aligned the DDL (CHECK constraints, named foreign keys) across all four databases.
 
 ### 📖 Documentation
 
