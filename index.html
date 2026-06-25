@@ -121,7 +121,7 @@ footer a{color:var(--muted)}
     <div class="grid">
       <div class="card"><h3>Decentralized master election</h3><p>The node that launches a job becomes its master — no dedicated coordinator or single point of orchestration.</p></div>
       <div class="card"><h3>Proactive node awareness</h3><p>The master queries the live worker count before partitioning, so work is split to match the cluster you actually have.</p></div>
-      <div class="card"><h3>Database-driven coordination</h3><p>All cluster state lives in standard SQL tables. Works with PostgreSQL, MySQL, Oracle, and H2.</p></div>
+      <div class="card"><h3>Database-driven coordination</h3><p>All cluster state lives in standard SQL tables. Works with PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2.</p></div>
       <div class="card"><h3>Flexible partition strategies</h3><p>Round-robin, fixed-node-count, or scale-up assignment — chosen to fit the workload at runtime.</p></div>
       <div class="card"><h3>Explicit state tracking</h3><p>Every partition's lifecycle — pending, claimed, completed, failed — is recorded transactionally. No silently lost work.</p></div>
       <div class="card"><h3>Automatic failover</h3><p>Missed heartbeats mark a node unreachable; its transferable partitions are reassigned to healthy workers.</p></div>
@@ -147,7 +147,7 @@ footer a{color:var(--muted)}
     &lt;artifactId&gt;spring-batch-db-cluster-core&lt;/artifactId&gt;
     &lt;version&gt;2.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
-    <p class="sub" style="margin-top:16px">Then create the schema: alongside the standard Spring Batch tables, this library adds three tables — <code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, and <code>BATCH_PARTITIONS</code>. DDL for PostgreSQL, MySQL, Oracle, and H2 is bundled with the library; see <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#database-setup">Database Setup</a> for the scripts and dev-vs-production guidance.</p>
+    <p class="sub" style="margin-top:16px">Then create the schema: alongside the standard Spring Batch tables, this library adds three tables — <code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, and <code>BATCH_PARTITIONS</code>. DDL for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 is bundled with the library; see <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#database-setup">Database Setup</a> for the scripts and dev-vs-production guidance.</p>
   </section>
 
   <section id="usage">
