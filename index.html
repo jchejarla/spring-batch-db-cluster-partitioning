@@ -158,7 +158,7 @@ footer a{color:var(--muted)}
   batch:
     cluster:
       enabled: true
-      node-id: ${HOSTNAME:batch-node-01}
+      node-id: ${HOSTNAME:batch-node}-${random.uuid}   # unique per JVM and per restart
       heartbeat-interval: 3000
       task-polling-interval: 1000
       unreachable-node-threshold: 15000
