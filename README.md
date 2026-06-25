@@ -255,8 +255,10 @@ Enable the cluster partitioning by adding the following to your <code>applicatio
 # Enable the cluster partitioning feature
 spring.batch.cluster.enabled=true
 
-# Unique identifier for this node instance
-spring.batch.cluster.node-id=${HOSTNAME:my-batch-node-01}
+# Unique identifier for this node instance.
+# Must be unique per running JVM AND per restart: use a hostname prefix for readability
+# plus a unique suffix so a restarting node never collides with its previous registration.
+spring.batch.cluster.node-id=${HOSTNAME:my-batch-node}-${random.uuid}
 
 # How often this node sends a heartbeat to the database (in milliseconds)
 spring.batch.cluster.heartbeat-interval=3000 # 3 seconds
