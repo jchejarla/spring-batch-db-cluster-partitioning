@@ -14,7 +14,6 @@ public class StartApp {
 
         try {
             SpringApplication app = new SpringApplication(StartApp.class);
-            app.addListeners(new DemoNodeIdSuffixListener());
             app.run(args);
         } catch (Exception e) {
            log.error("Exception occurred when starting the application", e);

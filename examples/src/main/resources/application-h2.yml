@@ -25,7 +25,7 @@ spring:
       initialize-schema: never
     cluster:
       enabled: true
-      node-id: ${HOSTNAME:node}-${random.uuid}
+      node-id-prefix: ${HOSTNAME:node}
       # Tight timings for the demo: a dead node's row is removed in roughly
       # 8 seconds (3s to be marked UNREACHABLE + 5s cleanup), so a reviewer
       # who kills and restarts can re-run a job within a few seconds rather

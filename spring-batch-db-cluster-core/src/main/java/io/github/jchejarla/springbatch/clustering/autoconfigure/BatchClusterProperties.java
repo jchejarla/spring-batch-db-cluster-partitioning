@@ -1,9 +1,15 @@
 package io.github.jchejarla.springbatch.clustering.autoconfigure;
 
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
+import jakarta.annotation.PostConstruct;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.StringUtils;
+
+import java.net.InetAddress;
+import java.util.UUID;
 
 /**
  * Configuration for database-coordinated Spring Batch clustering, bound from the
@@ -33,9 +39,18 @@ public class BatchClusterProperties {
     private boolean tracingEnabled = false;
 
     /**
-     * Unique id for this node within the cluster. Must be distinct per JVM; if unset, supply one per
-     * instance (e.g. via an environment variable). Reusing an id across live JVMs breaks coordination.
+     * Optional prefix for this node's auto-generated id. Defaults to the machine host name when unset.
+     * The actual node id is always {@code <prefix>-<random-uuid>}, generated once at startup, so it is
+     * guaranteed unique per JVM and per restart with no manual configuration.
      */
+    private String nodeIdPrefix;
+
+    /**
+     * The resolved, cluster-unique id for this node, generated at startup as
+     * {@code <node-id-prefix>-<uuid>}. Read-only: it is produced by the framework, not configured.
+     * The host name is recorded separately in {@code BATCH_NODES.HOST_IDENTIFIER} for observability.
+     */
+    @Setter(AccessLevel.NONE)
     private String nodeId;
 
     /** Maximum number of partition steps this node executes concurrently. */
@@ -73,6 +88,24 @@ public class BatchClusterProperties {
      * (and otherwise permanently {@code STARTED}) job execution can be abandoned and made restartable.
      */
     private long orphanedMasterScanInterval = 10000;
+
+    /**
+     * Generates the cluster-unique node id once, after configuration binding, as
+     * {@code <node-id-prefix or host name>-<uuid>}.
+     */
+    @PostConstruct
+    void resolveNodeId() {
+        String prefix = StringUtils.hasText(nodeIdPrefix) ? nodeIdPrefix.trim() : defaultHostName();
+        this.nodeId = prefix + "-" + UUID.randomUUID();
+    }
+
+    private String defaultHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {
+            return "node";
+        }
+    }
 
     public enum HostIdentifier {
         HOST_NAME,

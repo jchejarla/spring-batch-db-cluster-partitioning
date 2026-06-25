@@ -255,10 +255,9 @@ Enable the cluster partitioning by adding the following to your <code>applicatio
 # Enable the cluster partitioning feature
 spring.batch.cluster.enabled=true
 
-# Unique identifier for this node instance.
-# Must be unique per running JVM AND per restart: use a hostname prefix for readability
-# plus a unique suffix so a restarting node never collides with its previous registration.
-spring.batch.cluster.node-id=${HOSTNAME:my-batch-node}-${random.uuid}
+# Optional readable prefix for this node's id (defaults to the host name).
+# The framework always appends a unique suffix, so each node id is unique per JVM and per restart.
+spring.batch.cluster.node-id-prefix=${HOSTNAME:my-batch-node}
 
 # How often this node sends a heartbeat to the database (in milliseconds)
 spring.batch.cluster.heartbeat-interval=3000 # 3 seconds
@@ -391,7 +390,7 @@ public class MyJobConfig {
     }
 }
 ```
-3. Run Multiple Instances: Start multiple instances of your Spring Boot application, each configured with a unique <code>spring.batch.cluster.node-id</code>. One instance will act as the master (initiating the job), and others will automatically register as workers.
+3. Run Multiple Instances: Start multiple instances of your Spring Boot application. Each node automatically receives a unique id (optionally prefixed via <code>spring.batch.cluster.node-id-prefix</code>), so no per-instance configuration is required. One instance will act as the master (initiating the job), and others will automatically register as workers.
 
 ### Running the Bundled Examples
 
