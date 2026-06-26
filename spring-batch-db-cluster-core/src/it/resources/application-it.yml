@@ -20,7 +20,7 @@ spring:
       initialize-schema: always
     cluster:
       enabled: true
-      node-id: ${HOSTNAME:worker}-${random.uuid}
+      node-id-prefix: ${HOSTNAME:worker}
       grid-size: 4
       heartbeat-interval: 5000
   main:
