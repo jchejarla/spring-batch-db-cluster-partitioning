@@ -92,6 +92,7 @@ footer a{color:var(--muted)}
       <a href="#how">How it works</a>
       <a href="#usage">Usage</a>
       <a href="#examples">Examples</a>
+      <a href="#faq">FAQ</a>
       <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">GitHub</a>
     </nav>
   </div>
@@ -205,6 +206,25 @@ public class MyJobPartitioner extends ClusterAwarePartitioner {
       <div class="card"><h3>ETL job</h3><p>Reads rows from a CSV, distributes chunks across workers round-robin, and writes XML — a full chunk-oriented reader, processor, and writer pipeline.</p></div>
     </div>
     <p style="text-align:center;margin-top:28px"><a class="btn" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples">Browse the examples module</a></p>
+  </section>
+
+  <section id="faq">
+    <h2>FAQ</h2>
+    <p class="sub">How it coordinates, how it fails over, and what it needs.</p>
+    <details><summary>Why coordinate through the database instead of a message broker like Kafka or RabbitMQ?</summary>
+      <p>The brokers aren't the problem — they deliver messages reliably. The gap is in how Spring Batch's standard remote partitioning <em>uses</em> them: as a fire-and-forget dispatch channel, with no way to know how many workers are live before partitioning and no way to detect a worker that died after receiving a partition. This adds that coordination layer — proactive node awareness, transactional partition lifecycle, and heartbeat-based failover — using the relational database Spring Batch already requires, so there's no extra infrastructure to operate.</p></details>
+    <details><summary>How is this different from Spring Cloud Task's DeployerPartitionHandler?</summary>
+      <p>That approach is also broker-free, but it provisions a worker per partition through a deployment platform (Kubernetes, Cloud Foundry, …). This extension coordinates a standing cluster of peer JVM nodes that poll for work — no deployment platform required — and it queries how many nodes are actually live before partitioning, sizing the workload to the cluster you already have.</p></details>
+    <details><summary>Do I have to launch jobs synchronously or asynchronously?</summary>
+      <p>Your choice — job definition and launching stay standard Spring Batch. If you trigger jobs over HTTP and don't want the request thread blocked for the job's duration, configure an asynchronous <code>JobLauncher</code> and poll execution status. That's a native Spring Batch capability; nothing extra here.</p></details>
+    <details><summary>What happens when a worker node dies mid-job?</summary>
+      <p>Its heartbeat stops, so it is marked unreachable and then removed. Its incomplete partitions — if marked transferable — are reassigned to healthy nodes. Partitions marked non-transferable are never moved, a deliberate safety contract for work with node-local state or non-idempotent side effects.</p></details>
+    <details><summary>What happens when the master node dies?</summary>
+      <p>Because mastership is per-job-execution, only that one job is affected — the rest of the cluster keeps running. A surviving node detects the lost master and marks the stranded job execution failed so it becomes cleanly restartable instead of hanging. Automatic resumption on another node is on the roadmap.</p></details>
+    <details><summary>Which databases are supported?</summary>
+      <p>PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2, via per-database query providers. H2 (file mode) is handy for local multi-node demos; the others for production.</p></details>
+    <details><summary>How large a cluster does this target?</summary>
+      <p>Small-to-medium clusters — roughly 2–20 nodes — where the database comfortably handles heartbeat and partition-tracking traffic. For far larger clusters or sub-second coordination needs, a dedicated coordination service or broker-based architecture may fit better.</p></details>
   </section>
 
   <section id="cite">
