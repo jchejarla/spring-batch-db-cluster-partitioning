@@ -8,6 +8,10 @@ import org.springframework.boot.actuate.info.InfoContributor;
 
 import java.util.Map;
 
+/**
+ * Contributes the active clustering configuration (intervals and thresholds) to the
+ * {@code /actuator/info} endpoint.
+ */
 @RequiredArgsConstructor
 @ConditionalOnClusterEnabled
 public class BatchClusteringInfoContributor implements InfoContributor {

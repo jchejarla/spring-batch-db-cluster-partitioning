@@ -14,6 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Spring Boot {@link HealthIndicator} reporting this node's own cluster health — its current status
+ * and most recent heartbeat.
+ */
 @RequiredArgsConstructor
 @ConditionalOnEnabledHealthIndicator("BatchClusterNode")
 @ConditionalOnClusterEnabled

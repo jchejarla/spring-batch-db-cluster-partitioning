@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Actuator endpoint exposed at {@code /actuator/batch-cluster} that lists the cluster's nodes and,
+ * for a given node, its partition assignments and their status.
+ */
 @RequiredArgsConstructor
 @ConditionalOnClusterEnabled
 @Endpoint(id = "batch-cluster")

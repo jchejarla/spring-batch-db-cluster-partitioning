@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Spring Boot {@link HealthIndicator} reporting overall batch-cluster health (such as node liveness)
+ * under {@code /actuator/health}.
+ */
 @RequiredArgsConstructor
 @ConditionalOnEnabledHealthIndicator("BatchCluster")
 @ConditionalOnClusterEnabled
