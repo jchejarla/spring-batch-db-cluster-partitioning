@@ -26,6 +26,10 @@ spring:
     cluster:
       enabled: true
       node-id-prefix: ${HOSTNAME:node}
+      # This profile creates the cluster tables explicitly via spring.sql.init below (to control
+      # ordering and tolerate the shared file-DB across multiple nodes), so the built-in auto-DDL
+      # is turned off here. A typical app would instead just leave initialize-schema at its default.
+      initialize-schema: never
       # Tight timings for the demo: a dead node's row is removed in roughly
       # 8 seconds (3s to be marked UNREACHABLE + 5s cleanup), so a reviewer
       # who kills and restarts can re-run a job within a few seconds rather

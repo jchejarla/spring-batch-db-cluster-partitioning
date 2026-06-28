@@ -4,25 +4,20 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: password
-    initialization-mode: always
-    schema:
-      - classpath:/org/springframework/batch/core/schema-h2.sql
-      - classpath:/dev/jchejarla/springbatch/clustering/schema-h2.sql
   h2:
     console:
       enabled: true
   sql:
     init:
-      mode: always
-      platform: h2
+      mode: never
   batch:
     jdbc:
       initialize-schema: always
     cluster:
       enabled: true
       node-id-prefix: ${HOSTNAME:worker}
-      grid-size: 4
       heartbeat-interval: 5000
+      initialize-schema: embedded
   main:
     allow-circular-references: true
 

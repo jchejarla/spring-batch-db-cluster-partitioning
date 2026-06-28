@@ -15,6 +15,7 @@
   healthy nodes rather than piling onto one.
 - **Configurable orphan-detection cadence** — `orphaned-tasks-polling-interval` and
   `orphaned-master-scan-interval` keep coordination-database traffic light during long-running jobs.
+- **Auto-DDL for the cluster tables** — `spring.batch.cluster.initialize-schema` (`always` / `embedded` / `never`, default `embedded`) creates the cluster tables on startup, mirroring Spring Batch's own schema initialization and running after it so the foreign keys resolve.
 - **More databases** — added SQL Server, MariaDB, and Db2 support, joining PostgreSQL, MySQL, Oracle, and H2.
 - **Schema improvements** — bundled `schema-drop-<db>.sql` teardown scripts and indexes on the hot
   partition-query columns; aligned the DDL (CHECK constraints, named foreign keys) across all databases.

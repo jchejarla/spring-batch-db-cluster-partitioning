@@ -204,6 +204,12 @@ The standard Spring Batch metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXEC
 
 This library adds three additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`) for cluster state, partition assignment, and heartbeat tracking. SQL scripts for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
 
+  For development, the framework can also create these tables for you on startup — set
+  `spring.batch.cluster.initialize-schema` to `embedded` (the default; creates them only on embedded
+  databases such as H2), `always`, or `never`. This mirrors Spring Batch's own
+  `spring.batch.jdbc.initialize-schema` and runs after it so the foreign keys resolve. For production,
+  prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually.
+
 ### PostgreSQL Example Schema:
 
 ```sql

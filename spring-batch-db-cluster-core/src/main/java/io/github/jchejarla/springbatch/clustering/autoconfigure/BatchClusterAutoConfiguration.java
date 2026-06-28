@@ -33,6 +33,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -139,6 +140,34 @@ public class BatchClusterAutoConfiguration {
         }
     }
 
+
+    /**
+     * Optionally creates the cluster tables on startup (see
+     * {@link BatchClusterProperties#getInitializeSchema()}). Runs after {@code batchDataSourceInitializer}
+     * so the foreign keys to the Spring Batch tables resolve.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @DependsOn("batchDataSourceInitializer")
+    public BatchClusterDataSourceScriptDatabaseInitializer batchClusterDataSourceScriptDatabaseInitializer(
+            DataSource dataSource, BatchClusterProperties batchClusterProperties) throws SQLException {
+        DatabaseDriver driver = DatabaseDriver.fromJdbcUrl(getDatabaseURL(dataSource));
+        return new BatchClusterDataSourceScriptDatabaseInitializer(dataSource, batchClusterProperties.getInitializeSchema(), clusterSchemaLocation(driver));
+    }
+
+    static String clusterSchemaLocation(DatabaseDriver driver) {
+        String name = switch (driver) {
+            case POSTGRESQL -> "postgres";
+            case MYSQL -> "mysql";
+            case MARIADB -> "mariadb";
+            case ORACLE -> "oracle";
+            case SQLSERVER -> "sqlserver";
+            case DB2 -> "db2";
+            case H2 -> "h2";
+            default -> throw new BatchConfigurationException("Unsupported Database Type " + driver.name());
+        };
+        return "classpath:schema/schema-" + name + ".sql";
+    }
 
     private String getDatabaseURL(DataSource dataSource) throws SQLException {
         if(dataSource instanceof DriverManagerDataSource) {
