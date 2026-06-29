@@ -134,6 +134,8 @@ sequenceDiagram
 | `/actuator/batch-cluster`         | Cluster overview of node executions         |
 | `/actuator/batch-cluster/{nodeId}`| Details of a specific node        |
 
+> ⚠️ **Security:** these endpoints expose operational detail about nodes and partition assignments. Treat them like any other actuator endpoint — restrict their exposure (`management.endpoints.web.exposure.include`) and protect them with authentication/authorization. Don't expose `batch-cluster` unauthenticated on a public interface.
+
 ## 📦 Getting Started
 
 ### Version Compatibility
