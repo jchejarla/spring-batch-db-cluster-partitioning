@@ -2,6 +2,7 @@ package io.github.jchejarla.springbatch.clustering.mgmt;
 
 import io.github.jchejarla.springbatch.clustering.BaseUnitTest;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
+import io.github.jchejarla.springbatch.clustering.core.CoordinationStatus;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,10 @@ import org.springframework.scheduling.TaskScheduler;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
@@ -36,6 +41,7 @@ public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
     @BeforeEach
     public void init() {
         recoveryManager = new ClusterJobRecoveryManager(databaseBackedClusterService, batchClusterProperties, jobExplorer, jobRepository, clusterRecoveryScheduler);
+        doReturn("this-node").when(batchClusterProperties).getNodeId();
     }
 
     @Test
@@ -49,7 +55,8 @@ public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
     public void testClaimedOrphanIsFailedAndAbandoned() {
         OrphanedMasterJob orphan = new OrphanedMasterJob(1L, "deadNode", 10L, "step.manager");
         doReturn(List.of(orphan)).when(databaseBackedClusterService).findOrphanedMasterJobs();
-        doReturn(true).when(databaseBackedClusterService).claimOrphanedMasterJob(1L, "deadNode", ClusterJobRecoveryManager.STATUS_RECOVERING);
+        doReturn(true).when(databaseBackedClusterService)
+                .claimOrphanedMasterJob(eq(1L), eq("deadNode"), eq("this-node"), eq(CoordinationStatus.RECOVERING.name()));
 
         JobExecution jobExecution = new JobExecution(1L);
         jobExecution.setStatus(BatchStatus.STARTED);
@@ -64,14 +71,15 @@ public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
         assertEquals(BatchStatus.FAILED, jobExecution.getStatus());
         verify(jobRepository, times(1)).update(stepExecution);
         verify(jobRepository, times(1)).update(jobExecution);
-        verify(databaseBackedClusterService, times(1)).updateBatchJobCoordinationStatus(1L, 10L, ClusterJobRecoveryManager.STATUS_ABANDONED);
+        verify(databaseBackedClusterService, times(1)).updateBatchJobCoordinationStatus(1L, 10L, CoordinationStatus.ABANDONED.name());
     }
 
     @Test
     public void testLostClaimIsSkipped() {
         OrphanedMasterJob orphan = new OrphanedMasterJob(2L, "deadNode", 20L, "step.manager");
         doReturn(List.of(orphan)).when(databaseBackedClusterService).findOrphanedMasterJobs();
-        doReturn(false).when(databaseBackedClusterService).claimOrphanedMasterJob(2L, "deadNode", ClusterJobRecoveryManager.STATUS_RECOVERING);
+        doReturn(false).when(databaseBackedClusterService)
+                .claimOrphanedMasterJob(eq(2L), eq("deadNode"), eq("this-node"), eq(CoordinationStatus.RECOVERING.name()));
 
         recoveryManager.reapOrphanedMasterJobs();
 
@@ -87,7 +95,7 @@ public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
 
         recoveryManager.reapOrphanedMasterJobs();
 
-        verify(databaseBackedClusterService, never()).claimOrphanedMasterJob(anyLong(), anyString(), anyString());
+        verify(databaseBackedClusterService, never()).claimOrphanedMasterJob(anyLong(), anyString(), anyString(), anyString());
         verifyNoInteractions(jobRepository);
     }
 }

@@ -56,7 +56,7 @@ public class BatchClusterAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DatabaseBackedClusterService batchDatabaseClusterService(JdbcTemplate jdbcTemplate, BatchClusterProperties batchClusterProperties, DBSpecificQueryProvider dbSpecificQueryProvider) {
+    public DatabaseBackedClusterService databaseBackedClusterService(JdbcTemplate jdbcTemplate, BatchClusterProperties batchClusterProperties, DBSpecificQueryProvider dbSpecificQueryProvider) {
         return new DatabaseBackedClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
     }
 
@@ -142,9 +142,9 @@ public class BatchClusterAutoConfiguration {
 
 
     /**
-     * Optionally creates the cluster tables on startup (see
-     * {@link BatchClusterProperties#getInitializeSchema()}). Runs after {@code batchDataSourceInitializer}
-     * so the foreign keys to the Spring Batch tables resolve.
+     * Optionally creates the cluster tables on startup, controlled by
+     * {@code spring.batch.cluster.initialize-schema} (see {@link BatchClusterProperties}). Runs after
+     * {@code batchDataSourceInitializer} so the foreign keys to the Spring Batch tables resolve.
      */
     @Bean
     @ConditionalOnMissingBean

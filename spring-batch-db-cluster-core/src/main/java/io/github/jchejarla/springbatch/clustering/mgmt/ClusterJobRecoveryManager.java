@@ -2,6 +2,7 @@ package io.github.jchejarla.springbatch.clustering.mgmt;
 
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
+import io.github.jchejarla.springbatch.clustering.core.CoordinationStatus;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,11 +50,6 @@ import java.util.List;
 @ConditionalOnClusterEnabled
 public class ClusterJobRecoveryManager {
 
-    /** Transient status set while a node is reaping a stranded job, after it wins the atomic claim. */
-    static final String STATUS_RECOVERING = "RECOVERING";
-    /** Terminal coordination status indicating the job was abandoned because its master was lost. */
-    static final String STATUS_ABANDONED = "ABANDONED";
-
     private final DatabaseBackedClusterService databaseBackedClusterService;
     private final BatchClusterProperties batchClusterProperties;
     private final JobExplorer jobExplorer;
@@ -76,16 +72,17 @@ public class ClusterJobRecoveryManager {
             List<OrphanedMasterJob> orphanedJobs = databaseBackedClusterService.findOrphanedMasterJobs();
             for (OrphanedMasterJob orphanedJob : orphanedJobs) {
                 boolean claimed = databaseBackedClusterService.claimOrphanedMasterJob(
-                        orphanedJob.jobExecutionId(), orphanedJob.masterNodeId(), STATUS_RECOVERING);
+                        orphanedJob.jobExecutionId(), orphanedJob.masterNodeId(),
+                        batchClusterProperties.getNodeId(), CoordinationStatus.RECOVERING.name());
                 if (!claimed) {
                     // Another surviving node won the claim and is handling this job.
                     continue;
                 }
-                log.warn("Master node '{}' for jobExecutionId={} has left the cluster; abandoning the stranded job execution so it can be cleanly restarted",
+                log.warn("Owner node '{}' for jobExecutionId={} has left the cluster; abandoning the stranded job execution so it can be cleanly restarted",
                         orphanedJob.masterNodeId(), orphanedJob.jobExecutionId());
                 failStrandedJobExecution(orphanedJob);
                 databaseBackedClusterService.updateBatchJobCoordinationStatus(
-                        orphanedJob.jobExecutionId(), orphanedJob.masterStepExecutionId(), STATUS_ABANDONED);
+                        orphanedJob.jobExecutionId(), orphanedJob.masterStepExecutionId(), CoordinationStatus.ABANDONED.name());
             }
         } catch (Exception e) {
             log.error("Error while scanning for orphaned master jobs", e);

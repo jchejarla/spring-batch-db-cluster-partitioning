@@ -47,19 +47,19 @@ public class BatchClusterAutoConfigurationUnitTest extends BaseUnitTest {
 
     @Test
     public void testBatchDatabaseClusterService() {
-        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
+        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.databaseBackedClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
         assertNotNull(databaseBackedClusterService);
     }
 
     @Test
     public void testClusterAwarePartitionHandler() {
-        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
+        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.databaseBackedClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
         batchClusterAutoConfiguration.clusterAwarePartitionHandler(databaseBackedClusterService, batchClusterProperties);
     }
 
     @Test
     public void testClusterNodeManager() {
-        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
+        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.databaseBackedClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
         ClusterNodeManager nodeManager = batchClusterAutoConfiguration.clusterNodeManager(databaseBackedClusterService, batchClusterProperties,
                 mock(TaskScheduler.class),
                 mock(ClusterNodeInfo.class),
@@ -69,7 +69,7 @@ public class BatchClusterAutoConfigurationUnitTest extends BaseUnitTest {
 
     @Test
     public void testPartitionWorkerTasksRunner() {
-        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.batchDatabaseClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
+        DatabaseBackedClusterService databaseBackedClusterService = batchClusterAutoConfiguration.databaseBackedClusterService(jdbcTemplate, batchClusterProperties, dbSpecificQueryProvider);
         PartitionedWorkerNodeTasksRunner tasksRunner = batchClusterAutoConfiguration.partitionWorkerTasksRunner(mock(ApplicationContext.class),
                 mock(JobExplorer.class), mock(JobRepository.class), mock(TaskExecutor.class),
                 batchClusterProperties, databaseBackedClusterService, mock(TaskScheduler.class),

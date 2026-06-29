@@ -2,6 +2,7 @@ package io.github.jchejarla.springbatch.clustering.partition;
 
 import io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
+import io.github.jchejarla.springbatch.clustering.core.CoordinationStatus;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
@@ -83,7 +84,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             String partitionKey = stepExecution.getStepName();
             String nodeId = stepExecution.getExecutionContext().getString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER);
             PartitionTransferableProp isTaskTransferable = stepExecution.getExecutionContext().get(ClusterPartitioningConstants.IS_TRANSFERABLE_IDENTIFIER, PartitionTransferableProp.class);
-            params.add(new Object[]{stepExecutionId, jobExecutionId, partitionKey, nodeId, "PENDING", masterStepExecutionId, Objects.equals(PartitionTransferableProp.YES, isTaskTransferable) ? 1 : 0});
+            params.add(new Object[]{stepExecutionId, jobExecutionId, partitionKey, nodeId, PartitionStatus.PENDING.name(), masterStepExecutionId, Objects.equals(PartitionTransferableProp.YES, isTaskTransferable) ? 1 : 0});
         }
 
         log.info("Persisting master step info into coordination table with status = CREATED, master step execution id {}", masterStepExecutionId);
@@ -95,14 +96,14 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
         log.info("Persisting workload distribution for step {} completed, now cluster wide nodes will pickup the workload and run them", managerStepExecution.getStepName());
 
         log.info("Updating master step info into coordination table with status = STARTED, master step execution id {}", masterStepExecutionId);
-        databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, "STARTED");
+        databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, CoordinationStatus.STARTED.name());
         log.info("Updating of master step info into coordination table with status = STARTED is completed, master step execution id {}", masterStepExecutionId);
 
         // PartitionHandler need to wait (synchronously) until all the tasks are complete, if this method returns, then the job is completed
         waitForExecutionOfAllTasks(managerStepExecution.getId());
 
         log.info("Updating master step info into coordination table with status = COMPLETED, master step execution id {}", masterStepExecutionId);
-        databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, "COMPLETED");
+        databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, CoordinationStatus.COMPLETED.name());
         log.info("Updating of master step info into coordination table with status = COMPLETED is completed, master step execution id {}", masterStepExecutionId);
 
         return stepExecutions;

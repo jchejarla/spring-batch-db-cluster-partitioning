@@ -7,6 +7,7 @@ import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeInfo;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNodeStatusChangeConditionNotifier;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeLoad;
 import io.github.jchejarla.springbatch.clustering.mgmt.NodeStatus;
+import io.github.jchejarla.springbatch.clustering.partition.PartitionStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.*;
@@ -93,7 +94,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
         List<PartitionAssignmentTask> partitionsToRun = databaseBackedClusterService.fetchPartitionAssignedTasks();
         if (!partitionsToRun.isEmpty()) {
             log.info("Updating tasks status to CLAIMED");
-            databaseBackedClusterService.updatePartitionsStatus(partitionsToRun, "CLAIMED");
+            databaseBackedClusterService.updatePartitionsStatus(partitionsToRun, PartitionStatus.CLAIMED.name());
             log.info("Updating tasks status to CLAIMED is completed");
         }
 
@@ -149,11 +150,11 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
                 NodeLoad.INST.incrementLoadCount();
                 // Launch the Step
                 step.execute(stepExecution);
-                databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, ExitStatus.COMPLETED.getExitCode());
+                databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, PartitionStatus.COMPLETED.name());
             } catch (Exception e) {
                 stepExecution.setStatus(BatchStatus.FAILED);
                 stepExecution.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), e.getMessage()));
-                databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, ExitStatus.FAILED.getExitCode());
+                databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, PartitionStatus.FAILED.name());
             } finally {
                 NodeLoad.INST.decrementLoadCount();
                 stepExecution.setEndTime(LocalDateTime.now());

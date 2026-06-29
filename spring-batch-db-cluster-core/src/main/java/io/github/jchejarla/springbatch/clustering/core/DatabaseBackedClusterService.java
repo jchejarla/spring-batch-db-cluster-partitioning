@@ -63,7 +63,7 @@ public class DatabaseBackedClusterService {
 
     @Transactional
     public int saveBatchJobCoordinationInfo(long jobExecutionId, long masterStepExecutionId, String masterStepName) {
-        Object[] params = new Object[]{jobExecutionId, batchClusterProperties.getNodeId(), masterStepExecutionId, masterStepName, "CREATED", new Date(), new Date()};
+        Object[] params = new Object[]{jobExecutionId, batchClusterProperties.getNodeId(), masterStepExecutionId, masterStepName, CoordinationStatus.CREATED.name(), new Date(), new Date()};
         return jdbcTemplate.update(queryProvider.getSaveBatchJobCoordinationInfoQuery(), params);
     }
 
@@ -152,14 +152,16 @@ public class DatabaseBackedClusterService {
     }
 
     /**
-     * Atomically claims an orphaned job for recovery by transitioning its coordination row from
-     * {@code STARTED} to {@code recoveringStatus}, guarded by the dead master's node id. Returns
-     * {@code true} only for the single node that wins the claim, so a stranded job is reaped exactly once.
+     * Atomically claims an orphaned job for recovery: transitions its coordination row to
+     * {@code recoveringStatus} and takes ownership ({@code master_node_id = thisNodeId}), guarded by the
+     * lost owner's node id. Taking ownership means that if this reaper also dies mid-recovery, the row is
+     * re-detected (its owner is now gone too) and re-claimed by another node. Returns {@code true} only
+     * for the single node that wins the claim, so a stranded job is reaped exactly once.
      */
     @Transactional
-    public boolean claimOrphanedMasterJob(long jobExecutionId, String deadMasterNode, String recoveringStatus) {
+    public boolean claimOrphanedMasterJob(long jobExecutionId, String lostOwnerNode, String thisNodeId, String recoveringStatus) {
         int rowsUpdated = jdbcTemplate.update(queryProvider.getClaimOrphanedMasterJobQuery(),
-                recoveringStatus, new Date(), jobExecutionId, deadMasterNode);
+                recoveringStatus, thisNodeId, new Date(), jobExecutionId, lostOwnerNode);
         return rowsUpdated == 1;
     }
 

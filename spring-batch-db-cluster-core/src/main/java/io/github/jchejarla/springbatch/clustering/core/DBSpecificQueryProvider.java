@@ -63,25 +63,29 @@ public interface DBSpecificQueryProvider {
     }
 
     /**
-     * Finds jobs whose master node has left the cluster: coordination rows still marked {@code STARTED}
-     * whose {@code master_node_id} no longer exists in {@code batch_nodes} (i.e. the master was marked
-     * unreachable and then removed by the node-cleanup phase). These are candidates for recovery.
+     * Finds jobs whose current owner has left the cluster: coordination rows still in-flight
+     * ({@code STARTED}, or {@code RECOVERING} if a previous reaper died) whose {@code master_node_id} no
+     * longer exists in {@code batch_nodes} (the owner was marked unreachable and then removed by the
+     * node-cleanup phase). Including {@code RECOVERING} ensures a recovery that was itself interrupted is
+     * picked up by another node rather than being stranded.
      */
     default String getOrphanedMasterJobsQuery() {
         return "select bc.job_execution_id, bc.master_node_id, bc.master_step_execution_id, bc.master_step_name " +
                 "from batch_job_coordination bc " +
-                "where bc.status = 'STARTED' " +
+                "where bc.status in ('STARTED', 'RECOVERING') " +
                 "and not exists (select 1 from batch_nodes bn where bn.node_id = bc.master_node_id)";
     }
 
     /**
-     * Atomically claims an orphaned coordination row for recovery, transitioning it from {@code STARTED}
-     * to a caller-supplied transient status, guarded by the (job execution, dead master) pair. Exactly one
-     * surviving node wins the claim (the database transaction arbitrates), so a job is reaped only once.
+     * Atomically claims an orphaned coordination row for recovery: sets the transient status and takes
+     * ownership ({@code master_node_id}), guarded by the (job execution, lost owner) pair. Because the
+     * winner overwrites {@code master_node_id} with its own id, concurrent reapers see zero rows updated,
+     * so a job is claimed exactly once; and if the winner later dies, the row's owner is gone again and it
+     * is re-detected.
      */
     default String getClaimOrphanedMasterJobQuery() {
-        return "update batch_job_coordination set status = ?, last_updated = ? " +
-                "where job_execution_id = ? and status = 'STARTED' and master_node_id = ?";
+        return "update batch_job_coordination set status = ?, master_node_id = ?, last_updated = ? " +
+                "where job_execution_id = ? and master_node_id = ? and status in ('STARTED', 'RECOVERING')";
     }
 
     default String getAllNodesInClusterQuery() {
@@ -90,5 +94,13 @@ public interface DBSpecificQueryProvider {
 
     String getMarkNodesUnreachableQuery();
     String getDeleteNodesUnreachableQuery();
+
+    /**
+     * Returns a dialect-specific SQL expression for the elapsed milliseconds between {@code columnName}
+     * and the current database time, used in heartbeat-age comparisons.
+     * <p><strong>Security:</strong> {@code columnName} is interpolated directly into SQL, so it must always
+     * be a trusted, hard-coded column name from this library — never user-supplied input. All <em>values</em>
+     * in the generated queries are passed as bind parameters ({@code ?}), not concatenated.
+     */
     String getTimeStampColumnWithDiffInMillisToCurrentTime(String columnName);
 }
