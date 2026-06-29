@@ -59,7 +59,9 @@ The master's monitor reassigns orphaned partitions — those belonging to a remo
 
 ### Master failure
 
-Today, a node detects a job whose master has left the cluster (a `BATCH_JOB_COORDINATION` row still `STARTED` whose master node is gone), **atomically claims it** so exactly one survivor acts, and marks the stranded job execution `FAILED` — making it cleanly restartable instead of hanging in `STARTED` forever. The atomic claim plus the node-removal grace window guard against acting on a master that is merely slow.
+Today, a node detects a job whose master has left the cluster (a `BATCH_JOB_COORDINATION` row still `STARTED` whose master node is gone), **atomically claims it** so exactly one survivor acts, and marks the stranded job execution `FAILED` — making it cleanly restartable instead of hanging in `STARTED` forever. The atomic claim plus the node-removal grace window guard against acting on a master that is merely slow. The claim also takes ownership of the coordination row, so if the recovering node itself dies mid-recovery the row is re-detected and re-claimed by another node (recovery is idempotent).
+
+Because this phase recovers by **fail-and-restart** rather than resume, a job is restarted even in the edge case where its master died after all partitions had completed but before finalizing — so **restarts must be idempotent**. (Resume-in-place is the roadmap item below.)
 
 **Roadmap:** automatic *takeover* — a surviving node resuming the job (reassigning remaining work and finalizing it) rather than requiring a restart. The data model already supports this; the open work is split-brain-safe correctness.
 

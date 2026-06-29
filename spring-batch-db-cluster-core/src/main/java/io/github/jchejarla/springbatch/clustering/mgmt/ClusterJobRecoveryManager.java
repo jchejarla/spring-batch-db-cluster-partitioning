@@ -55,8 +55,12 @@ import java.util.List;
  *
  * <p>This is the detection-and-reaping phase of master failover. It does not (yet) automatically
  * resume the job on another node; it makes recovery a clean, operator- or client-driven restart.
- * The scan cadence is controlled by the {@code spring.batch.cluster.orphaned-master-scan-interval}
- * property (see {@link BatchClusterProperties}).</p>
+ * Because recovery is fail-and-restart rather than resume, a job is restarted even in the edge case
+ * where its master died after all partitions completed but before finalizing &mdash; so <strong>restarts
+ * must be idempotent</strong>. The claim takes ownership of the coordination row, so a recovery that is
+ * itself interrupted is re-detected and retried by another node (recovery is idempotent). The scan
+ * cadence is controlled by the {@code spring.batch.cluster.orphaned-master-scan-interval} property
+ * (see {@link BatchClusterProperties}).</p>
  *
  * @author Janardhan Chejarla
  */

@@ -66,16 +66,16 @@ public class MasterRecoveryQueriesTest {
     @Test
     void detectsAndClaimsJobWhoseMasterIsGone() {
         long jobId = newJobExecution();
-        insertCoordination(jobId, "ghost-master", "STARTED");
+        insertCoordination(jobId, "ghost-master", CoordinationStatus.STARTED.name());
 
         List<OrphanedMasterJob> orphans = service.findOrphanedMasterJobs();
         assertTrue(orphans.stream().anyMatch(o -> o.jobExecutionId() == jobId && o.masterNodeId().equals("ghost-master")));
 
-        assertTrue(service.claimOrphanedMasterJob(jobId, "ghost-master", "reaper-node", "RECOVERING"));
+        assertTrue(service.claimOrphanedMasterJob(jobId, "ghost-master", "reaper-node", CoordinationStatus.RECOVERING.name()));
         // a second reaper loses: ownership has already moved off the dead master
-        assertFalse(service.claimOrphanedMasterJob(jobId, "ghost-master", "reaper-node", "RECOVERING"));
+        assertFalse(service.claimOrphanedMasterJob(jobId, "ghost-master", "reaper-node", CoordinationStatus.RECOVERING.name()));
 
-        assertEquals("RECOVERING", coordinationField(jobId, "status"));
+        assertEquals(CoordinationStatus.RECOVERING.name(), coordinationField(jobId, "status"));
         assertEquals("reaper-node", coordinationField(jobId, "master_node_id"));
     }
 
@@ -83,14 +83,14 @@ public class MasterRecoveryQueriesTest {
     void reDetectsInterruptedRecovery() {
         long jobId = newJobExecution();
         // a recovery a now-departed reaper claimed but never finished
-        insertCoordination(jobId, "dead-reaper", "RECOVERING");
+        insertCoordination(jobId, "dead-reaper", CoordinationStatus.RECOVERING.name());
         assertTrue(service.findOrphanedMasterJobs().stream().anyMatch(o -> o.jobExecutionId() == jobId));
     }
 
     @Test
     void ignoresJobWhoseMasterIsStillAlive() {
         long jobId = newJobExecution();
-        insertCoordination(jobId, "alive-node", "STARTED");
+        insertCoordination(jobId, "alive-node", CoordinationStatus.STARTED.name());
         assertTrue(service.findOrphanedMasterJobs().stream().noneMatch(o -> o.jobExecutionId() == jobId));
     }
 

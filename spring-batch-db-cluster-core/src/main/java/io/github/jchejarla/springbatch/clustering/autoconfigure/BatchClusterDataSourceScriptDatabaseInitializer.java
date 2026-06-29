@@ -43,7 +43,7 @@ public class BatchClusterDataSourceScriptDatabaseInitializer extends DataSourceS
 
     private static DatabaseInitializationSettings settings(DatabaseInitializationMode mode, String schemaLocation) {
         DatabaseInitializationSettings settings = new DatabaseInitializationSettings();
-        settings.setSchemaLocations(List.of(schemaLocation));
+        settings.setSchemaLocations(schemaLocation == null ? List.of() : List.of(schemaLocation));
         settings.setMode(mode);
         // In a cluster the nodes share one database, so several may try to create the tables on
         // startup; tolerate "already exists" from a peer rather than failing the node.

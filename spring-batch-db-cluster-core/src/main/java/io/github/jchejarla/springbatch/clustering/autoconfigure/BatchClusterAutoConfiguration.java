@@ -47,6 +47,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
+import org.springframework.boot.sql.init.DatabaseInitializationMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -158,16 +159,23 @@ public class BatchClusterAutoConfiguration {
 
     /**
      * Optionally creates the cluster tables on startup, controlled by
-     * {@code spring.batch.cluster.initialize-schema} (see {@link BatchClusterProperties}). Runs after
-     * {@code batchDataSourceInitializer} so the foreign keys to the Spring Batch tables resolve.
+     * {@code spring.batch.cluster.initialize-schema} (see {@link BatchClusterProperties}).
+     * <p>Depends on Spring Boot's standard {@code batchDataSourceInitializer} bean so it runs after the
+     * Spring Batch schema and the foreign keys to {@code BATCH_JOB_EXECUTION}/{@code BATCH_STEP_EXECUTION}
+     * resolve. (Applications that replace that initializer should manage the cluster schema themselves.)
      */
     @Bean
     @ConditionalOnMissingBean
     @DependsOn("batchDataSourceInitializer")
     public BatchClusterDataSourceScriptDatabaseInitializer batchClusterDataSourceScriptDatabaseInitializer(
             DataSource dataSource, BatchClusterProperties batchClusterProperties) throws SQLException {
+        DatabaseInitializationMode mode = batchClusterProperties.getInitializeSchema();
+        if (mode == DatabaseInitializationMode.NEVER) {
+            // Disabled: nothing to resolve (also avoids opening a connection or rejecting an unsupported driver).
+            return new BatchClusterDataSourceScriptDatabaseInitializer(dataSource, mode, null);
+        }
         DatabaseDriver driver = DatabaseDriver.fromJdbcUrl(getDatabaseURL(dataSource));
-        return new BatchClusterDataSourceScriptDatabaseInitializer(dataSource, batchClusterProperties.getInitializeSchema(), clusterSchemaLocation(driver));
+        return new BatchClusterDataSourceScriptDatabaseInitializer(dataSource, mode, clusterSchemaLocation(driver));
     }
 
     static String clusterSchemaLocation(DatabaseDriver driver) {
