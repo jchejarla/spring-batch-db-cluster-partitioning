@@ -13,6 +13,14 @@
 
 - **Load-aware assignment** — a new `LEAST_LOADED` partitioning mode assigns each partition to the node
   with the lowest live load, steering work away from nodes already busy with other jobs.
+- **Heartbeat-loss fencing** — a node that loses its heartbeat now cancels its in-progress partition
+  tasks, so it stops executing work; those partitions are left for the master to recover.
+
+### 🐛 Fixes
+
+- **Enforce the `is_transferable` safety contract.** Non-transferable partitions were previously
+  reassigned on node loss despite the documented contract; they are now failed (so the job fails
+  cleanly) rather than silently re-executed on another node. Only transferable partitions are reassigned.
 
 - **Cluster recovery for lost master nodes** — a surviving node detects a job whose master has left the
   cluster, claims it atomically, and marks the stranded execution restartable instead of leaving it hung.

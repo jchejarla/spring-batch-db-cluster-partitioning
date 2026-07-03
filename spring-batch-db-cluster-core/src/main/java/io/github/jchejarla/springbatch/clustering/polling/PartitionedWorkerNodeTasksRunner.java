@@ -167,9 +167,18 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
                 step.execute(stepExecution);
                 databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, PartitionStatus.COMPLETED.name());
             } catch (Exception e) {
-                stepExecution.setStatus(BatchStatus.FAILED);
-                stepExecution.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), e.getMessage()));
-                databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, PartitionStatus.FAILED.name());
+                if (NodeStatus.ACTIVE != currentNodeInfo.getNodeStatus()) {
+                    // This node lost its heartbeat and is being fenced (its in-progress tasks were cancelled).
+                    // Do NOT finalize this partition — leave it CLAIMED so the master's recovery reassigns it
+                    // (if transferable) or fails it. Marking it FAILED here would prevent reassignment.
+                    Thread.currentThread().interrupt();
+                    log.warn("Step interrupted while node '{}' is being fenced; leaving partition claimed for master recovery (jobExecutionId={}, stepExecutionId={})",
+                            batchClusterProperties.getNodeId(), jobExecutionId, stepExecutionId);
+                } else {
+                    stepExecution.setStatus(BatchStatus.FAILED);
+                    stepExecution.setExitStatus(new ExitStatus(ExitStatus.FAILED.getExitCode(), e.getMessage()));
+                    databaseBackedClusterService.updatePartitionStatus(partitionAssignmentTask, PartitionStatus.FAILED.name());
+                }
             } finally {
                 NodeLoad.INST.decrementLoadCount();
                 stepExecution.setEndTime(LocalDateTime.now());
@@ -205,11 +214,15 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
         }
     }
 
-    //Hook to interrupt currently in-progress tasks for future implementation, scenario where updating of Node heartbeat itself failed.
+    /**
+     * Cancels this node's in-progress partition tasks when it loses its heartbeat, so a fenced node stops
+     * executing work. Cancelled partitions are left {@code CLAIMED} (not failed) so the master's recovery
+     * reassigns the transferable ones to healthy nodes and fails the non-transferable ones.
+     */
     private void interruptInProgressTasksWhenHeartbeatFailed() {
         tasksSubmitted.forEach(taskSubmitted -> {
             if (!taskSubmitted.isDone()) {
-                log.warn("Node heartbeat update seem to have failed and it triggered event to cancel currently in-progress tasks, if the task is set is_assignable=true, this will get transferred to another node in the cluster  ");
+                log.warn("Node heartbeat update failed; cancelling in-progress partition tasks. Transferable partitions will be reassigned to another node by the master.");
                 taskSubmitted.cancel(true);
             }
         });
@@ -217,7 +230,7 @@ public class PartitionedWorkerNodeTasksRunner implements ClusterNodeStatusChange
 
     @Override
     public void onClusterNodeHeartbeatFail() {
-        //interruptInProgressTasksWhenHeartbeatFailed();
+        interruptInProgressTasksWhenHeartbeatFailed();
     }
 
 }

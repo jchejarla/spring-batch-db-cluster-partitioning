@@ -117,6 +117,23 @@ public class PartitionedWorkerNodeTasksRunnerUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testExecuteStepDoesNotFailPartitionWhenNodeIsFencedMidExecution() throws Exception {
+        Step step = mock(Step.class);
+        StepExecution stepExecution = new StepExecution("Test-Step", mock(JobExecution.class));
+        PartitionAssignmentTask partitionAssignmentTask = mock(PartitionAssignmentTask.class);
+        doReturn(stepExecution).when(jobExplorer).getStepExecution(anyLong(), anyLong());
+        doReturn(step).when(applicationContext).getBean(any(), any(Class.class));
+        doThrow(RuntimeException.class).when(step).execute(any());
+        // ACTIVE when execution starts, then UNREACHABLE (fenced) when the step throws
+        doReturn(NodeStatus.ACTIVE, NodeStatus.UNREACHABLE).when(clusterNodeInfo).getNodeStatus();
+
+        partitionedWorkerNodeTasksRunner.executeStep(partitionAssignmentTask);
+
+        // a fenced node must NOT finalize the partition (leave it CLAIMED for master recovery/reassignment)
+        verify(databaseBackedClusterService, never()).updatePartitionStatus(any(), eq("FAILED"));
+    }
+
+    @Test
     public void testExecuteStepWhenErrorOccurredBeforeLaunchingExecution() throws JobInterruptedException {
         Step step = mock(Step.class);
         StepExecution stepExecution = new StepExecution("Test-Step", mock(JobExecution.class));

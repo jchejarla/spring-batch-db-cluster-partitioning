@@ -54,7 +54,8 @@ The two thresholds give a deliberate grace window: a brief GC pause or network b
 
 The master's monitor reassigns orphaned partitions — those belonging to a removed node — to healthy nodes. Two deliberate properties:
 
-- **Transferable-only**: only partitions the user marked transferable (`arePartitionsTransferableWhenNodeFailed()`) are moved. Non-transferable partitions (node-local state, non-idempotent side effects) are never reassigned — correctness over availability, by contract.
+- **Transferable-only**: only partitions the user marked transferable (`arePartitionsTransferableWhenNodeFailed()`) are moved. Non-transferable partitions (node-local state, non-idempotent side effects) are never reassigned; when their node is lost they are **failed** (so the job fails cleanly) rather than re-executed elsewhere — correctness over availability, by contract.
+- **Fencing**: a node that loses its own heartbeat cancels its in-progress partition tasks and leaves them `CLAIMED` (not failed), so the master reassigns the transferable ones and fails the non-transferable ones.
 - **Self-fencing**: a node that has lost its own heartbeat stops claiming new work and aborts before executing a claimed partition. Combined with the transactional `CLAIMED` transition, this is what prevents a reassigned partition from being executed twice.
 
 ### Master failure

@@ -98,8 +98,12 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         doReturn(true).when(batchClusterProperties).isTracingEnabled();
         doReturn(100L).when(batchClusterProperties).getMasterTaskStatusCheckInterval();
         List<PartitionAssignmentTask> orphanedTasks = new ArrayList<>();
-        orphanedTasks.add(mock(PartitionAssignmentTask.class));
-        orphanedTasks.add(mock(PartitionAssignmentTask.class));
+        PartitionAssignmentTask orphan1 = mock(PartitionAssignmentTask.class);
+        PartitionAssignmentTask orphan2 = mock(PartitionAssignmentTask.class);
+        when(orphan1.isTransferable()).thenReturn(true);
+        when(orphan2.isTransferable()).thenReturn(true);
+        orphanedTasks.add(orphan1);
+        orphanedTasks.add(orphan2);
         doReturn(orphanedTasks, Collections.emptyList()).when(databaseBackedClusterService).checkForOrphanedTasks(anyLong());
         doReturn(List.of(mock(ClusterNode.class))).when(databaseBackedClusterService).getActiveNodes();
         doReturn(new int[]{1}).when(databaseBackedClusterService).updateBatchPartitionsToReAssignedNodes(any());
@@ -113,6 +117,23 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         verify(databaseBackedClusterService, times(1)).saveBatchPartitions(any());
         verify(databaseBackedClusterService, times(2)).updateBatchJobCoordinationStatus(anyLong(), anyLong(), anyString());
         verify(databaseBackedClusterService, times(2)).updateBatchPartitionsToReAssignedNodes(any());
+    }
+
+    @Test
+    public void testNonTransferableOrphansAreFailedAndOnlyTransferableAreReassigned() throws Exception {
+        PartitionAssignmentTask nonTransferable = mock(PartitionAssignmentTask.class);
+        PartitionAssignmentTask transferable = mock(PartitionAssignmentTask.class);
+        when(nonTransferable.isTransferable()).thenReturn(false);
+        when(transferable.isTransferable()).thenReturn(true);
+        doReturn(List.of(nonTransferable, transferable)).when(databaseBackedClusterService).checkForOrphanedTasks(anyLong());
+        doReturn(List.of(mock(ClusterNode.class))).when(databaseBackedClusterService).getActiveNodes();
+
+        clusterAwarePartitionHandler.pollForOrphanedTasksAndReArrange(1L);
+
+        // the non-transferable orphan is failed (never moved); only the transferable one is reassigned
+        verify(databaseBackedClusterService, times(1))
+                .updatePartitionsStatus(argThat(tasks -> tasks.size() == 1 && tasks.contains(nonTransferable)), eq(PartitionStatus.FAILED.name()));
+        verify(databaseBackedClusterService, times(1)).updateBatchPartitionsToReAssignedNodes(any());
     }
 
     @Test

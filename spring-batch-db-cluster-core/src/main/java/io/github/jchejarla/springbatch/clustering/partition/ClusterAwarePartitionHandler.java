@@ -176,27 +176,39 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
 
     protected void pollForOrphanedTasksAndReArrange(long masterStepExecutionId) throws JobExecutionException {
         List<PartitionAssignmentTask> orphanedTasks = databaseBackedClusterService.checkForOrphanedTasks(masterStepExecutionId);
-        if (!orphanedTasks.isEmpty()) {
-            log.info("There are {} orphaned tasks found that are initially assigned to a cluster which is currently not healthy " +
-                            "(If the task JVM is still up and health status is not registered, Step tasks will be discarded from that JVM), re assigning them to a different node",
-                    orphanedTasks.size());
-            List<ClusterNode> activeNodes = databaseBackedClusterService.getActiveNodes();
-            if (activeNodes.isEmpty()) {
-                log.error("There are no active nodes found from database, please check the log if there are any errors in registering/ updating the heart beat of nodes");
-                throw new JobExecutionException("There are no active nodes found from database, please check the log if there are any errors in registering/ updating the heart beat of nodes");
-            }
-
-            // re-assign orphaned tasks to active nodes
-            // there is co-ordination required on the Node that was executing the task (to avoid to issue where Health
-            List<Object[]> params = new ArrayList<>();
-            int index = 0;
-            for (PartitionAssignmentTask originTask : orphanedTasks) {
-                String assignedToNode = activeNodes.get(index % activeNodes.size()).nodeId();
-                index++;
-                params.add(new Object[]{assignedToNode, new Date(), originTask.jobExecutionId(), originTask.masterStepExecutionId(), originTask.stepExecutionId()});
-            }
-            databaseBackedClusterService.updateBatchPartitionsToReAssignedNodes(params);
+        if (orphanedTasks.isEmpty()) {
+            return;
         }
+
+        // Non-transferable partitions must never run on another node (node-local state or non-idempotent
+        // side effects). Their owning node has left the cluster, so they cannot be recovered — fail them
+        // so the job fails cleanly rather than being silently re-executed elsewhere or hanging forever.
+        List<PartitionAssignmentTask> nonTransferable = orphanedTasks.stream().filter(task -> !task.isTransferable()).toList();
+        if (!nonTransferable.isEmpty()) {
+            log.error("{} orphaned partition(s) are non-transferable and their node has left the cluster; failing them (they cannot be safely re-executed elsewhere)", nonTransferable.size());
+            databaseBackedClusterService.updatePartitionsStatus(nonTransferable, PartitionStatus.FAILED.name());
+        }
+
+        List<PartitionAssignmentTask> transferable = orphanedTasks.stream().filter(PartitionAssignmentTask::isTransferable).toList();
+        if (transferable.isEmpty()) {
+            return;
+        }
+        log.info("Reassigning {} transferable orphaned partition(s) whose node has left the cluster", transferable.size());
+        List<ClusterNode> activeNodes = databaseBackedClusterService.getActiveNodes();
+        if (activeNodes.isEmpty()) {
+            log.error("There are no active nodes found from database to reassign orphaned partitions");
+            throw new JobExecutionException("There are no active nodes found from database to reassign orphaned partitions");
+        }
+
+        // re-assign transferable orphaned tasks round-robin across the healthy nodes
+        List<Object[]> params = new ArrayList<>();
+        int index = 0;
+        for (PartitionAssignmentTask originTask : transferable) {
+            String assignedToNode = activeNodes.get(index % activeNodes.size()).nodeId();
+            index++;
+            params.add(new Object[]{assignedToNode, new Date(), originTask.jobExecutionId(), originTask.masterStepExecutionId(), originTask.stepExecutionId()});
+        }
+        databaseBackedClusterService.updateBatchPartitionsToReAssignedNodes(params);
     }
 
 }
