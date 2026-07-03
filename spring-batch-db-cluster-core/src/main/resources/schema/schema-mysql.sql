@@ -1,5 +1,8 @@
+-- NOTE: table names are lowercase to match the (lowercase) coordination queries. MySQL/MariaDB
+-- table names are case-sensitive on case-sensitive filesystems (lower_case_table_names=0),
+-- unlike the other dialects which fold identifier case. Keep our table names lowercase here.
 -- maintains cluster nodes heartbeat
-CREATE TABLE BATCH_NODES (
+CREATE TABLE batch_nodes (
     NODE_ID VARCHAR(200) NOT NULL PRIMARY KEY,
     CREATED_TIME TIMESTAMP NOT NULL,
     LAST_UPDATED_TIME TIMESTAMP NOT NULL,
@@ -9,7 +12,7 @@ CREATE TABLE BATCH_NODES (
 ) ENGINE=InnoDB;
 
 -- Job coordination
-CREATE TABLE BATCH_JOB_COORDINATION (
+CREATE TABLE batch_job_coordination (
     JOB_EXECUTION_ID BIGINT PRIMARY KEY,
     MASTER_NODE_ID VARCHAR(200) NOT NULL,
     MASTER_STEP_EXECUTION_ID BIGINT NOT NULL,
@@ -21,7 +24,7 @@ CREATE TABLE BATCH_JOB_COORDINATION (
 ) ENGINE=InnoDB;
 
 -- Partition tracking
-CREATE TABLE BATCH_PARTITIONS (
+CREATE TABLE batch_partitions (
     step_execution_id BIGINT PRIMARY KEY,
     job_execution_id BIGINT NOT NULL,
     partition_key VARCHAR(100) NOT NULL,
@@ -38,16 +41,16 @@ CREATE TABLE BATCH_PARTITIONS (
 ) ENGINE=InnoDB;
 
 -- Indexes for hot coordination queries (worker polling, completion checks, orphan scans)
-CREATE INDEX IDX_BATCH_PART_NODE_STATUS ON BATCH_PARTITIONS (assigned_node, status);
-CREATE INDEX IDX_BATCH_PART_MASTER_STATUS ON BATCH_PARTITIONS (master_step_execution_id, status);
+CREATE INDEX IDX_BATCH_PART_NODE_STATUS ON batch_partitions (assigned_node, status);
+CREATE INDEX IDX_BATCH_PART_MASTER_STATUS ON batch_partitions (master_step_execution_id, status);
 
 -- Optional phase-timing event log (append-only; populated only when
 -- spring.batch.cluster.capture-phase-timings=true). No FK: an audit trail that can outlive the job row.
 
-CREATE TABLE BATCH_JOB_PHASE_EVENTS (
+CREATE TABLE batch_job_phase_events (
     JOB_EXECUTION_ID BIGINT NOT NULL,
     NODE_ID VARCHAR(200) NOT NULL,
     PHASE VARCHAR(40) NOT NULL,
     EVENT_TIME TIMESTAMP NOT NULL
 ) ENGINE=InnoDB;
-CREATE INDEX IDX_BATCH_PHASE_EVENTS_JOB ON BATCH_JOB_PHASE_EVENTS (JOB_EXECUTION_ID);
+CREATE INDEX IDX_BATCH_PHASE_EVENTS_JOB ON batch_job_phase_events (JOB_EXECUTION_ID);

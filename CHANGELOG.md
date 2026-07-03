@@ -29,6 +29,12 @@
   reassigned on node loss despite the documented contract; they are now failed (so the job fails
   cleanly) rather than silently re-executed on another node. Only transferable partitions are reassigned.
 
+- **MySQL/MariaDB case-sensitivity fix.** The DDL created the cluster tables in uppercase while the
+  coordination queries referenced them in lowercase. On a case-sensitive MySQL/MariaDB
+  (`lower_case_table_names=0`, the Linux default) these are different tables, so coordination failed.
+  The MySQL and MariaDB schemas now create the tables in lowercase to match the queries. Surfaced by the
+  new cross-database validation suite.
+
 - **Cluster recovery for lost master nodes** — a surviving node detects a job whose master has left the
   cluster, claims it atomically, and marks the stranded execution restartable instead of leaving it hung.
 - **Balanced failover recovery** — a lost node's transferable partitions are redistributed across all
@@ -39,6 +45,13 @@
 - **More databases** — added SQL Server, MariaDB, and Db2 support, joining PostgreSQL, MySQL, Oracle, and H2.
 - **Schema improvements** — bundled `schema-drop-<db>.sql` teardown scripts and indexes on the hot
   partition-query columns; aligned the DDL (CHECK constraints, named foreign keys) across all databases.
+
+### ✅ Testing
+
+- **Cross-database validation suite** — opt-in Testcontainers integration tests apply each dialect's
+  `schema-*.sql` and exercise the `DBSpecificQueryProvider` query surface against a real engine
+  (MariaDB, SQL Server, Db2), so the per-database DDL and SQL are no longer validated only against H2.
+  Run with `-Dcontainer.it=true` (and `-Dcontainer.it.db2=true` for Db2); skipped when Docker is absent.
 
 ### 📖 Documentation
 
