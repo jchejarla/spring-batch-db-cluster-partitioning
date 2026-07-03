@@ -46,12 +46,7 @@ class SqlServerSchemaIT extends AbstractDialectSchemaIT {
     }
 
     @Override
-    String springBatchSchema() {
-        return "org/springframework/batch/core/schema-sqlserver.sql";
-    }
-
-    @Override
-    String clusterSchema() {
-        return "schema/schema-sqlserver.sql";
+    String dialect() {
+        return "sqlserver";
     }
 }

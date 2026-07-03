@@ -51,7 +51,9 @@
 - **Cross-database validation suite** — opt-in Testcontainers integration tests apply each dialect's
   `schema-*.sql` and exercise the `DBSpecificQueryProvider` query surface against a real engine
   (MariaDB, SQL Server, Db2), so the per-database DDL and SQL are no longer validated only against H2.
-  Run with `-Dcontainer.it=true` (and `-Dcontainer.it.db2=true` for Db2); skipped when Docker is absent.
+  Includes a master-failover recovery scenario (a job whose master left the cluster is detected and
+  claimed exactly once by a surviving node). Run with `-Dcontainer.it=true` (and `-Dcontainer.it.db2=true`
+  for Db2); skipped when Docker is absent.
 
 ### 📖 Documentation
 

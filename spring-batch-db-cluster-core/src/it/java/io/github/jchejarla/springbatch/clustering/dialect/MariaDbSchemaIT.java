@@ -45,12 +45,7 @@ class MariaDbSchemaIT extends AbstractDialectSchemaIT {
     }
 
     @Override
-    String springBatchSchema() {
-        return "org/springframework/batch/core/schema-mariadb.sql";
-    }
-
-    @Override
-    String clusterSchema() {
-        return "schema/schema-mariadb.sql";
+    String dialect() {
+        return "mariadb";
     }
 }

@@ -46,12 +46,7 @@ class Db2SchemaIT extends AbstractDialectSchemaIT {
     }
 
     @Override
-    String springBatchSchema() {
-        return "org/springframework/batch/core/schema-db2.sql";
-    }
-
-    @Override
-    String clusterSchema() {
-        return "schema/schema-db2.sql";
+    String dialect() {
+        return "db2";
     }
 }
