@@ -40,3 +40,14 @@ CREATE TABLE BATCH_PARTITIONS (
 -- Indexes for hot coordination queries (worker polling, completion checks, orphan scans)
 CREATE INDEX IDX_BATCH_PART_NODE_STATUS ON BATCH_PARTITIONS (assigned_node, status);
 CREATE INDEX IDX_BATCH_PART_MASTER_STATUS ON BATCH_PARTITIONS (master_step_execution_id, status);
+
+-- Optional phase-timing event log (append-only; populated only when
+-- spring.batch.cluster.capture-phase-timings=true). No FK: an audit trail that can outlive the job row.
+
+CREATE TABLE BATCH_JOB_PHASE_EVENTS (
+    JOB_EXECUTION_ID BIGINT NOT NULL,
+    NODE_ID VARCHAR(200) NOT NULL,
+    PHASE VARCHAR(40) NOT NULL,
+    EVENT_TIME DATETIME2 NOT NULL
+);
+CREATE INDEX IDX_BATCH_PHASE_EVENTS_JOB ON BATCH_JOB_PHASE_EVENTS (JOB_EXECUTION_ID);

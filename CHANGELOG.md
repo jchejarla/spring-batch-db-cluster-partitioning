@@ -18,6 +18,10 @@
 - **Job-centric observability** — a read-only `BatchClusterQueryService` and actuator endpoints
   (`/actuator/batch-cluster-jobs`, `/actuator/batch-cluster-jobs/{jobExecutionId}`) show, per job, the
   master node, partition count, status histogram, and where each partition is running.
+- **Phase-timing capture (opt-in)** — `spring.batch.cluster.capture-phase-timings=true` records the
+  master-side coordination phases (received → partitioned → distributed → completion-detected) to the
+  append-only `BATCH_JOB_PHASE_EVENTS` table using the database clock. This is the raw basis for
+  coordination-overhead reporting (consumption comes in a later release).
 
 ### 🐛 Fixes
 

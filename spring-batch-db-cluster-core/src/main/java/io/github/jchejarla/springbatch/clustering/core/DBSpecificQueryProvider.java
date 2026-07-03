@@ -109,6 +109,11 @@ public interface DBSpecificQueryProvider {
                 "from batch_partitions where master_step_execution_id = ?";
     }
 
+    /** Appends a coordination phase event, timestamped with the database clock (single clock across nodes). */
+    default String getRecordPhaseEventQuery() {
+        return "insert into batch_job_phase_events (job_execution_id, node_id, phase, event_time) values (?, ?, ?, CURRENT_TIMESTAMP)";
+    }
+
     /**
      * Atomically claims an orphaned coordination row for recovery: sets the transient status and takes
      * ownership ({@code master_node_id}), guarded by the (job execution, lost owner) pair. Because the

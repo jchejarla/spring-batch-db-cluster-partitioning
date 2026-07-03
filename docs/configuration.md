@@ -21,6 +21,7 @@ suit small-to-medium clusters (~2–20 nodes).
 | `orphaned-tasks-polling-interval` | `1000` | How often the master scans for orphaned partitions to reassign. |
 | `master-task-status-check-interval` | `500` | Master-side sleep between partition-completion checks. |
 | `orphaned-master-scan-interval` | `10000` | How often each node scans for jobs whose master node was lost, so a stranded execution can be abandoned and made restartable. |
+| `capture-phase-timings` | `false` | When `true`, records master-side coordination phase timestamps to the append-only `BATCH_JOB_PHASE_EVENTS` table (database clock). Pair with a retention policy; the table grows over time. |
 
 !!! note "Spring Batch core schema is a prerequisite"
     These tables have foreign keys to the standard Spring Batch tables, so the Spring Batch schema must

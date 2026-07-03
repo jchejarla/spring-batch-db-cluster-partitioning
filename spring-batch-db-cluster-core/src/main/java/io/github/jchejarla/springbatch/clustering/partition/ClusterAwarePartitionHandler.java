@@ -19,6 +19,7 @@ import io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
 import io.github.jchejarla.springbatch.clustering.core.CoordinationStatus;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
+import io.github.jchejarla.springbatch.clustering.query.JobPhase;
 import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.ConditionalOnClusterEnabled;
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.polling.PartitionAssignmentTask;
@@ -83,6 +84,8 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
      */
     @Override
     public Collection<StepExecution> handle(StepExecutionSplitter stepSplitter, StepExecution managerStepExecution) throws Exception {
+        long jobExecutionId = managerStepExecution.getJobExecutionId();
+        recordPhase(jobExecutionId, JobPhase.RECEIVED);
         log.info("ClusterAwarePartitionHandler is invoked to handle the partition and execution of the partitioned task : {}", managerStepExecution.getStepName());
         Set<StepExecution> stepExecutions = stepSplitter.split(managerStepExecution, 0);
         log.info("Number of partition steps generated are : {} ", stepExecutions.size());
@@ -90,8 +93,8 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             log.warn("Partitioner returned empty set of executions, so there is nothing to distribute");
             return  stepExecutions;
         }
+        recordPhase(jobExecutionId, JobPhase.PARTITIONED);
         Long masterStepExecutionId = managerStepExecution.getId();
-        long jobExecutionId = managerStepExecution.getJobExecutionId();
         List<Object[]> params = new ArrayList<>();
 
         for(StepExecution stepExecution: stepExecutions) {
@@ -109,6 +112,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
         log.info("Persisting workload distribution for step {} started", managerStepExecution.getStepName());
         databaseBackedClusterService.saveBatchPartitions(params);
         log.info("Persisting workload distribution for step {} completed, now cluster wide nodes will pickup the workload and run them", managerStepExecution.getStepName());
+        recordPhase(jobExecutionId, JobPhase.DISTRIBUTED);
 
         log.info("Updating master step info into coordination table with status = STARTED, master step execution id {}", masterStepExecutionId);
         databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, CoordinationStatus.STARTED.name());
@@ -116,6 +120,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
 
         // PartitionHandler need to wait (synchronously) until all the tasks are complete, if this method returns, then the job is completed
         waitForExecutionOfAllTasks(managerStepExecution.getId());
+        recordPhase(jobExecutionId, JobPhase.COMPLETION_DETECTED);
 
         log.info("Updating master step info into coordination table with status = COMPLETED, master step execution id {}", masterStepExecutionId);
         databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, CoordinationStatus.COMPLETED.name());
@@ -124,6 +129,21 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
         return stepExecutions;
     }
 
+
+    /**
+     * Records a master-side coordination phase for observability, only when phase-timing capture is
+     * enabled. Never lets an observability failure affect the job.
+     */
+    private void recordPhase(long jobExecutionId, JobPhase phase) {
+        if (!batchClusterProperties.isCapturePhaseTimings()) {
+            return;
+        }
+        try {
+            databaseBackedClusterService.recordPhaseEvent(jobExecutionId, phase.name());
+        } catch (Exception e) {
+            log.warn("Failed to record phase-timing event {} for jobExecutionId={}", phase, jobExecutionId, e);
+        }
+    }
 
     private void waitForExecutionOfAllTasks(final long masterStepExecutionId) {
 

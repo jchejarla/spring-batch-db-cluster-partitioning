@@ -64,6 +64,14 @@ public class BatchClusterProperties {
     private boolean tracingEnabled = false;
 
     /**
+     * When {@code true}, records master-side coordination phase timestamps (received, partitioned,
+     * distributed, completion-detected) to the append-only {@code BATCH_JOB_PHASE_EVENTS} table, using the
+     * database clock. Off by default. Enables later reporting of coordination overhead; the table grows
+     * over time, so pair it with a retention/purge policy.
+     */
+    private boolean capturePhaseTimings = false;
+
+    /**
      * Optional prefix for this node's auto-generated id. Defaults to the machine host name when unset.
      * The actual node id is always {@code <prefix>-<random-uuid>}, generated once at startup, so it is
      * guaranteed unique per JVM and per restart with no manual configuration.

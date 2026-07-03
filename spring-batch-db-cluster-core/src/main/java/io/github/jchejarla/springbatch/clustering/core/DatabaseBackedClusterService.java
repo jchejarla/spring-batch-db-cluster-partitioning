@@ -64,6 +64,11 @@ public class DatabaseBackedClusterService {
         return jdbcTemplate.update(queryProvider.getUpdateNodeHeartBeatQuery(), params);
     }
 
+    /** Appends a coordination phase event (for observability), timestamped with the database clock. */
+    public void recordPhaseEvent(long jobExecutionId, String phase) {
+        jdbcTemplate.update(queryProvider.getRecordPhaseEventQuery(), jobExecutionId, batchClusterProperties.getNodeId(), phase);
+    }
+
     @Transactional
     public int markNodesUnreachable() {
         Object[] params = new Object[]{NodeStatus.UNREACHABLE.name(), NodeStatus.ACTIVE.name(), batchClusterProperties.getUnreachableNodeThreshold()};
