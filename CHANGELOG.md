@@ -15,6 +15,9 @@
   with the lowest live load, steering work away from nodes already busy with other jobs.
 - **Heartbeat-loss fencing** — a node that loses its heartbeat now cancels its in-progress partition
   tasks, so it stops executing work; those partitions are left for the master to recover.
+- **Job-centric observability** — a read-only `BatchClusterQueryService` and actuator endpoints
+  (`/actuator/batch-cluster-jobs`, `/actuator/batch-cluster-jobs/{jobExecutionId}`) show, per job, the
+  master node, partition count, status histogram, and where each partition is running.
 
 ### 🐛 Fixes
 

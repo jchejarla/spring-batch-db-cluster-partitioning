@@ -91,6 +91,24 @@ public interface DBSpecificQueryProvider {
                 "and not exists (select 1 from batch_nodes bn where bn.node_id = bc.master_node_id)";
     }
 
+    /** Read-only: lists coordinated jobs (most recent first), for the job-centric observability view. */
+    default String getCoordinatedJobsQuery() {
+        return "select job_execution_id, master_node_id, master_step_execution_id, master_step_name, status " +
+                "from batch_job_coordination order by created_time desc";
+    }
+
+    /** Read-only: the coordination row for one job execution. */
+    default String getJobCoordinationByIdQuery() {
+        return "select job_execution_id, master_node_id, master_step_execution_id, master_step_name, status " +
+                "from batch_job_coordination where job_execution_id = ?";
+    }
+
+    /** Read-only: the partitions of a job (by manager step execution id) with their placement and status. */
+    default String getPartitionsByMasterStepQuery() {
+        return "select step_execution_id, partition_key, assigned_node, status " +
+                "from batch_partitions where master_step_execution_id = ?";
+    }
+
     /**
      * Atomically claims an orphaned coordination row for recovery: sets the transient status and takes
      * ownership ({@code master_node_id}), guarded by the (job execution, lost owner) pair. Because the

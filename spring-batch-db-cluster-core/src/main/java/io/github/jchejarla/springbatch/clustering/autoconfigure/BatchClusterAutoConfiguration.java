@@ -16,9 +16,11 @@
 package io.github.jchejarla.springbatch.clustering.autoconfigure;
 
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterHealthIndicator;
+import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterJobsEndpoint;
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterNodeHealthIndicator;
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusterNodesEndpoint;
 import io.github.jchejarla.springbatch.clustering.actuate.BatchClusteringInfoContributor;
+import io.github.jchejarla.springbatch.clustering.query.BatchClusterQueryService;
 import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 import io.github.jchejarla.springbatch.clustering.core.DatabaseBackedClusterService;
 import io.github.jchejarla.springbatch.clustering.core.serviceimpl.DB2DatabaseQueryProvider;
@@ -270,6 +272,17 @@ public class BatchClusterAutoConfiguration {
     @Bean
     public BatchClusterNodesEndpoint batchClusterNodesEndpoint(ClusterNodeManager clusterNodeManager) {
         return new BatchClusterNodesEndpoint(clusterNodeManager);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public BatchClusterQueryService batchClusterQueryService(JdbcTemplate jdbcTemplate, DBSpecificQueryProvider dbSpecificQueryProvider) {
+        return new BatchClusterQueryService(jdbcTemplate, dbSpecificQueryProvider);
+    }
+
+    @Bean
+    public BatchClusterJobsEndpoint batchClusterJobsEndpoint(BatchClusterQueryService batchClusterQueryService) {
+        return new BatchClusterJobsEndpoint(batchClusterQueryService);
     }
 
 

@@ -60,4 +60,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,batch-cluster"
+        include: "health,info,batch-cluster,batch-cluster-jobs"
