@@ -18,8 +18,8 @@ package io.github.jchejarla.springbatch.clustering.partition;
 import io.github.jchejarla.springbatch.clustering.BaseUnitTest;
 import io.github.jchejarla.springbatch.clustering.api.PartitionStrategy;
 import io.github.jchejarla.springbatch.clustering.partition.impl.FixedNodeCountPartitionAssignmentStrategy;
+import io.github.jchejarla.springbatch.clustering.partition.impl.LeastLoadedPartitionAssignmentStrategy;
 import io.github.jchejarla.springbatch.clustering.partition.impl.RoundRobinPartitionAssignmentStrategy;
-import io.github.jchejarla.springbatch.clustering.partition.impl.ScaleUpPartitionAssignmentStrategy;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -33,9 +33,9 @@ public class PartitionStrategyFactoryUnitTest extends BaseUnitTest {
         PartitionAssignmentStrategy partitionAssignmentStrategy = PartitionStrategyFactory.getStrategy(partitionStrategy);
         assertInstanceOf(FixedNodeCountPartitionAssignmentStrategy.class, partitionAssignmentStrategy);
         partitionStrategy = PartitionStrategy.builder()
-                .partitioningMode(PartitioningMode.SCALE_UP).build();
+                .partitioningMode(PartitioningMode.LEAST_LOADED).build();
         partitionAssignmentStrategy = PartitionStrategyFactory.getStrategy(partitionStrategy);
-        assertInstanceOf(ScaleUpPartitionAssignmentStrategy.class, partitionAssignmentStrategy);
+        assertInstanceOf(LeastLoadedPartitionAssignmentStrategy.class, partitionAssignmentStrategy);
         partitionStrategy = PartitionStrategy.builder()
                 .partitioningMode(PartitioningMode.ROUND_ROBIN).build();
         partitionAssignmentStrategy = PartitionStrategyFactory.getStrategy(partitionStrategy);

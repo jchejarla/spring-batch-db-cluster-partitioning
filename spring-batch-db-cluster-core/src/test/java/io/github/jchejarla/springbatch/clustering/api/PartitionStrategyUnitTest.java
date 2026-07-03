@@ -41,11 +41,11 @@ public class PartitionStrategyUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void testScaleUpStrategyBuilder() {
+    public void testLeastLoadedStrategyBuilder() {
         PartitionStrategy partitionStrategy = PartitionStrategy.builder()
-                .partitioningMode(PartitioningMode.SCALE_UP)
+                .partitioningMode(PartitioningMode.LEAST_LOADED)
                 .build();
-        Assertions.assertEquals(PartitioningMode.SCALE_UP, partitionStrategy.getPartitioningMode());
+        Assertions.assertEquals(PartitioningMode.LEAST_LOADED, partitionStrategy.getPartitioningMode());
     }
 
 }

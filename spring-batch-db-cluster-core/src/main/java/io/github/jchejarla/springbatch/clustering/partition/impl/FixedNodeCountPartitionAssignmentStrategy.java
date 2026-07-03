@@ -15,6 +15,7 @@
  */
 package io.github.jchejarla.springbatch.clustering.partition.impl;
 
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignment;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignmentStrategy;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +47,12 @@ public class FixedNodeCountPartitionAssignmentStrategy implements PartitionAssig
      * @return A list of {@link PartitionAssignment} objects representing the assignment of partitions to nodes.
      */
     @Override
-    public List<PartitionAssignment> assignPartitions(List<ExecutionContext> executionContexts, List<String> availableNodes) {
-        List<String> nodes = availableNodes.subList(0, Math.min(fixedNodeCount, availableNodes.size()));
+    public List<PartitionAssignment> assignPartitions(List<ExecutionContext> executionContexts, List<ClusterNode> availableNodes) {
+        List<ClusterNode> nodes = availableNodes.subList(0, Math.min(fixedNodeCount, availableNodes.size()));
         List<PartitionAssignment> assignments = new ArrayList<>();
         for (int i = 0; i < executionContexts.size(); i++) {
             ExecutionContext executionContext = executionContexts.get(i);
-            String assignedNode = nodes.get(i % nodes.size());
+            String assignedNode = nodes.get(i % nodes.size()).nodeId();
             assignments.add(new PartitionAssignment(i, executionContext, assignedNode));
         }
         return assignments;

@@ -16,6 +16,7 @@
 package io.github.jchejarla.springbatch.clustering.partition.impl;
 
 import io.github.jchejarla.springbatch.clustering.BaseUnitTest;
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignment;
 import org.junit.jupiter.api.Test;
 import org.mockito.Spy;
@@ -39,12 +40,12 @@ public class RoundRobinPartitionAssignmentStrategyUnitTest extends BaseUnitTest 
         executionContexts.add(mock(ExecutionContext.class));
         executionContexts.add(mock(ExecutionContext.class));
         executionContexts.add(mock(ExecutionContext.class));
-        List<String> availableNodes = new ArrayList<>();
-        availableNodes.add("Test-Node-123");
-        availableNodes.add("Test-Node-124");
-        availableNodes.add("Test-Node-125");
-        availableNodes.add("Test-Node-126");
-        availableNodes.add("Test-Node-127");
+        List<ClusterNode> availableNodes = new ArrayList<>();
+        availableNodes.add(new ClusterNode("Test-Node-123", 0));
+        availableNodes.add(new ClusterNode("Test-Node-124", 0));
+        availableNodes.add(new ClusterNode("Test-Node-125", 0));
+        availableNodes.add(new ClusterNode("Test-Node-126", 0));
+        availableNodes.add(new ClusterNode("Test-Node-127", 0));
         List<PartitionAssignment> partitionAssignments = partitionAssignmentStrategy.assignPartitions(executionContexts, availableNodes);
         assertFalse(partitionAssignments.isEmpty());
         assertNotEquals(partitionAssignments.get(0).nodeId(),partitionAssignments.get(1).nodeId());

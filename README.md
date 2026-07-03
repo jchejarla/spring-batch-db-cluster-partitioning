@@ -51,6 +51,7 @@ The core principles of this project is to know **number of available nodes** upf
 * **Flexible Partitioning Strategies:**
     * **Round-Robin:** Evenly distributes partitions across available nodes.
     * **Fixed Node Count:** Assigns partitions to a specified number of nodes.
+    * **Least-Loaded:** Load-aware — assigns each partition to the node with the lowest live load, steering work away from nodes already busy with other jobs.
 * **Explicit Task State Tracking:** Every partition's lifecycle (PENDING, CLAIMED, COMPLETED, FAILED) is transactionally recorded, offering unparalleled visibility.
 * **Robust Fault Tolerance:**
     * **Node Heartbeats:** Worker nodes periodically update their liveness, enabling master nodes to detect unresponsive instances.
@@ -314,8 +315,8 @@ public class MyJobPartitioner extends ClusterAwarePartitioner {
         // Or, Fixed Node Count:
         // return PartitionBuilder.builder().partitioningMode(PartitioningMode.FIXED_NODE_COUNT).fixedNodeCount(3).build();
 
-        // Or, Scale-Up (similar to Round-Robin but explicitly named for dynamic scaling intent):
-        // return PartitionBuilder.builder().partitioningMode(PartitioningMode.SCALE_UP).build();
+        // Or, Least-Loaded (load-aware: assigns to the least-busy nodes based on live load):
+        // return PartitionBuilder.builder().partitioningMode(PartitioningMode.LEAST_LOADED).build();
     }
 }
 ```

@@ -15,10 +15,15 @@
  */
 package io.github.jchejarla.springbatch.clustering.partition;
 
+import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import org.springframework.batch.item.ExecutionContext;
 
 import java.util.List;
 
+/**
+ * Maps work units onto the currently live cluster nodes. Implementations receive the live nodes
+ * (each carrying its reported load), so load-aware strategies can balance accordingly.
+ */
 public interface PartitionAssignmentStrategy {
-    List<PartitionAssignment> assignPartitions(List<ExecutionContext> executionContexts, List<String> availableNodes);
+    List<PartitionAssignment> assignPartitions(List<ExecutionContext> executionContexts, List<ClusterNode> availableNodes);
 }

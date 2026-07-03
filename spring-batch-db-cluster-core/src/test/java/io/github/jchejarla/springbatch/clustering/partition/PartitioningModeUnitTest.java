@@ -26,8 +26,8 @@ public class PartitioningModeUnitTest extends BaseUnitTest {
     public void testPartitioningMode() {
         PartitioningMode partitioningMode= PartitioningMode.FIXED_NODE_COUNT;
         assertEquals(PartitioningMode.FIXED_NODE_COUNT, partitioningMode);
-        partitioningMode= PartitioningMode.SCALE_UP;
-        assertEquals(PartitioningMode.SCALE_UP, partitioningMode);
+        partitioningMode= PartitioningMode.LEAST_LOADED;
+        assertEquals(PartitioningMode.LEAST_LOADED, partitioningMode);
         partitioningMode= PartitioningMode.ROUND_ROBIN;
         assertEquals(PartitioningMode.ROUND_ROBIN, partitioningMode);
     }

@@ -6,8 +6,13 @@
   `<prefix>-<uuid>`, guaranteeing a unique id per JVM and per restart with no manual configuration.
   Use the new optional `spring.batch.cluster.node-id-prefix` (defaults to the host name) to control the
   readable prefix.
+- Removed the `SCALE_UP` partitioning mode (it duplicated round-robin). The `PartitionAssignmentStrategy`
+  interface now receives `List<ClusterNode>` (carrying each node's live load) instead of `List<String>`.
 
 ### ✨ New Features
+
+- **Load-aware assignment** — a new `LEAST_LOADED` partitioning mode assigns each partition to the node
+  with the lowest live load, steering work away from nodes already busy with other jobs.
 
 - **Cluster recovery for lost master nodes** — a surviving node detects a job whose master has left the
   cluster, claims it atomically, and marks the stranded execution restartable instead of leaving it hung.

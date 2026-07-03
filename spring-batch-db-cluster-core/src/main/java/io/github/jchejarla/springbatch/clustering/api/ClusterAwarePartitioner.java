@@ -106,7 +106,6 @@ public abstract class ClusterAwarePartitioner implements Partitioner {
         }
         List<ExecutionContext> executionContexts = createDistributedPartitions(activeNodesOrderedByLoad.size());
 
-        List<String> activeNodes = activeNodesOrderedByLoad.stream().map(ClusterNode::nodeId).collect(Collectors.toList());
         PartitionStrategy partitionStrategy = buildPartitionStrategy();
         if(Objects.isNull(partitionStrategy)) {
             partitionStrategy = PartitionStrategy.builder().partitioningMode(PartitioningMode.ROUND_ROBIN).build();
@@ -118,7 +117,7 @@ public abstract class ClusterAwarePartitioner implements Partitioner {
 
         log.info("Strategy for distributing the step workload {}", partitionStrategy.getPartitioningMode());
         PartitionAssignmentStrategy strategy = PartitionStrategyFactory.getStrategy(partitionStrategy);
-        List<PartitionAssignment> assignments = strategy.assignPartitions(executionContexts, activeNodes);
+        List<PartitionAssignment> assignments = strategy.assignPartitions(executionContexts, activeNodesOrderedByLoad);
         return assignments.stream().collect(Collectors.toMap(partitionAssignment-> String.valueOf(partitionAssignment.uniqueChunkId()), partitionAssignment-> {
             ExecutionContext executionContext = partitionAssignment.executionContext();
             executionContext.putString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER, partitionAssignment.nodeId());

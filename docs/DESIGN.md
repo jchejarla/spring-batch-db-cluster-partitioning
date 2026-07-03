@@ -37,7 +37,7 @@ A key consequence is **fault isolation**: because mastership is scoped to a sing
 
 ## Partition assignment strategies
 
-Pluggable via `PartitionAssignmentStrategy`: round-robin, fixed-node-count, and scale-up. (Load-aware assignment that uses the per-node load already tracked in `BATCH_NODES` is on the roadmap.)
+Pluggable via `PartitionAssignmentStrategy`: round-robin, fixed-node-count, and **least-loaded** — the last being load-aware, assigning each partition to the node with the lowest live load (tracked in `BATCH_NODES`), so work is steered away from nodes already busy with other jobs.
 
 ## Fault tolerance
 

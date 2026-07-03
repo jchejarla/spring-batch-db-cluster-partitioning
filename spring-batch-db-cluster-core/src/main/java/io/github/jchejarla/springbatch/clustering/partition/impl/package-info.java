@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 /**
- * Built-in partition-assignment strategies: round-robin, fixed-node-count, and scale-up.
+ * Built-in partition-assignment strategies: round-robin, fixed-node-count, and least-loaded.
  *
  * <p>Each maps the work units produced by the partitioner onto the available nodes; the strategy is
- * selected at runtime via the partitioner's chosen {@code PartitionStrategy}.</p>
+ * selected at runtime via the partitioner's chosen {@code PartitionStrategy}. The least-loaded
+ * strategy is load-aware, using the live per-node load reported in {@code BATCH_NODES}.</p>
  */
 package io.github.jchejarla.springbatch.clustering.partition.impl;

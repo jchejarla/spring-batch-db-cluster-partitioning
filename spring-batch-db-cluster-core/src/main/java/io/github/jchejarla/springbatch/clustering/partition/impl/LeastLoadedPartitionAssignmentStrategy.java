@@ -24,37 +24,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A partition strategy that assigns partitions to nodes in a round-robin fashion.
- * <p>
- * This strategy iterates through the available nodes, assigning each partition
- * to the next node in the list.  It ensures an even distribution of partitions
- * across the nodes.
- * </p>
+ * A load-aware strategy that assigns each partition to the node with the lowest current load.
+ *
+ * <p>Each node's running load is seeded from the live load it reported (the count of partitions it is
+ * already executing, tracked in {@code BATCH_NODES}), then incremented locally as partitions are
+ * assigned within this call. This spreads new work toward the least-busy nodes and accounts for work
+ * a node is already doing for other jobs — unlike round-robin, which ignores existing load. Ties are
+ * broken by node order for deterministic assignment.</p>
  *
  * @author Janardhan Chejarla
  */
-public class RoundRobinPartitionAssignmentStrategy implements PartitionAssignmentStrategy {
+public class LeastLoadedPartitionAssignmentStrategy implements PartitionAssignmentStrategy {
 
-    /**
-     * Assigns partitions to nodes using a round-robin approach.
-     *
-     * @param executionContexts The list of {@link ExecutionContext} instances representing the partitions.
-     * @param availableNodes    The list of available node IDs in the cluster.
-     * @return A list of {@link PartitionAssignment} objects representing the assignment of partitions to nodes.
-     */
     @Override
     public List<PartitionAssignment> assignPartitions(List<ExecutionContext> executionContexts, List<ClusterNode> availableNodes) {
-        List<PartitionAssignment> assignments = new ArrayList<>();
-        int nodeIndex = 0;
-
-        for (int i = 0; i < executionContexts.size(); i++) {
-            String node = availableNodes.get(nodeIndex++).nodeId();
-            if (nodeIndex == availableNodes.size()) {
-                nodeIndex = 0; // Wrap around
-            }
-            assignments.add(new PartitionAssignment(i, executionContexts.get(i), node));
+        int nodeCount = availableNodes.size();
+        long[] runningLoad = new long[nodeCount];
+        for (int j = 0; j < nodeCount; j++) {
+            runningLoad[j] = availableNodes.get(j).currentLoad();
         }
 
+        List<PartitionAssignment> assignments = new ArrayList<>();
+        for (int i = 0; i < executionContexts.size(); i++) {
+            int target = 0;
+            for (int j = 1; j < nodeCount; j++) {
+                if (runningLoad[j] < runningLoad[target]) {
+                    target = j;
+                }
+            }
+            runningLoad[target]++;
+            assignments.add(new PartitionAssignment(i, executionContexts.get(i), availableNodes.get(target).nodeId()));
+        }
         return assignments;
     }
 
