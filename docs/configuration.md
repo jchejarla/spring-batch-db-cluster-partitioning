@@ -25,8 +25,9 @@ suit small-to-medium clusters (~2–20 nodes).
 
 !!! note "Spring Batch core schema is a prerequisite"
     These tables have foreign keys to the standard Spring Batch tables, so the Spring Batch schema must
-    exist first (`spring.batch.jdbc.initialize-schema`, or a migration tool). The cluster auto-DDL runs
-    after it.
+    exist first. Spring Boot 4 no longer auto-creates it — use Flyway/Liquibase or `spring.sql.init`
+    (see [Installation](installation.md)). The cluster auto-DDL runs after it via
+    `@DependsOnDatabaseInitialization`.
 
 !!! warning "Actuator exposure"
     The `/actuator/batch-cluster` endpoints expose node and partition detail. Restrict their exposure
