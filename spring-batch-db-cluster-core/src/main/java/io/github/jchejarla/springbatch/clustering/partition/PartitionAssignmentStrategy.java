@@ -16,7 +16,7 @@
 package io.github.jchejarla.springbatch.clustering.partition;
 
 import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 import java.util.List;
 

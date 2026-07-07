@@ -23,9 +23,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.JobInstance;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.scheduling.TaskScheduler;
 
@@ -73,10 +75,11 @@ public class ClusterJobRecoveryManagerUnitTest extends BaseUnitTest {
         doReturn(true).when(databaseBackedClusterService)
                 .claimOrphanedMasterJob(eq(1L), eq("deadNode"), eq("this-node"), eq(CoordinationStatus.RECOVERING.name()));
 
-        JobExecution jobExecution = new JobExecution(1L);
+        JobExecution jobExecution = new JobExecution(1L, new JobInstance(1L, "job"), new JobParameters());
         jobExecution.setStatus(BatchStatus.STARTED);
-        StepExecution stepExecution = jobExecution.createStepExecution("step");
+        StepExecution stepExecution = new StepExecution("step", jobExecution);
         stepExecution.setStatus(BatchStatus.STARTED);
+        jobExecution.addStepExecution(stepExecution);
         doReturn(jobExecution).when(jobExplorer).getJobExecution(1L);
 
         recoveryManager.reapOrphanedMasterJobs();

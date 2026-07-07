@@ -16,9 +16,9 @@
 package examples.io.github.jchejarla.springbatch.clustering.taskexec;
 
 import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.core.listener.StepExecutionListener;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 public class SumAggregator implements StepExecutionListener {
     private long totalSum = 0;

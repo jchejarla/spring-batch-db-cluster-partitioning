@@ -16,11 +16,11 @@
 package examples.io.github.jchejarla.springbatch.clustering.advancedjob;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.LineMapper;
-import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
+import org.springframework.batch.infrastructure.item.file.LineMapper;
+import org.springframework.batch.infrastructure.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.infrastructure.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.infrastructure.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +36,7 @@ public class CSVItemReaderConfig {
             @Value("#{stepExecutionContext['endRow']}") long endIndex,
             @Value("#{jobParameters['inputFile']}") String inputFile,
             LineMapper<Customer> lineMapper) {
-        FlatFileItemReader<Customer> reader = new FlatFileItemReader<Customer>() {
+        FlatFileItemReader<Customer> reader = new FlatFileItemReader<Customer>(lineMapper) {
             private int currentLine = 0;
 
             @Override

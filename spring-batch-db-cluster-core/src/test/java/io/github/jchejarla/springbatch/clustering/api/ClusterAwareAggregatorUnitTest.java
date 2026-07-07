@@ -20,11 +20,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.JobInstance;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.step.StepExecution;
+import org.springframework.batch.core.repository.JobRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyCollection;
@@ -34,36 +35,45 @@ import static org.mockito.Mockito.*;
 public class ClusterAwareAggregatorUnitTest extends BaseUnitTest {
 
     @Mock
-    JobExecution jobExecution;
-    @Mock
-    JobExplorer jobExplorer;
+    JobRepository jobRepository;
     @Mock
     ClusterAwareAggregatorCallback aggregatorCallback;
     ClusterAwareAggregator clusterAwareAggregator;
 
     @BeforeEach
     public void init() {
-        clusterAwareAggregator = spy(new ClusterAwareAggregator(aggregatorCallback));
-        clusterAwareAggregator.setJobExplorer(jobExplorer);
+        clusterAwareAggregator = spy(new ClusterAwareAggregator(aggregatorCallback, jobRepository));
     }
 
     @Test
     public void testDoHandleSuccess() {
-        List<StepExecution> stepExecutions = new ArrayList<>();
-        StepExecution stepExecutionResult = new StepExecution("masterStep", jobExecution);
-        stepExecutionResult.setStatus(BatchStatus.COMPLETED);
-        doReturn(jobExecution).when(jobExplorer).getJobExecution(anyLong());
-        clusterAwareAggregator.aggregate(stepExecutionResult, stepExecutions);
+        // A non-failed aggregate result must be dispatched to the success callback.
+        aggregate(BatchStatus.COMPLETED);
         verify(aggregatorCallback, times(1)).onSuccess(anyCollection());
+        verify(aggregatorCallback, never()).onFailure(anyCollection());
     }
 
     @Test
     public void testDoHandleFailed() {
-        List<StepExecution> stepExecutions = new ArrayList<>();
-        StepExecution stepExecutionResult = new StepExecution("masterStep", jobExecution);
-        stepExecutionResult.setStatus(BatchStatus.FAILED);
-        doReturn(jobExecution).when(jobExplorer).getJobExecution(anyLong());
-        clusterAwareAggregator.aggregate(stepExecutionResult, stepExecutions);
+        // A failed worker drives the aggregate result to FAILED, dispatched to the failure callback.
+        aggregate(BatchStatus.FAILED);
         verify(aggregatorCallback, times(1)).onFailure(anyCollection());
+        verify(aggregatorCallback, never()).onSuccess(anyCollection());
+    }
+
+    /**
+     * As of Spring Batch 6, {@code RemoteStepExecutionAggregator} reloads the job execution (and its step
+     * executions) from the {@link JobRepository} before delegating, so the test wires a persisted worker
+     * step of the given status and lets the aggregator derive the master result status from it.
+     */
+    private void aggregate(BatchStatus workerStatus) {
+        JobExecution jobExecution = new JobExecution(1L, new JobInstance(1L, "job"), new JobParameters());
+        StepExecution worker = new StepExecution("worker", jobExecution);
+        worker.setStatus(workerStatus);
+        jobExecution.addStepExecution(worker);
+        StepExecution masterResult = new StepExecution("masterStep", jobExecution);
+
+        doReturn(jobExecution).when(jobRepository).getJobExecution(anyLong());
+        clusterAwareAggregator.aggregate(masterResult, List.of(worker));
     }
 }

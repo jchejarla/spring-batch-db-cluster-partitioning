@@ -16,9 +16,10 @@
 package io.github.jchejarla.springbatch.clustering.api;
 
 import org.springframework.batch.core.BatchStatus;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.partition.support.DefaultStepExecutionAggregator;
 import org.springframework.batch.core.partition.support.RemoteStepExecutionAggregator;
+import org.springframework.batch.core.repository.JobRepository;
 
 import java.util.Collection;
 
@@ -45,8 +46,12 @@ public class ClusterAwareAggregator extends RemoteStepExecutionAggregator {
      * Constructs a new {@code ClusterAwareAggregator} with the specified callback.
      *
      * @param clusterAwareAggregatorCallback The callback to be invoked on success or failure.
+     * @param jobRepository The Spring Batch job repository used to reload persisted partition step
+     *                      executions before aggregation. Required as of Spring Batch 6, which removed
+     *                      the no-argument {@link RemoteStepExecutionAggregator} constructor.
      */
-    public ClusterAwareAggregator(ClusterAwareAggregatorCallback clusterAwareAggregatorCallback) {
+    public ClusterAwareAggregator(ClusterAwareAggregatorCallback clusterAwareAggregatorCallback, JobRepository jobRepository) {
+        super(jobRepository);
         this.clusterAwareAggregatorCallback = clusterAwareAggregatorCallback;
         setDelegate(new ClusterAwareClusterAwareAggregatorInternal());
     }

@@ -37,21 +37,21 @@ import io.github.jchejarla.springbatch.clustering.partition.ClusterAwarePartitio
 import io.github.jchejarla.springbatch.clustering.polling.PartitionedWorkerNodeTasksRunner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
+import org.springframework.boot.batch.autoconfigure.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.boot.sql.init.DatabaseInitializationMode;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -71,6 +71,16 @@ import java.sql.SQLException;
 @RequiredArgsConstructor
 @EnableScheduling
 public class BatchClusterAutoConfiguration {
+
+    /**
+     * Fails fast if clustering is enabled on the Spring Batch 6 default (in-memory) JobRepository, which
+     * cannot coordinate a cluster. See {@link ClusterJobRepositoryValidator}.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ClusterJobRepositoryValidator clusterJobRepositoryValidator(JobRepository jobRepository) {
+        return new ClusterJobRepositoryValidator(jobRepository);
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -162,13 +172,15 @@ public class BatchClusterAutoConfiguration {
     /**
      * Optionally creates the cluster tables on startup, controlled by
      * {@code spring.batch.cluster.initialize-schema} (see {@link BatchClusterProperties}).
-     * <p>Depends on Spring Boot's standard {@code batchDataSourceInitializer} bean so it runs after the
-     * Spring Batch schema and the foreign keys to {@code BATCH_JOB_EXECUTION}/{@code BATCH_STEP_EXECUTION}
-     * resolve. (Applications that replace that initializer should manage the cluster schema themselves.)
+     * <p>Annotated {@link DependsOnDatabaseInitialization} so it runs after any database initialization
+     * (Flyway, Liquibase, or {@code spring.sql.init}) that creates the Spring Batch schema, letting the
+     * foreign keys to {@code BATCH_JOB_EXECUTION}/{@code BATCH_STEP_EXECUTION} resolve. Note that Spring
+     * Boot 4 no longer auto-creates the Spring Batch schema, so the application must initialize it (a
+     * migration tool is recommended for production).
      */
     @Bean
     @ConditionalOnMissingBean
-    @DependsOn("batchDataSourceInitializer")
+    @DependsOnDatabaseInitialization
     public BatchClusterDataSourceScriptDatabaseInitializer batchClusterDataSourceScriptDatabaseInitializer(
             DataSource dataSource, BatchClusterProperties batchClusterProperties) throws SQLException {
         DatabaseInitializationMode mode = batchClusterProperties.getInitializeSchema();

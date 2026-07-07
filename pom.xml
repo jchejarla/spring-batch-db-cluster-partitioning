@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.15</version>
+        <version>4.1.0</version>
     </parent>
 
     <properties>
@@ -33,7 +33,21 @@
         <version.org.awaitility>4.3.0</version.org.awaitility>
         <version.org.awaitability>4.3.0</version.org.awaitability>
         <gpg.keyname>B35BEB20ED044228AB3C5C1C0EE4B27825C2EDDF</gpg.keyname>
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot 4.x no longer manages Testcontainers versions in its BOM, so import it here. -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 
     <licenses>

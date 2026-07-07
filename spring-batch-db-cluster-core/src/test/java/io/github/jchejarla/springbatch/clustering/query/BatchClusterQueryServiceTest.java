@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.Timestamp;
@@ -44,8 +44,12 @@ public class BatchClusterQueryServiceTest {
 
     @BeforeEach
     void setUp() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(
-                "jdbc:h2:mem:query-" + UUID.randomUUID() + ";DB_CLOSE_DELAY=-1", "sa", "");
+        // SingleConnectionDataSource keeps one physical connection open for the test. H2 2.4.240 binds a
+        // table's CHECK constraint to the creating connection; with a connection-per-op DataSource that
+        // connection closes and later inserts into the CHECK-constrained batch_partitions table fail with
+        // "database has been closed". Holding the connection open avoids that test-only quirk.
+        SingleConnectionDataSource dataSource = new SingleConnectionDataSource(
+                "jdbc:h2:mem:query-" + UUID.randomUUID() + ";DB_CLOSE_DELAY=-1", "sa", "", true);
         dataSource.setDriverClassName("org.h2.Driver");
         new ResourceDatabasePopulator(
                 new ClassPathResource("org/springframework/batch/core/schema-h2.sql"),

@@ -17,7 +17,7 @@ package io.github.jchejarla.springbatch.clustering.partition;
 
 import io.github.jchejarla.springbatch.clustering.BaseUnitTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;

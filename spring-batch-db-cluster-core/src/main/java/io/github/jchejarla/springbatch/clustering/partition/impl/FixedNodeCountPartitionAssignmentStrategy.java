@@ -19,7 +19,7 @@ import io.github.jchejarla.springbatch.clustering.mgmt.ClusterNode;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignment;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionAssignmentStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 import java.util.ArrayList;
 import java.util.List;

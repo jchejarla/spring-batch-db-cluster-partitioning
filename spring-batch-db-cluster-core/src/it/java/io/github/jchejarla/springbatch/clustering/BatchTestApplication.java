@@ -15,8 +15,15 @@
  */
 package io.github.jchejarla.springbatch.clustering;
 
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.EnableJdbcJobRepository;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// Spring Batch 6 defaults to an in-memory ResourcelessJobRepository; clustering needs a JDBC-backed
+// repository so nodes share job metadata. @EnableBatchProcessing brings the registrar and
+// @EnableJdbcJobRepository selects the JDBC repository.
 @SpringBootApplication
+@EnableBatchProcessing
+@EnableJdbcJobRepository
 public class BatchTestApplication {
 }

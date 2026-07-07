@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Spy;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
-import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;

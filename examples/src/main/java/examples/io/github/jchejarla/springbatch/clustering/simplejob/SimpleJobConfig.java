@@ -24,19 +24,18 @@ import io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.partition.support.Partitioner;
-import org.springframework.batch.core.partition.support.StepExecutionAggregator;
+import org.springframework.batch.core.job.parameters.RunIdIncrementer;
+import org.springframework.batch.core.partition.Partitioner;
+import org.springframework.batch.core.partition.StepExecutionAggregator;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,11 +92,9 @@ public class SimpleJobConfig {
     }
 
     @Bean("multiStepAggregator")
-    public StepExecutionAggregator aggregator(JobExplorer jobExplorer) {
+    public StepExecutionAggregator aggregator(JobRepository jobRepository) {
         sumAggregatorCallback = new SumAggregatorCallback(nodeId);
-        ClusterAwareAggregator clusterAwareAggregator = new ClusterAwareAggregator(sumAggregatorCallback);
-        clusterAwareAggregator.setJobExplorer(jobExplorer);
-        return clusterAwareAggregator;
+        return new ClusterAwareAggregator(sumAggregatorCallback, jobRepository);
     }
 
     @Bean

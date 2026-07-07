@@ -22,8 +22,8 @@ import io.github.jchejarla.springbatch.clustering.partition.*;
 import io.github.jchejarla.springbatch.clustering.partition.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.BatchConfigurationException;
-import org.springframework.batch.core.partition.support.Partitioner;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.core.partition.Partitioner;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;

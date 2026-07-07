@@ -9,10 +9,14 @@ spring:
       enabled: true
   sql:
     init:
-      mode: never
+      # Spring Boot 4 no longer auto-initializes the Spring Batch schema, so create it here; the cluster
+      # auto-DDL runs afterwards via @DependsOnDatabaseInitialization.
+      mode: always
+      schema-locations: classpath:org/springframework/batch/core/schema-h2.sql
   batch:
-    jdbc:
-      initialize-schema: always
+    job:
+      # Don't auto-run jobs on startup; the test launches the job itself.
+      enabled: false
     cluster:
       enabled: true
       node-id-prefix: ${HOSTNAME:worker}

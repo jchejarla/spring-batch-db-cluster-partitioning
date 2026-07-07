@@ -18,10 +18,10 @@ package examples.io.github.jchejarla.springbatch.clustering;
 import examples.io.github.jchejarla.springbatch.clustering.simplejob.SimpleJobConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.job.parameters.JobParameters;
+import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -83,9 +83,9 @@ public class RestEndPoints {
             long startTime = System.currentTimeMillis();
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             long endTime = System.currentTimeMillis();
-            System.out.println(">>> [" + nodeId + "] (master) etl job " + jobExecution.getJobId()
+            System.out.println(">>> [" + nodeId + "] (master) etl job " + jobExecution.getId()
                     + " finished in " + (endTime - startTime) + " ms with status " + jobExecution.getStatus());
-            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+            String sb = "Job Id : " + jobExecution.getId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
                     "Output: converted " + rows + " rows CSV data into XML format under " + resolvedOutput;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
@@ -111,9 +111,9 @@ public class RestEndPoints {
             long endTime = System.currentTimeMillis();
             SimpleJobConfig simpleJobConfig = applicationContext.getBean(SimpleJobConfig.class);
             long sumValue = simpleJobConfig.getSumAggregatorCallback().getSum().longValue();
-            System.out.println(">>> [" + nodeId + "] (master) job " + jobExecution.getJobId()
+            System.out.println(">>> [" + nodeId + "] (master) job " + jobExecution.getId()
                     + " finished in " + (endTime - startTime) + " ms; total sum=" + sumValue);
-            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+            String sb = "Job Id : " + jobExecution.getId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
                     "Output: " + "sum of number from " + from + " to " + to + " is " + sumValue;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
@@ -136,7 +136,7 @@ public class RestEndPoints {
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             Long result = (Long) jobExecution.getExecutionContext().get("totalSum");
             long endTime = System.currentTimeMillis();
-            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+            String sb = "Job Id : " + jobExecution.getId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
                     "Output: " + "sum of number from " + from + " to " + to + " is " +result;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {
@@ -159,7 +159,7 @@ public class RestEndPoints {
             JobExecution jobExecution = jobLauncher.run(job, parameters);
             Long result = (Long) jobExecution.getExecutionContext().get("totalSum");
             long endTime = System.currentTimeMillis();
-            String sb = "Job Id : " + jobExecution.getJobId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
+            String sb = "Job Id : " + jobExecution.getId() + " Completed in " + (endTime - startTime) + " milli seconds." + "\n" +
                     "Output: " + "sum of number from " + from + " to " + to + " is " +result;
             return ResponseEntity.ok(sb);
         } catch(Exception e) {

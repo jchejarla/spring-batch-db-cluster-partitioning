@@ -26,9 +26,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.step.StepExecution;
 import org.springframework.batch.core.partition.StepExecutionSplitter;
-import org.springframework.batch.item.ExecutionContext;
+import org.springframework.batch.infrastructure.item.ExecutionContext;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -147,7 +147,7 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
         doReturn(stepExecutions).when(stepSplitter).split(any(), anyInt());
         doThrow(RuntimeException.class).when(databaseBackedClusterService).getPendingTasksCount(anyLong());
         Exception exception = Assertions.assertThrows(RuntimeException.class, ()->clusterAwarePartitionHandler.handle(stepSplitter, managerStepExecution));
-        assertEquals("org.springframework.batch.core.JobExecutionException: Exception occurred while waiting for workload partitions executions", exception.getMessage());
+        assertEquals("org.springframework.batch.core.job.JobExecutionException: Exception occurred while waiting for workload partitions executions", exception.getMessage());
         verify(databaseBackedClusterService, times(1)).saveBatchJobCoordinationInfo(anyLong(), anyLong(), any());
         verify(databaseBackedClusterService, times(1)).saveBatchPartitions(any());
         verify(databaseBackedClusterService, times(1)).updateBatchJobCoordinationStatus(anyLong(), anyLong(), anyString());

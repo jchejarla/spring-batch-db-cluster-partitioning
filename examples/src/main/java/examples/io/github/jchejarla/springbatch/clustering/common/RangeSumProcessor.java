@@ -15,7 +15,7 @@
  */
 package examples.io.github.jchejarla.springbatch.clustering.common;
 
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 
 public class RangeSumProcessor implements ItemProcessor<Range, Long> {
 
