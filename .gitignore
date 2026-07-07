@@ -5,3 +5,7 @@ target
 site
 docs/apidocs
 .cache
+
+# JetBrains Qodana (IDE plugin artifacts)
+qodana.yaml
+.qodana/
