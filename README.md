@@ -143,16 +143,22 @@ sequenceDiagram
 
 ### Version Compatibility
 
-| Library version | Spring Boot | Branch | Status |
-|---|---|---|---|
-| 3.x (in development) | 4.x | `main` | Active development |
-| 2.x | 3.x | `2.x` | Maintenance (bug and security fixes; feature backports considered on request) |
+| Library version | Spring Boot | Spring Batch | Java | Branch | Status |
+|---|---|---|---|---|---|
+| 3.x | 4.1+ | 6.x | 21+ | `main` | Active development |
+| 2.x | 3.x | 5.x | 17+ | `2.x` | Maintenance (bug and security fixes; feature backports considered on request) |
+
+Upgrading from 2.x? See the [Migration Guide](docs/migration.md).
 
 ### Prerequisites
 
-* Java 17+
+* **Java 21+**
+* **Spring Boot 4.1+ / Spring Batch 6** (the 2.x line targets Spring Boot 3)
 * Maven 3.x or Gradle 7.x+
 * A relational database (e.g., PostgreSQL, MySQL, Oracle, H2 for development)
+* A **JDBC-backed `JobRepository`** — Spring Batch 6 defaults to an in-memory repository, which cannot
+  coordinate a cluster. Enable JDBC with `@EnableBatchProcessing` + `@EnableJdbcJobRepository`
+  (clustering fails fast at startup otherwise). See [Database Setup](#database-setup).
 
 ### Installation (as a Maven/Gradle dependency)
 
@@ -191,29 +197,30 @@ This library extends Spring Batch, so two layers of schema need to exist in your
 
 **1. Spring Batch core schema** (required prerequisite)
 
-The standard Spring Batch metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, etc.) must exist. You have two options:
+The standard Spring Batch metadata tables (`BATCH_JOB_INSTANCE`, `BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, etc.) must exist. **Spring Boot 4 no longer auto-initializes them** (`spring.batch.jdbc.initialize-schema` was removed), so create them with one of:
 
-- **Recommended for development:** let Spring Boot create them on startup by setting:
-  ```properties
-  spring.batch.jdbc.initialize-schema=always
+- **A migration tool** (recommended for production) — Flyway or Liquibase.
+- **`spring.sql.init`**, pointing at the bundled Spring Batch DDL:
+  ```yaml
+  spring:
+    sql:
+      init:
+        mode: always
+        schema-locations: classpath:org/springframework/batch/core/schema-@@platform@@.sql
   ```
-- **For production** (or if you prefer to manage schema manually): apply the official Spring Batch DDL script for your database from the [Spring Batch repository](https://github.com/spring-projects/spring-batch/tree/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core). Direct links per database:
-    - [PostgreSQL](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-postgresql.sql)
-    - [MySQL](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-mysql.sql)
-    - [Oracle](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-oracle.sql)
-    - [H2](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-h2.sql)
+- **Manually**, from the [Spring Batch 6.0 DDL scripts](https://github.com/spring-projects/spring-batch/tree/6.0.x/spring-batch-core/src/main/resources/org/springframework/batch/core) for your database.
 
-  Use the Spring Batch version that matches the one this library depends on (currently 5.2.x).
+  Use the Spring Batch version that matches the one this library depends on (currently 6.0.x).
 
 **2. Cluster partitioning tables** (provided by this library)
 
-This library adds three additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`) for cluster state, partition assignment, and heartbeat tracking. SQL scripts for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
+This library adds four additional tables (`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`, and the opt-in `BATCH_JOB_PHASE_EVENTS`) for cluster state, partition assignment, heartbeat tracking, and phase-timing. SQL scripts for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 are bundled in [`spring-batch-db-cluster-core/src/main/resources/schema/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/spring-batch-db-cluster-core/src/main/resources/schema). Apply the one matching your database, or use the inline PostgreSQL example below.
 
   For development, the framework can also create these tables for you on startup — set
   `spring.batch.cluster.initialize-schema` to `embedded` (the default; creates them only on embedded
-  databases such as H2), `always`, or `never`. This mirrors Spring Batch's own
-  `spring.batch.jdbc.initialize-schema` and runs after it so the foreign keys resolve. For production,
-  prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually.
+  databases such as H2), `always`, or `never`. It runs after the Spring Batch schema (ordered via
+  `@DependsOnDatabaseInitialization`, so it works with Flyway/Liquibase/`spring.sql.init`) so the foreign
+  keys resolve. For production, prefer a managed migration tool or apply the bundled DDL manually.
 
 ### PostgreSQL Example Schema:
 

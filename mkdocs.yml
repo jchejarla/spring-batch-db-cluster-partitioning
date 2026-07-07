@@ -23,6 +23,7 @@ nav:
   - Installation: installation.md
   - Configuration: configuration.md
   - Design: DESIGN.md
+  - Migration (2.x → 3.0): migration.md
   - FAQ: faq.md
   - API (Javadoc): apidocs/index.html
 

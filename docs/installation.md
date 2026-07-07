@@ -1,5 +1,15 @@
 # Installation
 
+!!! info "Upgrading from 2.x?"
+    3.0.0 is a platform release (Spring Boot 4 / Spring Batch 6 / Java 21). See the
+    [Migration Guide](migration.md).
+
+## Requirements
+
+- **Java 21+**
+- **Spring Boot 4.1+** / **Spring Batch 6** (the 2.x line targets Spring Boot 3)
+- A relational database (PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, or H2 for development)
+
 ## 1. Add the dependency
 
 Maven:
@@ -12,21 +22,47 @@ Maven:
 </dependency>
 ```
 
-## 2. Create the schema
+## 2. Use a JDBC JobRepository
 
-This library adds three tables alongside the standard Spring Batch tables: `BATCH_NODES`,
-`BATCH_JOB_COORDINATION`, and `BATCH_PARTITIONS`. DDL for PostgreSQL, MySQL, MariaDB, Oracle,
-SQL Server, Db2, and H2 is bundled in the library under `schema/`.
+Spring Batch 6 defaults to an in-memory `ResourcelessJobRepository` that persists nothing. A cluster
+coordinates through **shared, persisted** job metadata, so a JDBC-backed repository is required. Enable
+it on a configuration class:
 
-- **Development:** let the framework create them on startup — set
-  `spring.batch.cluster.initialize-schema=embedded` (default; creates them only on embedded databases
-  such as H2). It runs after Spring Batch's own schema so the foreign keys resolve.
-- **Production:** apply the bundled DDL with a managed migration tool (Flyway/Liquibase) or by hand.
+```java
+@SpringBootApplication
+@EnableBatchProcessing
+@EnableJdbcJobRepository   // dataSourceRef defaults to "dataSource"
+public class MyApplication { }
+```
 
-See [Configuration](configuration.md) for `initialize-schema` and the Spring Batch core-schema
-prerequisite.
+Both annotations are needed — `@EnableJdbcJobRepository` is inert without `@EnableBatchProcessing`. If
+clustering is enabled on the resourceless repository, startup fails fast with an actionable message.
 
-## 3. Enable clustering
+## 3. Create the schema
+
+Two layers of tables must exist:
+
+- **Spring Batch core tables** (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, …). Spring Boot 4 no
+  longer auto-creates these, so use Flyway/Liquibase, or `spring.sql.init`:
+
+    ```yaml
+    spring:
+      sql:
+        init:
+          mode: always
+          schema-locations: classpath:org/springframework/batch/core/schema-@@platform@@.sql
+    ```
+
+- **Cluster tables** — `BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`, and
+  `BATCH_JOB_PHASE_EVENTS`. DDL for all supported databases is bundled under `schema/`.
+    - **Development:** let the framework create them — `spring.batch.cluster.initialize-schema=embedded`
+      (default; embedded databases such as H2 only). It runs after the Spring Batch schema (via
+      `@DependsOnDatabaseInitialization`) so the foreign keys resolve.
+    - **Production:** apply the bundled DDL with your migration tool or by hand.
+
+See [Configuration](configuration.md) for `initialize-schema` and the schema prerequisite.
+
+## 4. Enable clustering
 
 ```yaml
 spring:
