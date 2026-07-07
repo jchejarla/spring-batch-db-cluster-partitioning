@@ -17,7 +17,8 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ '17', '21' ]
+        # The project targets Java 21 (Spring Boot 4 / Spring Batch 6); Java 17 can no longer build it.
+        java-version: [ '21' ]
 
     steps:
     - uses: actions/checkout@v4
