@@ -16,6 +16,7 @@
 package io.github.jchejarla.springbatch.clustering.autoconfigure;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.configuration.BatchConfigurationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.sql.init.DatabaseInitializationMode;
@@ -24,6 +25,9 @@ import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Optionally creates the cluster coordination tables ({@code BATCH_NODES},
@@ -65,7 +69,29 @@ public class BatchClusterDataSourceScriptDatabaseInitializer implements Initiali
         // startup; tolerate "already exists" from a peer rather than failing the node.
         populator.setContinueOnError(true);
         DatabasePopulatorUtils.execute(populator, dataSource);
+        verifyCoordinationTablesExist();
         log.info("Cluster schema initialization applied from {}", schemaLocation);
+    }
+
+    /**
+     * {@code continueOnError} above tolerates the benign multi-node "already exists" race, but it also
+     * swallows a genuine failure — most importantly the Spring Batch schema not yet existing, so the
+     * foreign-key {@code CREATE TABLE} statements fail. Probe a coordination table afterwards so that
+     * case fails loud with an actionable message instead of the node silently starting up without its
+     * coordination tables (and then failing obscurely deep in job execution).
+     */
+    private void verifyCoordinationTablesExist() {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("select 1 from batch_partitions where 1=0");
+        } catch (SQLException e) {
+            throw new BatchConfigurationException(
+                    "Cluster schema initialization ran but the coordination tables are missing. This " +
+                    "usually means the Spring Batch schema (BATCH_JOB_EXECUTION / BATCH_STEP_EXECUTION) " +
+                    "did not exist when the cluster DDL ran, so the foreign-key CREATE statements failed. " +
+                    "Create the Spring Batch schema first (Flyway/Liquibase or spring.sql.init) — see the " +
+                    "migration guide.", e);
+        }
     }
 
     private boolean isEnabled() {
