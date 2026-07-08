@@ -1,12 +1,16 @@
 name: Publish versioned docs
 
-# Publishes versioned documentation + Javadoc to GitHub Pages.
-# Fires on a release tag (v3.0.0, v3.1.0, ...) from V3 onward; also runnable manually for a dry run.
-# Docs are deployed under the /docs/ prefix so the hand-maintained landing page at the site root is
-# left untouched. Each version is browsable at /docs/<version>/ with /docs/latest/ tracking the newest.
+# Publishes versioned documentation + Javadoc to GitHub Pages under the /docs/ prefix (the
+# hand-maintained landing page at the site root is left untouched). Each version is browsable at
+# /docs/<version>/ and shown in the on-page version selector:
+#   - Push to main       -> rolling "dev" docs at /docs/dev/ (not aliased "latest").
+#   - Push a release tag -> frozen /docs/<version>/ aliased "latest"; /docs/ redirects to it.
+#   - workflow_dispatch  -> deploy the given version (aliased "latest"), e.g. for a dry run.
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -57,8 +61,13 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
-          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
             echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Configure git and fetch existing pages
@@ -70,5 +79,16 @@ jobs:
 
       - name: Deploy versioned docs + Javadoc
         run: |
-          mike deploy --deploy-prefix docs --update-aliases --push "${{ steps.ver.outputs.version }}" latest
-          mike set-default --deploy-prefix docs --push latest
+          if [ "${{ steps.ver.outputs.release }}" = "true" ]; then
+            # Release (tag or manual): frozen version, move the "latest" alias, point /docs/ at latest.
+            mike deploy --deploy-prefix docs --update-aliases --push "${{ steps.ver.outputs.version }}" latest
+            mike set-default --deploy-prefix docs --push latest
+          else
+            # Rolling dev docs from main (not aliased "latest"). If no release exists yet, point /docs/
+            # at dev so the site isn't empty; once a release exists, /docs/ stays on latest.
+            has_release="$(git show origin/gh-pages:docs/versions.json 2>/dev/null | grep -c '"latest"' || true)"
+            mike deploy --deploy-prefix docs --push dev
+            if [ "${has_release:-0}" = "0" ]; then
+              mike set-default --deploy-prefix docs --push dev
+            fi
+          fi
