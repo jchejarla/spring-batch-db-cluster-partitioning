@@ -16,6 +16,26 @@ That approach is also broker-free, but it provisions a worker per partition via 
 that poll for work — no deployment platform required — and queries how many nodes are live before
 partitioning, sizing the workload to the cluster you already have.
 
+### Does it work with Spring Batch 6's `ResourcelessJobRepository`? Do I need a JDBC job repository?
+
+Every node must share one persistent, JDBC-backed `JobRepository`. The `ResourcelessJobRepository`
+that Spring Batch 6 makes the default will not work — and that is not a limitation peculiar to this
+extension.
+
+Resourceless keeps job metadata in a single JVM's heap and persists nothing. Spring Batch's own
+documentation scopes it to jobs "where … the execution context is not involved in any way (like …
+partitioned steps where partitions meta-data is shared between the manager and workers through the
+execution context)" — it *explicitly excludes* partitioning, and it is single-JVM and not thread-safe.
+Distributed partitioning is exactly that excluded case: a partition's slice of work travels in the
+execution context from the master to whichever node runs it, and the results travel back to be
+aggregated, so the metadata store has to be shared and durable. Spring Batch's *own* remote
+partitioning imposes the same requirement — its workers load each partition's `StepExecution` from the
+shared repository; the broker only carries a pointer. The line is Spring Batch's own: a throwaway
+single-JVM job needs no repository; a partitioned or distributed job needs a shared persistent one.
+This extension sits on that line and asks for nothing more than the shared database — no broker on top.
+Configure it with `@EnableBatchProcessing` + `@EnableJdbcJobRepository` (see the Migration guide, which
+also describes the startup fail-fast guard).
+
 ### Do I have to launch jobs synchronously or asynchronously?
 
 Your choice — job definition and launching stay standard Spring Batch. To avoid blocking an HTTP

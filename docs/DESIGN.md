@@ -16,6 +16,28 @@ Three tables augment Spring Batch's own schema:
 - **`BATCH_PARTITIONS`** — partition lifecycle: each partition's assigned node and status (`PENDING` → `CLAIMED` → `COMPLETED` / `FAILED`), plus whether it is transferable on failure.
 - **`BATCH_JOB_COORDINATION`** — binds each job execution to its master node and manager step, with status (`CREATED` → `STARTED` → `COMPLETED`, or `ABANDONED` on recovery).
 
+## The shared job repository
+
+Those three tables augment Spring Batch's *own* metadata schema — and that schema must be a **shared,
+persistent `JobRepository`** that every node points at, not the in-memory `ResourcelessJobRepository`
+that Spring Batch 6 makes the default. This is intrinsic to distributed partitioning, not something
+this extension adds. A partition's payload — its `ExecutionContext`, the slice of work it represents —
+is written by the master and must be read back by whichever node executes it, and the result must be
+read back by the master to aggregate. That hand-off is a cross-JVM exchange of Spring Batch metadata,
+so the metadata store has to be shared and durable.
+
+Spring Batch's native remote partitioning imposes the identical requirement: its
+`StepExecutionRequestHandler` loads each `StepExecution` from a job repository linked to the one shared
+by all workers; the message broker carries only a pointer to the partition, never the partition's data.
+`ResourcelessJobRepository` is, by the framework's own definition, for the opposite case — a one-time
+job in a single JVM that stores no metadata and is not thread-safe — and it explicitly excludes
+"partitioned steps where partitions meta-data is shared between the manager and workers through the
+execution context." So the boundary Spring Batch itself draws — throwaway single-JVM job → no
+repository; partitioned or distributed job → shared persistent repository — is the boundary this design
+sits on. What it removes relative to broker-based remote partitioning is the *broker*, not the
+repository: the one shared database serves as both the Spring Batch metadata store and the coordination
+plane.
+
 ## Capacity-aware partitioning
 
 Standard remote partitioning splits work *before* knowing how much capacity exists to run it: the grid size is chosen blind and the pieces are dispatched. Over-split and partitions queue; under-split and capacity sits idle.
