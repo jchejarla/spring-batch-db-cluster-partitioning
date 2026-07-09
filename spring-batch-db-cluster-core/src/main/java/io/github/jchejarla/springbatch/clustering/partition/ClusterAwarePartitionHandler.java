@@ -33,6 +33,8 @@ import org.springframework.batch.core.partition.StepExecutionSplitter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -71,6 +73,11 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
 
     private final DatabaseBackedClusterService databaseBackedClusterService;
     private final BatchClusterProperties batchClusterProperties;
+
+    // The per-job completion/orphan monitors below block (sleep-loops polling the DB). Run them on
+    // virtual threads (one per task) rather than the shared ForkJoinPool.commonPool, so a master running
+    // many concurrent jobs cannot exhaust the common pool and stall monitoring.
+    private final Executor monitorExecutor = Executors.newVirtualThreadPerTaskExecutor();
     /**
      * Handles the splitting and coordination of partitioned steps across the cluster.
      * <p>This method registers the current node as the job master, persists partition metadata,
@@ -160,7 +167,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             } finally {
                 areAllTasksCompleted.set(true);
             }
-        });
+        }, monitorExecutor);
 
         CompletableFuture<Void> orphanedTasksMonitorTask = CompletableFuture.runAsync(()->{
             try {
@@ -174,7 +181,7 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
                 log.error("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
                 throw new CompletionException("Exception occurred while monitoring for orphaned tasks and re-arrange them to different available nodes", e);
             }
-        });
+        }, monitorExecutor);
         CompletableFuture.allOf(taskCompletionMonitorTask, orphanedTasksMonitorTask).join();
     }
 
