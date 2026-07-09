@@ -41,6 +41,18 @@ public class LargeSumExecutionTask implements Tasklet {
                 + stepName + " (range " + start + ".." + end + ") on "
                 + (Thread.currentThread().isVirtual() ? "virtual" : "platform") + " thread "
                 + Thread.currentThread());
+        // Optional demo knob: -Ddemo.partition.sleepMs=NNN makes each partition run for a fixed
+        // duration so failover (kill a node mid-partition -> reassignment) can be demonstrated
+        // without CPU-burning huge ranges. Zero (the default) keeps the pure compute behavior.
+        long sleepMs = Long.getLong("demo.partition.sleepMs", 0L);
+        if (sleepMs > 0) {
+            try {
+                Thread.sleep(sleepMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("partition " + stepName + " interrupted", e);
+            }
+        }
         long result = 0;
         for(long i=start; i<=end; i++) {
             result += i;
