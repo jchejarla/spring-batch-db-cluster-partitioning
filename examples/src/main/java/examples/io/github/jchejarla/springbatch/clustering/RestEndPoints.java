@@ -16,6 +16,8 @@
 package examples.io.github.jchejarla.springbatch.clustering;
 
 import examples.io.github.jchejarla.springbatch.clustering.simplejob.SimpleJobConfig;
+import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;
@@ -23,7 +25,6 @@ import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.job.parameters.JobParameters;
 import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,9 +46,15 @@ public class RestEndPoints {
 
     private final JobLauncher jobLauncher;
     private final ApplicationContext applicationContext;
+    private final BatchClusterProperties batchClusterProperties;
 
-    @Value("${spring.batch.cluster.node-id:unknown}")
+    // The framework generates the node id (<prefix>-<uuid>) at startup; read it from there.
     private String nodeId;
+
+    @PostConstruct
+    void init() {
+        this.nodeId = batchClusterProperties.getNodeId();
+    }
 
     // Defaults point at the bundled CSV under examples/data and a writable
     // output directory under ./build. Override via query parameters if needed.

@@ -22,6 +22,8 @@ import io.github.jchejarla.springbatch.clustering.autoconfigure.conditions.Condi
 import io.github.jchejarla.springbatch.clustering.partition.ClusterAwarePartitionHandler;
 import io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
+import io.github.jchejarla.springbatch.clustering.autoconfigure.BatchClusterProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.job.Job;
@@ -60,8 +62,16 @@ public class SimpleJobConfig {
     @Getter
     SumAggregatorCallback sumAggregatorCallback;
 
-    @Value("${spring.batch.cluster.node-id:unknown}")
+    @Autowired
+    private BatchClusterProperties batchClusterProperties;
+
+    // The framework generates the node id (<prefix>-<uuid>) at startup; read it from there.
     private String nodeId;
+
+    @PostConstruct
+    void init() {
+        this.nodeId = batchClusterProperties.getNodeId();
+    }
 
     @Bean("clusteredJob")
     public Job clusteredJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager, @Qualifier("multiStepAggregator") StepExecutionAggregator clusterAwareAggregator) {
@@ -104,8 +114,8 @@ public class SimpleJobConfig {
 
     @Bean
     @StepScope
-    public Partitioner partitioner(@Value("#{jobParameters['taskSize']}") Long tasksSize, @Value("#{jobParameters['from']}") Long from, @Value("#{jobParameters['to']}") Long to,
-                                    @Value("${spring.batch.cluster.node-id:unknown}") String nodeId) {
+    public Partitioner partitioner(@Value("#{jobParameters['taskSize']}") Long tasksSize, @Value("#{jobParameters['from']}") Long from, @Value("#{jobParameters['to']}") Long to) {
+        // Use the framework-generated node id (the outer config field) for the demo log line below.
         return new ClusterAwarePartitioner() {
 
             @Override
