@@ -469,6 +469,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#does-it-work-with-spring-batch-6s-resourcelessjobrepository-do-i-need-a-jdbc-job-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does it work with Spring Batch 6's ResourcelessJobRepository? Do I need a JDBC job repository?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#do-i-have-to-launch-jobs-synchronously-or-asynchronously" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -607,6 +618,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#does-it-work-with-spring-batch-6s-resourcelessjobrepository-do-i-need-a-jdbc-job-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does it work with Spring Batch 6's ResourcelessJobRepository? Do I need a JDBC job repository?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#do-i-have-to-launch-jobs-synchronously-or-asynchronously" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -694,6 +716,23 @@ requires, so there's no extra infrastructure to operate.</p>
 (Kubernetes, Cloud Foundry, …). This extension coordinates a <strong>standing cluster of peer JVM nodes</strong>
 that poll for work — no deployment platform required — and queries how many nodes are live before
 partitioning, sizing the workload to the cluster you already have.</p>
+<h3 id="does-it-work-with-spring-batch-6s-resourcelessjobrepository-do-i-need-a-jdbc-job-repository">Does it work with Spring Batch 6's <code>ResourcelessJobRepository</code>? Do I need a JDBC job repository?<a class="headerlink" href="#does-it-work-with-spring-batch-6s-resourcelessjobrepository-do-i-need-a-jdbc-job-repository" title="Permanent link">&para;</a></h3>
+<p>Every node must share one persistent, JDBC-backed <code>JobRepository</code>. The <code>ResourcelessJobRepository</code>
+that Spring Batch 6 makes the default will not work — and that is not a limitation peculiar to this
+extension.</p>
+<p>Resourceless keeps job metadata in a single JVM's heap and persists nothing. Spring Batch's own
+documentation scopes it to jobs "where … the execution context is not involved in any way (like …
+partitioned steps where partitions meta-data is shared between the manager and workers through the
+execution context)" — it <em>explicitly excludes</em> partitioning, and it is single-JVM and not thread-safe.
+Distributed partitioning is exactly that excluded case: a partition's slice of work travels in the
+execution context from the master to whichever node runs it, and the results travel back to be
+aggregated, so the metadata store has to be shared and durable. Spring Batch's <em>own</em> remote
+partitioning imposes the same requirement — its workers load each partition's <code>StepExecution</code> from the
+shared repository; the broker only carries a pointer. The line is Spring Batch's own: a throwaway
+single-JVM job needs no repository; a partitioned or distributed job needs a shared persistent one.
+This extension sits on that line and asks for nothing more than the shared database — no broker on top.
+Configure it with <code>@EnableBatchProcessing</code> + <code>@EnableJdbcJobRepository</code> (see the Migration guide, which
+also describes the startup fail-fast guard).</p>
 <h3 id="do-i-have-to-launch-jobs-synchronously-or-asynchronously">Do I have to launch jobs synchronously or asynchronously?<a class="headerlink" href="#do-i-have-to-launch-jobs-synchronously-or-asynchronously" title="Permanent link">&para;</a></h3>
 <p>Your choice — job definition and launching stay standard Spring Batch. To avoid blocking an HTTP
 request thread for a job's duration, configure an asynchronous <code>JobLauncher</code> and poll execution status.
