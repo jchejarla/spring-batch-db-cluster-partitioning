@@ -24,6 +24,10 @@
     </parent>
 
     <properties>
+        <!-- Spring Boot's parent drives the compiler release from java.version (defaults to 17); set it
+             to 21 so the whole project actually compiles to Java 21 bytecode (matching the documented
+             baseline and enabling Java 21 APIs / virtual threads), not just via the source/target props. -->
+        <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
