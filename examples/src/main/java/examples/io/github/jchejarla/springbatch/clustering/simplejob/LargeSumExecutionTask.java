@@ -38,7 +38,9 @@ public class LargeSumExecutionTask implements Tasklet {
         long end = executionContext.getLong("end");
         String stepName = stepExecution.getStepName();
         System.out.println(">>> [" + nodeId + "] (worker) picked up partition "
-                + stepName + " (range " + start + ".." + end + ")");
+                + stepName + " (range " + start + ".." + end + ") on "
+                + (Thread.currentThread().isVirtual() ? "virtual" : "platform") + " thread "
+                + Thread.currentThread());
         long result = 0;
         for(long i=start; i<=end; i++) {
             result += i;

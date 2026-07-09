@@ -256,6 +256,10 @@ public class BatchClusterAutoConfiguration {
     @Bean("clusteredStepsTasksExecutor")
     public TaskExecutor clusteredStepsTasksExecutor(BatchClusterProperties batchClusterProperties) {
         SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+        // Partition steps block on I/O (DB + the step's own work), so run each on a virtual thread
+        // (Java 21+). The concurrency limit stays as admission control — the real ceiling is the JDBC
+        // connection pool, not thread count.
+        taskExecutor.setVirtualThreads(true);
         taskExecutor.setConcurrencyLimit(batchClusterProperties.getConcurrencyLimitPerNode());
         taskExecutor.setThreadNamePrefix("Clustered-Task-Async-Executor");
         return taskExecutor;
