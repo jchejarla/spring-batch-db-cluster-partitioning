@@ -13,6 +13,14 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+    hikari:
+      # With AUTO_SERVER, the first JVM to open the file becomes an embedded TCP server for the
+      # rest. If several nodes are launched at the exact same moment against a fresh file, the ones
+      # that lose the race briefly see H2's "Lock file recently modified" until the server is up.
+      # Let Hikari retry the initial connection for a few seconds instead of failing fast, so you
+      # can cold-start all nodes simultaneously without staggering them.
+      initialization-fail-timeout: 20000
+      connection-timeout: 20000
   h2:
     console:
       enabled: true
