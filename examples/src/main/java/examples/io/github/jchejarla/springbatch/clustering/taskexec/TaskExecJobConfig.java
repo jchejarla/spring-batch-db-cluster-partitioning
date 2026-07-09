@@ -24,7 +24,6 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.batch.core.step.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.partition.Partitioner;
@@ -45,7 +44,6 @@ import java.util.Map;
 
 @Slf4j
 @Configuration
-@EnableBatchProcessing
 @ConditionalOnProperty(value = "spring.batch.single-node.enabled", havingValue = "true")
 public class TaskExecJobConfig {
 

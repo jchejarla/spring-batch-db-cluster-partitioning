@@ -23,7 +23,6 @@ import jakarta.jms.ConnectionFactory;
 import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -43,7 +42,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableBatchProcessing
 @ConditionalOnProperty(prefix = "spring.batch.msg-channel", name = {"enabled", "worker-node"}, havingValue = "true")
 public class WorkerConfig {
     @Autowired private JobRepository jobRepository;

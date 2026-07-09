@@ -21,7 +21,6 @@ import org.springframework.batch.core.job.Job;
 import org.springframework.batch.core.job.JobExecution;
 import org.springframework.batch.core.listener.JobExecutionListener;
 import org.springframework.batch.core.step.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.repository.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -49,7 +48,6 @@ import java.util.Map;
 
 @Slf4j
 @Configuration
-@EnableBatchProcessing
 @ConditionalOnProperty(prefix = "spring.batch.msg-channel", name = {"enabled", "master-node"}, havingValue = "true")
 public class MasterConfig {
 
