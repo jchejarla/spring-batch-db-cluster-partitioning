@@ -31,7 +31,15 @@ import java.util.Map;
 @ConditionalOnClusterEnabled
 public class BatchClusteringInfoContributor implements InfoContributor {
 
-    private static final String VERSION = "2.0.0";
+    // Read from the jar manifest (Implementation-Version) so /actuator/info always reports the real
+    // artifact version instead of a hardcoded string that silently drifts across releases. Falls back
+    // to "unknown" when running without a manifest (e.g. from an IDE / exploded classes).
+    private static final String VERSION = resolveVersion();
+
+    private static String resolveVersion() {
+        String version = BatchClusteringInfoContributor.class.getPackage().getImplementationVersion();
+        return version != null ? version : "unknown";
+    }
 
     private final BatchClusterProperties batchClusterProperties;
 
