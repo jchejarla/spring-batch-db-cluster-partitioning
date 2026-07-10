@@ -131,11 +131,14 @@ sequenceDiagram
 
 | Endpoint                            | Description                                  |
 |-------------------------------------|----------------------------------------------|
-| `/actuator/health`                 | Shows cluster-aware health status            |
-| `/actuator/batch-cluster`         | Cluster overview of node executions         |
-| `/actuator/batch-cluster/{nodeId}`| Details of a specific node        |
-| `/actuator/batch-cluster-jobs`    | Lists coordinated jobs                       |
+| `/actuator/health`                 | Two components — `batchCluster` (cluster-wide node counts) and `batchClusterNode` (this node's status/heartbeat/load) |
+| `/actuator/info`                   | Library version + the effective cluster settings (intervals, thresholds, concurrency) |
+| `/actuator/batch-cluster`         | Node-centric overview: every registered node with status, host, heartbeat, live load |
+| `/actuator/batch-cluster/{nodeId}`| Detail for one node        |
+| `/actuator/batch-cluster-jobs`    | Lists the jobs currently coordinated by the cluster |
 | `/actuator/batch-cluster-jobs/{jobExecutionId}` | Job-centric view: master node, partition count, status histogram, per-partition placement |
+
+> **Note:** these endpoints are **not exposed over HTTP by default** — add them to `management.endpoints.web.exposure.include` (e.g. `health,info,batch-cluster,batch-cluster-jobs`). Full reference, with example responses and programmatic access via `BatchClusterQueryService`, is on the [Observability docs page](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/Observability/).
 
 > ⚠️ **Security:** these endpoints expose operational detail about nodes and partition assignments. Treat them like any other actuator endpoint — restrict their exposure (`management.endpoints.web.exposure.include`) and protect them with authentication/authorization. Don't expose `batch-cluster` unauthenticated on a public interface.
 

@@ -22,6 +22,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Configuration: configuration.md
+  - Observability: Observability.md
   - Design: DESIGN.md
   - Migration (2.x → 3.0): migration.md
   - FAQ: faq.md
