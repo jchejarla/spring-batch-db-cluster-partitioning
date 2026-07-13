@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>9.2.0</version>
+            <version>9.7.0</version>
         </dependency>
 
         <!-- Uncomment this when testing with Oracle
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.11</version>
+            <version>42.7.13</version>
         </dependency>
 
         <!-- JDBC driver: H2. Used by the default "h2" profile so the example
