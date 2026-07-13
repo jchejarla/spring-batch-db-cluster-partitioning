@@ -1,3 +1,3 @@
 # Tooling for the versioned documentation site (built/published by .github/workflows/docs.yml)
 mkdocs-material>=9.5,<10
-mike>=2.1,<3
+mike>=2.2.0,<3
