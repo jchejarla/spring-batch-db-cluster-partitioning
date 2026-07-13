@@ -1,0 +1,29 @@
+# Dependabot keeps dependencies patched and surfaces vulnerable versions as PRs/alerts.
+# Complements the CycloneDX SBOM generated in CI (which records deps but does not alert).
+version: 2
+updates:
+  # Maven dependencies (the library + examples).
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    # Group routine minor/patch bumps into one PR; surface majors individually.
+    groups:
+      maven-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions used by the CI/docs workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "ci"]
+
+  # Python docs tooling (requirements-docs.txt).
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "docs"]
