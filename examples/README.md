@@ -27,7 +27,7 @@ There is also a **single-node baseline** endpoint (`GET /api/v1/singlenodejob/ad
 
 ## Prerequisites
 
-- Java 17+
+- Java 21+
 - Maven 3.x
 - One of:
   - Nothing — the bundled H2 profile (Path A below) requires no external database, **or**
@@ -61,7 +61,7 @@ Each node generates its own unique `node-id` automatically (from the configured 
 #### A.2 Start Worker Node 1
 
 ```bash
-java -jar examples/target/examples-2.0.0.jar \
+java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
   --spring.profiles.active=h2 \
   --server.port=8081
 ```
@@ -69,7 +69,7 @@ java -jar examples/target/examples-2.0.0.jar \
 #### A.3 Start Worker Node 2 (in a separate terminal)
 
 ```bash
-java -jar examples/target/examples-2.0.0.jar \
+java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
   --spring.profiles.active=h2 \
   --server.port=8082
 ```
@@ -113,13 +113,17 @@ SQL
 
 The bundled `application-postgres.yml` uses `search_path=spring_batch,public`, so all tables go into a dedicated `spring_batch` schema:
 
+> The `postgres` profile now bootstraps both schemas on startup via `spring.sql.init` (like the H2
+> profile), so applying the table DDL below is **optional**. You still need to create the `spring_batch`
+> namespace (the first command) — the profile's `search_path` points at it.
+
 ```bash
 # Create the spring_batch namespace
 PGPASSWORD=dev_password psql -h localhost -U dev_user -d dev_db \
   -c "CREATE SCHEMA IF NOT EXISTS spring_batch AUTHORIZATION dev_user;"
 
-# Apply Spring Batch's own core schema (5.2.x)
-curl -sSL https://raw.githubusercontent.com/spring-projects/spring-batch/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-postgresql.sql \
+# Apply Spring Batch's own core schema (6.0.x)
+curl -sSL https://raw.githubusercontent.com/spring-projects/spring-batch/6.0.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-postgresql.sql \
   | PGPASSWORD=dev_password PGOPTIONS='--search_path=spring_batch,public' \
     psql -h localhost -U dev_user -d dev_db -v ON_ERROR_STOP=1
 
@@ -129,7 +133,7 @@ PGPASSWORD=dev_password PGOPTIONS='--search_path=spring_batch,public' \
   -f spring-batch-db-cluster-core/src/main/resources/schema/schema-postgres.sql
 ```
 
-You should now see all 9 tables (6 from Spring Batch core, 3 from this library) inside the `spring_batch` schema:
+You should now see all 10 tables (6 from Spring Batch core, 4 from this library) inside the `spring_batch` schema:
 
 ```bash
 PGPASSWORD=dev_password psql -h localhost -U dev_user -d dev_db \
@@ -149,14 +153,14 @@ Each node generates its own unique `node-id` automatically (from the configured 
 #### B.4 Start Worker Node 1
 
 ```bash
-java -jar examples/target/examples-2.0.0.jar \
+java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
   --server.port=8081
 ```
 
 #### B.5 Start Worker Node 2 (in a separate terminal)
 
 ```bash
-java -jar examples/target/examples-2.0.0.jar \
+java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
   --server.port=8082
 ```
 
@@ -252,7 +256,7 @@ For Path A (H2), use the web console linked in step A.3 — `http://localhost:80
 > **Note on timing:** the example profiles use aggressive demo timings so failover is quick to watch. A
 > real deployment should keep the library defaults (a dead node is removed in ~75s), which tolerate GC
 > pauses and brief network blips without prematurely evicting a healthy node. See the
-> [Configuration reference](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/configuration/).
+> [Configuration reference](../docs/configuration.md).
 
 ---
 
@@ -331,7 +335,7 @@ Key properties (set in `application-*.yml` or as command-line overrides):
 > The values above are the library **defaults**. The bundled example profiles deliberately shorten them
 > (`heartbeat-interval: 1000`, `unreachable-node-threshold: 3000`, `node-cleanup-threshold: 5000`) so
 > failover is quick to demo — keep the defaults for real deployments. The
-> [full configuration reference](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/configuration/)
+> [full configuration reference](../docs/configuration.md)
 > lists every property.
 
 ---
@@ -342,11 +346,11 @@ Path B above uses PostgreSQL because it most closely resembles production deploy
 
 1. **Provision the database** with credentials that match `application-mysql.yml` or `application-oracle.yml` (defaults: database `dev_db`, user `dev_user`, password `dev_password`).
 2. **Apply both schemas** the same way as in step B.2, substituting the appropriate DDL files:
-    - Spring Batch core DDL: download from [`spring-projects/spring-batch:5.2.x/.../schema-mysql.sql`](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-mysql.sql) or [`schema-oracle.sql`](https://github.com/spring-projects/spring-batch/blob/5.2.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-oracle.sql).
+    - Spring Batch core DDL: download from [`spring-projects/spring-batch:6.0.x/.../schema-mysql.sql`](https://github.com/spring-projects/spring-batch/blob/6.0.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-mysql.sql) or [`schema-oracle.sql`](https://github.com/spring-projects/spring-batch/blob/6.0.x/spring-batch-core/src/main/resources/org/springframework/batch/core/schema-oracle.sql).
     - Cluster DDL: `spring-batch-db-cluster-core/src/main/resources/schema/schema-mysql.sql` or `schema-oracle.sql` from this repository.
 3. **Activate the profile** when starting each node:
    ```bash
-   java -jar examples/target/examples-2.0.0.jar \
+   java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
      --spring.profiles.active=mysql \
      --server.port=8081
    ```
