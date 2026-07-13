@@ -78,7 +78,16 @@ The master's monitor reassigns orphaned partitions — those belonging to a remo
 
 - **Transferable-only**: only partitions the user marked transferable (`arePartitionsTransferableWhenNodeFailed()`) are moved. Non-transferable partitions (node-local state, non-idempotent side effects) are never reassigned; when their node is lost they are **failed** (so the job fails cleanly) rather than re-executed elsewhere — correctness over availability, by contract.
 - **Fencing**: a node that loses its own heartbeat cancels its in-progress partition tasks and leaves them `CLAIMED` (not failed), so the master reassigns the transferable ones and fails the non-transferable ones.
-- **Self-fencing**: a node that has lost its own heartbeat stops claiming new work and aborts before executing a claimed partition. Combined with the transactional `CLAIMED` transition, this is what prevents a reassigned partition from being executed twice.
+- **Self-fencing**: a node that has lost its own heartbeat stops claiming new work and aborts before executing a claimed partition, reducing the chance it keeps running a partition the master is about to reassign.
+
+### Execution guarantees
+
+The reassignment and status transitions are compare-and-set (an `UPDATE` guarded by the current status), so a partition that has already reached a terminal state is never resurrected, and the master fails the step if any partition ends `FAILED`. Fencing is best-effort, though — a hard-paused node can resume and finish work the master has already reassigned. So the honest guarantees are:
+
+- **Transferable partitions: at-least-once.** On node loss they may run again on another node, so the work must be **idempotent** — which is exactly what marking a partition transferable asserts.
+- **Non-transferable partitions: at-most-once.** They are never reassigned; if their node is lost they are failed, so they are never executed on a second node.
+
+In both cases a partition is never *silently lost*: it either completes or the job fails.
 
 ### Master failure
 

@@ -41,6 +41,19 @@
 
 ### 🐛 Fixes
 
+- **A failed partition now fails the job.** The manager step fails when any partition ends `FAILED`
+  (a worker error, or a non-transferable partition whose node was lost), regardless of whether a
+  `ClusterAwareAggregator` is wired — previously a failed partition could be reported as job success.
+- **Compare-and-set partition transitions.** Reassignment and status updates are now guarded by the
+  current status, so a partition that already reached a terminal state is never resurrected and re-run
+  (closes a race between a briefly-stalled node completing and the master reassigning its partition).
+- **Skew-proof heartbeats.** Node registration and heartbeat timestamps are written with the database
+  clock, so liveness is judged by a single clock and is immune to clock skew between a node and the
+  database (previously a lagging node clock could be evicted early).
+- **Worker step execution moved to virtual threads (Java 21)** and the master's completion/orphan
+  monitors off the shared `ForkJoinPool.commonPool`, so a busy master coordinating many jobs cannot
+  exhaust the common pool. Default; no configuration required.
+
 - **Enforce the `is_transferable` safety contract.** Non-transferable partitions were previously
   reassigned on node loss despite the documented contract; they are now failed (so the job fails
   cleanly) rather than silently re-executed on another node. Only transferable partitions are reassigned.
