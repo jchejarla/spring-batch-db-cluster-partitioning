@@ -18,6 +18,15 @@ package io.github.jchejarla.springbatch.clustering.core.serviceimpl;
 import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 
 public class OracleDatabaseQueryProvider implements DBSpecificQueryProvider {
+
+    // Age comparisons here use SYSTIMESTAMP (the database *server* time zone). CURRENT_TIMESTAMP on Oracle
+    // is the *session* time zone (Oracle JDBC sets it from the JVM), so writes must use SYSTIMESTAMP too,
+    // otherwise a node's timestamp and the comparison would differ by the JVM<->DB time-zone offset.
+    @Override
+    public String currentDbTimestampExpression() {
+        return "SYSTIMESTAMP";
+    }
+
     @Override
     public String getMarkNodesUnreachableQuery() {
         return "UPDATE batch_nodes set status = ? where status = ? and ((CAST(SYSTIMESTAMP AS DATE) - CAST(LAST_UPDATED_TIME AS DATE)) * 24 * 60 * 60 * 1000) >= ?";

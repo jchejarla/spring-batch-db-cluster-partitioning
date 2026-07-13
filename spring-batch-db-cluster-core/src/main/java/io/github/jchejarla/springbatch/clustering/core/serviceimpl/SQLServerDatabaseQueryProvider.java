@@ -28,6 +28,14 @@ import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
  */
 public class SQLServerDatabaseQueryProvider implements DBSpecificQueryProvider {
 
+    // The age comparison uses SYSDATETIME() (datetime2, server clock); write with the same expression so
+    // timestamps and comparisons share one clock and precision. Both are server-local (SQL Server has no
+    // session time zone for these), so there is no time-zone skew either way.
+    @Override
+    public String currentDbTimestampExpression() {
+        return "SYSDATETIME()";
+    }
+
     @Override
     public String getMarkNodesUnreachableQuery() {
         return "UPDATE batch_nodes set status = ? where status = ? and DATEDIFF_BIG(MILLISECOND, last_updated_time, SYSDATETIME()) >= ?";

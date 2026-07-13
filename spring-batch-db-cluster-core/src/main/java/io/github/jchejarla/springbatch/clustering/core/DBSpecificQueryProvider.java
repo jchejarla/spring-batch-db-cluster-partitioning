@@ -17,15 +17,29 @@ package io.github.jchejarla.springbatch.clustering.core;
 
 public interface DBSpecificQueryProvider {
 
+    /**
+     * The database-clock "now" expression for this dialect. Every server-side timestamp write uses it, so
+     * that timestamps are written with the <em>same</em> clock the heartbeat/orphan age comparisons read
+     * — making liveness immune to node&lt;-&gt;DB clock skew. Defaults to the SQL-standard
+     * {@code CURRENT_TIMESTAMP}; a dialect whose age comparison uses a different now-expression overrides
+     * this to match it (e.g. Oracle compares against {@code SYSTIMESTAMP}, so it must also write it —
+     * {@code CURRENT_TIMESTAMP} on Oracle is the <em>session</em> time zone and would disagree with the
+     * server-time-zone {@code SYSTIMESTAMP}).
+     */
+    default String currentDbTimestampExpression() {
+        return "CURRENT_TIMESTAMP";
+    }
+
     default String getInsertQueryToRegisterNodeQuery() {
-        // Timestamps use the database clock (CURRENT_TIMESTAMP), not the node's local clock, so node
-        // liveness is judged by a single clock and is immune to node<->DB clock skew.
-        return "insert into batch_nodes (node_id, created_time, last_updated_time, status, host_identifier) values (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)";
+        // Timestamps use the database clock (currentDbTimestampExpression), not the node's local clock, so
+        // node liveness is judged by a single clock and is immune to node<->DB clock skew.
+        return "insert into batch_nodes (node_id, created_time, last_updated_time, status, host_identifier) values (?, "
+                + currentDbTimestampExpression() + ", " + currentDbTimestampExpression() + ", ?, ?)";
     }
 
     default String getUpdateNodeHeartBeatQuery() {
         // Heartbeat timestamp from the database clock (see registration query) so liveness is skew-proof.
-        return "update batch_nodes set last_updated_time = CURRENT_TIMESTAMP, status = ?, current_load=? where node_id =?";
+        return "update batch_nodes set last_updated_time = " + currentDbTimestampExpression() + ", status = ?, current_load=? where node_id =?";
     }
 
     default String getSaveBatchJobCoordinationInfoQuery() {
@@ -44,7 +58,7 @@ public interface DBSpecificQueryProvider {
         // The `status in ('PENDING','CLAIMED')` guard makes this a compare-and-set: a partition that has
         // already reached a terminal state (COMPLETED/FAILED) is never resurrected to PENDING. This closes
         // the race where a briefly-stalled node completes its partition just as the master reassigns it.
-        return "update batch_partitions set assigned_node=?, last_updated = CURRENT_TIMESTAMP, status = 'PENDING' where job_execution_id = ? and master_step_execution_id=? and step_execution_id = ? and status in ('PENDING', 'CLAIMED')";
+        return "update batch_partitions set assigned_node=?, last_updated = " + currentDbTimestampExpression() + ", status = 'PENDING' where job_execution_id = ? and master_step_execution_id=? and step_execution_id = ? and status in ('PENDING', 'CLAIMED')";
     }
 
     default String getPendingTasksCountQuery(){
@@ -70,11 +84,11 @@ public interface DBSpecificQueryProvider {
         // Guard with `status in ('PENDING','CLAIMED')`: every legitimate worker transition (claim, complete,
         // fail) starts from PENDING or CLAIMED, so this never blocks a valid update but prevents a late
         // write from clobbering a row that has already reached a terminal state or been reassigned away.
-        return "update batch_partitions set status = ?, last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ? and status in ('PENDING', 'CLAIMED')";
+        return "update batch_partitions set status = ?, last_updated = " + currentDbTimestampExpression() + " where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ? and status in ('PENDING', 'CLAIMED')";
     }
 
     default String getUpdateLastUpdateTimeQuery() {
-        return "update batch_partitions set last_updated = CURRENT_TIMESTAMP where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ?";
+        return "update batch_partitions set last_updated = " + currentDbTimestampExpression() + " where step_execution_id = ? and job_execution_id = ? and master_step_execution_id = ? and assigned_node = ?";
     }
 
     default String getCheckForOrphanedTasksQuery() {
@@ -125,7 +139,7 @@ public interface DBSpecificQueryProvider {
 
     /** Appends a coordination phase event, timestamped with the database clock (single clock across nodes). */
     default String getRecordPhaseEventQuery() {
-        return "insert into batch_job_phase_events (job_execution_id, node_id, phase, event_time) values (?, ?, ?, CURRENT_TIMESTAMP)";
+        return "insert into batch_job_phase_events (job_execution_id, node_id, phase, event_time) values (?, ?, ?, " + currentDbTimestampExpression() + ")";
     }
 
     /**

@@ -29,6 +29,13 @@ import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
  */
 public class DB2DatabaseQueryProvider implements DBSpecificQueryProvider {
 
+    // Db2's age comparison reads the CURRENT TIMESTAMP special register (two words); write with the same
+    // register so timestamps and comparisons share one clock.
+    @Override
+    public String currentDbTimestampExpression() {
+        return "CURRENT TIMESTAMP";
+    }
+
     @Override
     public String getMarkNodesUnreachableQuery() {
         return "UPDATE batch_nodes set status = ? where status = ? and " + diffInMillis("last_updated_time") + " >= ?";
