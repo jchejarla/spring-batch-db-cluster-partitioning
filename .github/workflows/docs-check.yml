@@ -1,0 +1,67 @@
+name: Docs check
+
+# Validates the documentation on every change: builds the site with mkdocs --strict (so a broken
+# link, missing nav entry, or missing snippet fails CI), and verifies the generated configuration
+# table is in sync with the @ConfigurationProperties source. This is a check only — it never deploys.
+
+on:
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'requirements-docs.txt'
+      - 'scripts/**'
+      - 'spring-batch-db-cluster-core/src/main/java/io/github/jchejarla/springbatch/clustering/autoconfigure/BatchClusterProperties.java'
+      - '.github/workflows/docs-check.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'requirements-docs.txt'
+      - 'scripts/**'
+      - 'spring-batch-db-cluster-core/src/main/java/io/github/jchejarla/springbatch/clustering/autoconfigure/BatchClusterProperties.java'
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Compile core (emits spring-configuration-metadata.json)
+        run: mvn -B -q -pl spring-batch-db-cluster-core -am compile
+
+      - name: Verify the generated config table is in sync with the source
+        run: |
+          python3 scripts/gen-config-table.py
+          if ! git diff --exit-code docs/_snippets/config-properties.md; then
+            echo "::error::docs/_snippets/config-properties.md is stale. Run 'mvn -pl spring-batch-db-cluster-core compile && python3 scripts/gen-config-table.py' and commit the result."
+            exit 1
+          fi
+
+      - name: Generate Javadoc and stage into docs/apidocs
+        run: |
+          mvn -B -q -pl spring-batch-db-cluster-core -am javadoc:javadoc
+          apidocs="$(find spring-batch-db-cluster-core/target -type f -name index.html -path '*apidocs*' -exec dirname {} \; | head -1)"
+          if [ -z "$apidocs" ]; then echo "Javadoc output not found"; exit 1; fi
+          rm -rf docs/apidocs && mkdir -p docs/apidocs
+          cp -r "$apidocs"/. docs/apidocs/
+
+      - name: Install docs tooling
+        run: pip install -r requirements-docs.txt
+
+      - name: Build docs (strict)
+        run: mkdocs build --strict
