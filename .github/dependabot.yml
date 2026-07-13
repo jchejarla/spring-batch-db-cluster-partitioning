@@ -1,15 +1,16 @@
-# Dependabot keeps dependencies patched and surfaces vulnerable versions as PRs/alerts.
-# Complements the CycloneDX SBOM generated in CI (which records deps but does not alert).
+# Dependabot keeps dependencies patched and surfaces vulnerable versions.
+# Note: CVE *alerts* / security updates are the high-value part and are controlled in
+# repo Settings → Code security (independent of this file). The entries below are routine
+# version-update PRs, kept low-noise: monthly, minor/patch grouped into one PR.
 version: 2
 updates:
   # Maven dependencies (the library + examples).
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     open-pull-requests-limit: 5
-    labels: ["dependencies"]
-    # Group routine minor/patch bumps into one PR; surface majors individually.
+    # One PR for all routine minor/patch bumps; majors still surface individually.
     groups:
       maven-minor-patch:
         update-types: ["minor", "patch"]
@@ -18,12 +19,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-    labels: ["dependencies", "ci"]
+      interval: "monthly"
 
   # Python docs tooling (requirements-docs.txt).
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "monthly"
-    labels: ["dependencies", "docs"]
