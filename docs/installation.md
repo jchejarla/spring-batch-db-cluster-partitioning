@@ -22,6 +22,20 @@ Maven:
 </dependency>
 ```
 
+!!! note "Testing a SNAPSHOT build?"
+    SNAPSHOTs are pre-release, not official versions. To consume one, add the snapshot repository:
+
+    ```xml
+    <repositories>
+      <repository>
+        <id>central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <snapshots><enabled>true</enabled></snapshots>
+        <releases><enabled>false</enabled></releases>
+      </repository>
+    </repositories>
+    ```
+
 ## 2. Use a JDBC JobRepository
 
 Spring Batch 6 defaults to an in-memory `ResourcelessJobRepository` that persists nothing. A cluster
