@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/dev/configuration/">
+        <link rel="canonical" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/dev/security/">
       
       
-        <link rel="prev" href="../guide/">
+        <link rel="prev" href="../Observability/">
       
       
-        <link rel="next" href="../Observability/">
+        <link rel="next" href="../examples/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Configuration - Spring Batch DB Cluster Partitioning</title>
+        <title>Security - Spring Batch DB Cluster Partitioning</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configuration" class="md-skip">
+        <a href="#security" class="md-skip">
           Skip to content
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configuration
+              Security
             
           </span>
         </div>
@@ -330,19 +330,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -358,7 +349,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -394,10 +384,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../security/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -413,6 +430,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#trust-model-the-database-is-the-security-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust model: the database is the security boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-least-privilege-database-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Least-privilege database account
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-network-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Network isolation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-actuator-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Actuator endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-library-does-and-does-not-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the library does — and does not — do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supply-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supply chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -572,6 +675,80 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#trust-model-the-database-is-the-security-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trust model: the database is the security boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-least-privilege-database-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Least-privilege database account
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-network-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Network isolation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-actuator-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Actuator endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-library-does-and-does-not-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the library does — and does not — do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supply-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supply chain
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -590,132 +767,60 @@
   
 
 
-<h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
-<p>All settings live under the <code>spring.batch.cluster.*</code> namespace and are bound by <code>BatchClusterProperties</code>.
-Clustering is opt-in (<code>enabled=true</code>). Intervals and thresholds are in <strong>milliseconds</strong>; the defaults
-suit small-to-medium clusters (~2–20 nodes).</p>
-<!-- GENERATED by scripts/gen-config-table.py from spring-configuration-metadata.json — do not edit by hand. -->
-
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>capture-phase-timings</code></td>
-<td><code>false</code></td>
-<td>When <code>true</code>, records master-side coordination phase timestamps (received, partitioned, distributed, completion-detected) to the append-only <code>BATCH_JOB_PHASE_EVENTS</code> table, using the database clock. Off by default. Enables later reporting of coordination overhead; the table grows over time, so pair it with a retention/purge policy.</td>
-</tr>
-<tr>
-<td><code>completed-tasks-cleanup-polling-interval</code></td>
-<td><code>5000</code></td>
-<td>How often a worker prunes its records of completed partition tasks.</td>
-</tr>
-<tr>
-<td><code>concurrency-limit-per-node</code></td>
-<td><code>10</code></td>
-<td>Maximum number of partition steps this node executes concurrently.</td>
-</tr>
-<tr>
-<td><code>enabled</code></td>
-<td><code>false</code></td>
-<td>Master switch for clustering. When <code>false</code>, none of the cluster components are activated.</td>
-</tr>
-<tr>
-<td><code>heartbeat-interval</code></td>
-<td><code>3000</code></td>
-<td>How often this node updates its heartbeat (and refreshes its view of the cluster).</td>
-</tr>
-<tr>
-<td><code>host-identifier</code></td>
-<td><code>host-name</code></td>
-<td>Whether a node registers itself in <code>BATCH_NODES</code> by host name or IP address.</td>
-</tr>
-<tr>
-<td><code>initialize-schema</code></td>
-<td><code>embedded</code></td>
-<td>Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own <code>spring.batch.jdbc.initialize-schema</code>. <code>EMBEDDED</code> (default) creates them only on embedded databases such as H2; <code>ALWAYS</code> always; <code>NEVER</code> not at all. For production, prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually.</td>
-</tr>
-<tr>
-<td><code>master-task-status-check-interval</code></td>
-<td><code>500</code></td>
-<td>Thread sleep time between each master-side check of overall partition completion.</td>
-</tr>
-<tr>
-<td><code>node-cleanup-thread-interval</code></td>
-<td><code>5000</code></td>
-<td>How often the phase-2 sweep runs that removes long-unreachable nodes from the registry.</td>
-</tr>
-<tr>
-<td><code>node-cleanup-threshold</code></td>
-<td><code>30000</code></td>
-<td>Heartbeat age after which an unreachable node is removed and its transferable partitions reassigned (phase 2).</td>
-</tr>
-<tr>
-<td><code>node-id-prefix</code></td>
-<td>—</td>
-<td>Optional prefix for this node's auto-generated id. Defaults to the machine host name when unset. The actual node id is always <code>&lt;prefix&gt;-&lt;random-uuid&gt;</code>, generated once at startup, so it is guaranteed unique per JVM and per restart with no manual configuration.</td>
-</tr>
-<tr>
-<td><code>orphaned-master-scan-interval</code></td>
-<td><code>10000</code></td>
-<td>How often each node scans for jobs whose master node has left the cluster, so the stranded (and otherwise permanently <code>STARTED</code>) job execution can be abandoned and made restartable.</td>
-</tr>
-<tr>
-<td><code>orphaned-tasks-polling-interval</code></td>
-<td><code>1000</code></td>
-<td>How often the master scans for orphaned partitions (assigned to a lost node) to reassign.</td>
-</tr>
-<tr>
-<td><code>task-polling-interval</code></td>
-<td><code>1000</code></td>
-<td>How often a worker polls <code>BATCH_PARTITIONS</code> for partitions assigned to it.</td>
-</tr>
-<tr>
-<td><code>tracing-enabled</code></td>
-<td><code>false</code></td>
-<td>When <code>true</code>, emits verbose timing/diagnostic logs for heartbeats and polling. Keep off in production.</td>
-</tr>
-<tr>
-<td><code>unreachable-node-thread-interval</code></td>
-<td><code>5000</code></td>
-<td>How often the phase-1 sweep runs that marks stale nodes <code>UNREACHABLE</code>.</td>
-</tr>
-<tr>
-<td><code>unreachable-node-threshold</code></td>
-<td><code>10000</code></td>
-<td>Heartbeat age after which a node is marked <code>UNREACHABLE</code> (phase 1 of failover).</td>
-</tr>
-</tbody>
-</table>
-<p><small>(The table above is generated from the <code>@ConfigurationProperties</code> source, so it never drifts from the code. The deprecated <code>node-id</code> property is intentionally omitted — see the note at the end of this page.)</small></p>
-<div class="admonition note">
-<p class="admonition-title">The bundled example profiles use fast demo timings — don't copy them to production</p>
-<p>So you can watch failover in seconds, the example profiles (<code>application-h2.yml</code>,
-<code>application-postgres.yml</code>, <code>application-mysql.yml</code>, <code>application-oracle.yml</code>) deliberately shorten
-these to <code>heartbeat-interval: 1000</code>, <code>unreachable-node-threshold: 3000</code>, <code>node-cleanup-threshold:
-5000</code> — so a dead node is removed in ~8s. <strong>Real deployments should keep the defaults above</strong>
-(a dead node is removed in ~75s): the longer thresholds tolerate GC pauses and brief network blips
-without prematurely evicting a healthy node and reassigning work it is still running.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Spring Batch core schema is a prerequisite</p>
-<p>These tables have foreign keys to the standard Spring Batch tables, so the Spring Batch schema must
-exist first. Spring Boot 4 no longer auto-creates it — use Flyway/Liquibase or <code>spring.sql.init</code>
-(see <a href="../installation/">Installation</a>). The cluster auto-DDL runs after it via
-<code>@DependsOnDatabaseInitialization</code>.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Actuator exposure</p>
-<p>The <code>/actuator/batch-cluster</code> endpoints expose node and partition detail. Restrict their exposure
-and protect them with authentication; do not expose them unauthenticated on a public interface.</p>
-</div>
-<p>The legacy <code>node-id</code> property has been removed (ids are generated automatically); a leftover value is
-ignored with a warning. Use <code>node-id-prefix</code> instead.</p>
+<h1 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h1>
+<p>This page is about <strong>hardening a deployment</strong>. To report a vulnerability, follow the private
+disclosure process in
+<a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/blob/main/SECURITY.md">SECURITY.md</a>
+— email, not a public issue.</p>
+<h2 id="trust-model-the-database-is-the-security-boundary">Trust model: the database is the security boundary<a class="headerlink" href="#trust-model-the-database-is-the-security-boundary" title="Permanent link">&para;</a></h2>
+<p>Coordination happens entirely through the database, so the coordination tables (<code>BATCH_NODES</code>,
+<code>BATCH_PARTITIONS</code>, <code>BATCH_JOB_COORDINATION</code>) <strong>are</strong> the trust anchor. There is no separate
+node-to-node authentication — nodes trust each other by virtue of shared database access. Any principal
+that can write to those tables can register a node, claim or reassign partitions, or influence job
+coordination.</p>
+<p>The practical consequence: <strong>securing the coordination database is securing the cluster.</strong> The three
+controls below follow from that.</p>
+<h2 id="1-least-privilege-database-account">1. Least-privilege database account<a class="headerlink" href="#1-least-privilege-database-account" title="Permanent link">&para;</a></h2>
+<p>At runtime the application only needs <strong>DML</strong> (<code>SELECT</code>/<code>INSERT</code>/<code>UPDATE</code>/<code>DELETE</code>) on the Spring Batch
+tables and this library's cluster tables — not schema-wide DDL or admin rights.</p>
+<ul>
+<li>Grant DML on the specific tables; do <strong>not</strong> grant <code>CREATE</code>/<code>DROP</code>/owner rights to the runtime account.</li>
+<li>Create the schema ahead of time with a migration tool (Flyway/Liquibase) and set
+  <code>spring.batch.cluster.initialize-schema=never</code> (see <a href="../configuration/">Configuration</a>), so the runtime
+  account never needs <code>CREATE TABLE</code>. Auto-DDL is a development convenience, not a production one.</li>
+<li>Use distinct credentials per environment. Never commit them — inject via environment variables or a
+  secrets manager.</li>
+</ul>
+<h2 id="2-network-isolation">2. Network isolation<a class="headerlink" href="#2-network-isolation" title="Permanent link">&para;</a></h2>
+<p>Keep the coordination database reachable <strong>only from the cluster nodes</strong> — a private subnet, security
+group, or firewall rule. Its exposure surface is exactly that of any application database; treat it the
+same way, including TLS on the connection.</p>
+<h2 id="3-actuator-endpoints">3. Actuator endpoints<a class="headerlink" href="#3-actuator-endpoints" title="Permanent link">&para;</a></h2>
+<p>The cluster endpoints (<code>batch-cluster</code>, <code>batch-cluster-jobs</code>, <code>info</code>, <code>health</code>) are <strong>read-only</strong> — none
+of them mutate cluster state — but they <strong>disclose operational detail</strong>: host names, node ids, and where
+each partition is running. They are <strong>not exposed over HTTP by default</strong>. If you expose them:</p>
+<ul>
+<li>Require authentication/authorization (e.g. Spring Security).</li>
+<li>Prefer a <strong>separate, firewalled management port</strong> (<code>management.server.port</code>) reachable only from your
+  ops network.</li>
+<li>Never expose <code>batch-cluster</code> / <code>batch-cluster-jobs</code> unauthenticated on a public interface.</li>
+</ul>
+<p>See <a href="../Observability/">Observability</a> for the endpoint details.</p>
+<h2 id="what-the-library-does-and-does-not-do">What the library does — and does not — do<a class="headerlink" href="#what-the-library-does-and-does-not-do" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Does not</strong> add authentication or transport security. That is the application's responsibility
+  (Spring Security for HTTP, TLS to the database). The library imposes no auth so it composes with
+  whatever you already run.</li>
+<li><strong>Parameterizes all SQL</strong> — queries are static strings with bound parameters, so values (including
+  node ids and the actuator's <code>jobExecutionId</code>) cannot be used for SQL injection.</li>
+<li><strong>Performs no deserialization of untrusted data.</strong> Partition payloads travel as Spring Batch
+  <code>ExecutionContext</code> metadata through the shared repository, not as ad-hoc serialized objects.</li>
+<li><strong>All actuator operations are read-only</strong> — there is no write/delete endpoint to abuse.</li>
+</ul>
+<h2 id="supply-chain">Supply chain<a class="headerlink" href="#supply-chain" title="Permanent link">&para;</a></h2>
+<p>Releases ship a CycloneDX SBOM, and Dependabot watches the Maven, GitHub Actions, and docs-tooling
+dependencies for known-vulnerable versions. Keep to the latest release to receive security fixes (see
+the <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/blob/main/SECURITY.md">support policy</a>).</p>
 
 
 

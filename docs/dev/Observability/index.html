@@ -16,7 +16,7 @@
         <link rel="prev" href="../configuration/">
       
       
-        <link rel="next" href="../examples/">
+        <link rel="next" href="../security/">
       
       
         
@@ -545,6 +545,33 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1086,7 +1113,7 @@ state. Treat them like any other actuator endpoint: expose only what you need
 (<code>management.endpoints.web.exposure.include</code>), and protect them with authentication/authorization.
 Never expose <code>batch-cluster</code> / <code>batch-cluster-jobs</code> unauthenticated on a public interface. A common
 pattern is a separate, firewalled management port (<code>management.server.port</code>) reachable only from
-your ops network.</p>
+your ops network. See <a href="../security/">Security</a> for the full hardening guidance.</p>
 </div>
 
 
