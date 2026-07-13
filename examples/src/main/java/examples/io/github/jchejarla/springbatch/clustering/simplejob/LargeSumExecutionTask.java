@@ -22,6 +22,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.repeat.RepeatStatus;
 
+// --8<-- [start:worker-task]
 public class LargeSumExecutionTask implements Tasklet {
 
     private final String nodeId;
@@ -64,3 +65,4 @@ public class LargeSumExecutionTask implements Tasklet {
     }
 
 }
+// --8<-- [end:worker-task]

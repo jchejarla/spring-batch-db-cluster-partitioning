@@ -21,8 +21,10 @@ theme:
 nav:
   - Home: index.md
   - Installation: installation.md
+  - Usage guide: guide.md
   - Configuration: configuration.md
   - Observability: Observability.md
+  - Examples: examples.md
   - Design: DESIGN.md
   - Migration (2.x → 3.0): migration.md
   - FAQ: faq.md
@@ -37,10 +39,17 @@ markdown_extensions:
       permalink: true
   - pymdownx.highlight
   - pymdownx.superfences
+  # Lets docs include external files (config table generated from source, example code).
+  # check_paths fails the build if an included path is missing — a drift guard in itself.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
 
-# Generated at build time by the docs workflow; not part of the repo.
 exclude_docs: |
+  # Generated at build time by the docs workflow; not part of the repo.
   SRS_Spring_Batch_Clustering_JChejarla.pdf
+  # Snippet partials included into pages, not standalone pages themselves.
+  _snippets/
 
 extra:
   version:
