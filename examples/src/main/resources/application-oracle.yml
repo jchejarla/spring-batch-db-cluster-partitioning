@@ -6,13 +6,31 @@ spring:
 
   batch:
     jdbc:
-      initialize-schema: "never"
+      initialize-schema: never
     cluster:
       enabled: true
-      node-id-prefix: ${HOSTNAME:worker}
-      grid-size: 4
-      heartbeat-interval: 5000
-      task-polling-interval: 2000
+      node-id-prefix: ${HOSTNAME:node}
+      # Cluster tables are created via spring.sql.init below (batch core tables first, for the FKs),
+      # so the built-in cluster auto-DDL is turned off here.
+      initialize-schema: never
+      # Fast timings so this example demonstrates failover quickly: a dead node's row is removed in
+      # roughly 8 seconds (3s to be marked UNREACHABLE + 5s cleanup), so you can kill/restart a node
+      # and re-run within seconds. All example profiles use these demo timings; a real deployment
+      # should keep the library production defaults (~75s recovery) rather than overriding them.
+      heartbeat-interval: 1000
+      task-polling-interval: 1000
+      unreachable-node-threshold: 3000
+      node-cleanup-threshold: 5000
+  sql:
+    init:
+      mode: always
+      platform: oracle
+      # Order matters: Spring Batch core tables first, then this library's cluster tables (which
+      # reference BATCH_JOB_EXECUTION / BATCH_STEP_EXECUTION).
+      schema-locations:
+        - classpath:org/springframework/batch/core/schema-oracle.sql
+        - classpath:schema/schema-oracle.sql
+      continue-on-error: true
   main:
     allow-circular-references: true
 
@@ -23,4 +41,4 @@ management:
   endpoints:
     web:
       exposure:
-        include: "health,info,batch-cluster"
+        include: "health,info,batch-cluster,batch-cluster-jobs"
