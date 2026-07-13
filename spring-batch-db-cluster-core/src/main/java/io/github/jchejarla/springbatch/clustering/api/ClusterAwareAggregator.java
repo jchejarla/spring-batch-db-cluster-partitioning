@@ -53,7 +53,7 @@ public class ClusterAwareAggregator extends RemoteStepExecutionAggregator {
     public ClusterAwareAggregator(ClusterAwareAggregatorCallback clusterAwareAggregatorCallback, JobRepository jobRepository) {
         super(jobRepository);
         this.clusterAwareAggregatorCallback = clusterAwareAggregatorCallback;
-        setDelegate(new ClusterAwareClusterAwareAggregatorInternal());
+        setDelegate(new ClusterAwareAggregatorInternal());
     }
 
     /**
@@ -82,7 +82,7 @@ public class ClusterAwareAggregator extends RemoteStepExecutionAggregator {
      * that overrides the {@code aggregate} method to trigger the custom success or failure
      * handlers based on the aggregated {@link StepExecution} status.
      */
-    private class ClusterAwareClusterAwareAggregatorInternal extends DefaultStepExecutionAggregator {
+    private class ClusterAwareAggregatorInternal extends DefaultStepExecutionAggregator {
 
         /**
          * Aggregates the results of multiple partitioned step executions into a single
