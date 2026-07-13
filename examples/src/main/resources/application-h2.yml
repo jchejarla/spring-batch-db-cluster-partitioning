@@ -23,6 +23,9 @@ spring:
       connection-timeout: 20000
   h2:
     console:
+      # Local demo convenience only — this profile runs a file-mode H2 on localhost. The H2 console is
+      # an attack surface (it exposes a SQL shell), so never enable it on a shared or production
+      # interface. Production uses Postgres/MySQL/Oracle profiles, which don't enable it.
       enabled: true
       path: /h2-console
   batch:

@@ -242,4 +242,4 @@ and recent jobs (full history/retention is out of scope by design — see the ro
     (`management.endpoints.web.exposure.include`), and protect them with authentication/authorization.
     Never expose `batch-cluster` / `batch-cluster-jobs` unauthenticated on a public interface. A common
     pattern is a separate, firewalled management port (`management.server.port`) reachable only from
-    your ops network.
+    your ops network. See [Security](security.md) for the full hardening guidance.

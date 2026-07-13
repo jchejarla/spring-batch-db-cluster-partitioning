@@ -72,8 +72,10 @@ For the full design rationale, fault-tolerance model, and a comparison with rela
 | Page | What's there |
 |---|---|
 | **[Installation](docs/installation.md)** | Add the dependency; create the Spring Batch + cluster schema |
+| **[Usage guide](docs/guide.md)** | Write a `ClusterAwarePartitioner` and wire a partitioned job |
 | **[Configuration](docs/configuration.md)** | Every `spring.batch.cluster.*` property, with defaults |
 | **[Observability](docs/Observability.md)** | Actuator endpoints, example responses, `BatchClusterQueryService` |
+| **[Security](docs/security.md)** | Trust model, least-privilege DB, actuator hardening |
 | **[Design](docs/DESIGN.md)** | How coordination works; the fault-tolerance model; related work |
 | **[Migration 2.x → 3.0](docs/migration.md)** | Upgrading to Spring Boot 4 / Spring Batch 6 / Java 21 |
 | **[FAQ](docs/faq.md)** | Broker-free rationale, the JDBC-job-repository requirement, and more |

@@ -24,6 +24,7 @@ nav:
   - Usage guide: guide.md
   - Configuration: configuration.md
   - Observability: Observability.md
+  - Security: security.md
   - Examples: examples.md
   - Design: DESIGN.md
   - Migration (2.x → 3.0): migration.md
