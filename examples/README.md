@@ -238,12 +238,21 @@ For Path A (H2), use the web console linked in step A.3 — `http://localhost:80
 ## Testing Failover
 
 1. Start **three workers** (ports 8081, 8082, 8083).
-2. Trigger a job with many partitions (e.g., `taskSize/20`).
+2. Trigger a job with many partitions (e.g., `taskSize/20`). To keep partitions running long enough to
+   kill a node mid-flight, add `-Ddemo.partition.sleepMs=15000` when starting the nodes so each
+   partition takes ~15s.
 3. While the job is running, **kill one worker** (e.g., `Ctrl+C` on worker-3).
-4. After the heartbeat timeout (default 15 seconds), observe that:
-   - The killed node is marked `UNREACHABLE` in `BATCH_NODES`.
-   - Its incomplete partitions (status `CLAIMED` or `PENDING`) are reassigned to the surviving workers.
-   - The job completes successfully without any partitions being lost or reprocessed.
+4. With the example profiles' fast demo timings, the dead node is removed in ~8 seconds (3s to be
+   marked `UNREACHABLE` + 5s cleanup), after which:
+   - The killed node is marked `UNREACHABLE` and then removed from `BATCH_NODES`.
+   - Its incomplete **transferable** partitions (`CLAIMED` or `PENDING`) are reassigned to the surviving
+     workers.
+   - The job completes successfully — no partition is lost or executed twice.
+
+> **Note on timing:** the example profiles use aggressive demo timings so failover is quick to watch. A
+> real deployment should keep the library defaults (a dead node is removed in ~75s), which tolerate GC
+> pauses and brief network blips without prematurely evicting a healthy node. See the
+> [Configuration reference](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/configuration/).
 
 ---
 
@@ -313,11 +322,17 @@ Key properties (set in `application-*.yml` or as command-line overrides):
 | Property | Default | Description |
 |----------|---------|-------------|
 | `spring.batch.cluster.enabled` | `false` | Enable database-driven cluster partitioning |
-| `spring.batch.cluster.node-id` | — | Unique identifier for this node instance |
-| `spring.batch.cluster.heartbeat-interval` | `5000` | Milliseconds between heartbeat writes |
-| `spring.batch.cluster.task-polling-interval` | `2000` | Milliseconds between partition-polling cycles |
-| `spring.batch.cluster.unreachable-node-threshold` | `15000` | Milliseconds before a silent node is marked unreachable |
-| `spring.batch.cluster.node-cleanup-threshold` | `60000` | Milliseconds before an unreachable node is removed and partitions reassigned |
+| `spring.batch.cluster.node-id-prefix` | host name | Readable prefix for this node's id; a unique suffix is appended per JVM and per restart |
+| `spring.batch.cluster.heartbeat-interval` | `3000` | Milliseconds between heartbeat writes |
+| `spring.batch.cluster.task-polling-interval` | `1000` | Milliseconds between partition-polling cycles |
+| `spring.batch.cluster.unreachable-node-threshold` | `10000` | Milliseconds before a silent node is marked unreachable |
+| `spring.batch.cluster.node-cleanup-threshold` | `30000` | Milliseconds before an unreachable node is removed and partitions reassigned |
+
+> The values above are the library **defaults**. The bundled example profiles deliberately shorten them
+> (`heartbeat-interval: 1000`, `unreachable-node-threshold: 3000`, `node-cleanup-threshold: 5000`) so
+> failover is quick to demo — keep the defaults for real deployments. The
+> [full configuration reference](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/configuration/)
+> lists every property.
 
 ---
 

@@ -23,6 +23,14 @@ suit small-to-medium clusters (~2–20 nodes).
 | `orphaned-master-scan-interval` | `10000` | How often each node scans for jobs whose master node was lost, so a stranded execution can be abandoned and made restartable. |
 | `capture-phase-timings` | `false` | When `true`, records master-side coordination phase timestamps to the append-only `BATCH_JOB_PHASE_EVENTS` table (database clock). Pair with a retention policy; the table grows over time. |
 
+!!! note "The bundled example profiles use fast demo timings — don't copy them to production"
+    So you can watch failover in seconds, the example profiles (`application-h2.yml`,
+    `application-postgres.yml`, `application-mysql.yml`, `application-oracle.yml`) deliberately shorten
+    these to `heartbeat-interval: 1000`, `unreachable-node-threshold: 3000`, `node-cleanup-threshold:
+    5000` — so a dead node is removed in ~8s. **Real deployments should keep the defaults above**
+    (a dead node is removed in ~75s): the longer thresholds tolerate GC pauses and brief network blips
+    without prematurely evicting a healthy node and reassigning work it is still running.
+
 !!! note "Spring Batch core schema is a prerequisite"
     These tables have foreign keys to the standard Spring Batch tables, so the Spring Batch schema must
     exist first. Spring Boot 4 no longer auto-creates it — use Flyway/Liquibase or `spring.sql.init`
