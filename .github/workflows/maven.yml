@@ -12,8 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      packages: write
+      contents: write   # required by the dependency-submission step below
 
     strategy:
       matrix:
@@ -44,6 +43,14 @@ jobs:
     - name: Generate SBOM (Java 21 only)
       if: matrix.java-version == '21' && github.event_name == 'push'
       run: mvn -B org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
+
+    - name: Upload SBOM
+      if: matrix.java-version == '21' && github.event_name == 'push'
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: 'target/bom.*'
+        retention-days: 90
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts
     - name: Update dependency graph

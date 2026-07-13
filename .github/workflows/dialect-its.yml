@@ -1,0 +1,46 @@
+# Runs the cross-database dialect integration tests against real engines (SQL Server, Db2, MariaDB)
+# via Testcontainers. These are gated off the normal build (they need Docker and are slow), so they
+# run here on pushes to main and on demand, giving the 7-database support claim real, automated backing.
+#
+# GitHub-hosted ubuntu runners provide Docker; the SQL Server and Db2 images are amd64 (fine on the
+# default runners). If this ever needs to gate a release, confirm it is green for the tagged commit.
+
+name: Dialect ITs
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'spring-batch-db-cluster-core/src/main/resources/schema/**'
+      - 'spring-batch-db-cluster-core/src/main/java/io/github/jchejarla/springbatch/clustering/core/**'
+      - 'spring-batch-db-cluster-core/src/it/**'
+      - '.github/workflows/dialect-its.yml'
+  workflow_dispatch:
+
+jobs:
+  dialect-its:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run dialect ITs (SQL Server, Db2, MariaDB)
+        run: >-
+          mvn -B -pl spring-batch-db-cluster-core verify
+          -Dgpg.skip=true
+          -Dcontainer.it=true
+          -Dcontainer.it.db2=true
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dialect-it-reports
+          path: 'spring-batch-db-cluster-core/target/failsafe-reports/*.xml'
+          retention-days: 14

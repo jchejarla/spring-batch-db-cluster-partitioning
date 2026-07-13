@@ -38,6 +38,10 @@
         <version.org.awaitability>4.3.0</version.org.awaitability>
         <gpg.keyname>B35BEB20ED044228AB3C5C1C0EE4B27825C2EDDF</gpg.keyname>
         <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- Extra JVM args for the failsafe (integration-test) JVM; empty by default. Defined here so the
+             ${failsafeArgLine} reference in the failsafe plugin config always resolves (e.g. JaCoCo could
+             set it later) instead of leaking a literal unresolved property onto the JVM command line. -->
+        <failsafeArgLine></failsafeArgLine>
     </properties>
 
     <dependencyManagement>
