@@ -133,6 +133,16 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
         databaseBackedClusterService.updateBatchJobCoordinationStatus(jobExecutionId, masterStepExecutionId, CoordinationStatus.COMPLETED.name());
         log.info("Updating of master step info into coordination table with status = COMPLETED is completed, master step execution id {}", masterStepExecutionId);
 
+        // A partition can end FAILED (a worker error, or a non-transferable partition whose node was lost).
+        // Completion above only means no partition is still PENDING/CLAIMED, so fail the manager step here
+        // when any partition failed. This guarantees a failed partition fails the job even if the caller did
+        // not wire a ClusterAwareAggregator (whose reload would otherwise be the only thing to catch it).
+        int failedPartitions = databaseBackedClusterService.getFailedTasksCount(masterStepExecutionId);
+        if (failedPartitions > 0) {
+            throw new JobExecutionException(failedPartitions + " of " + stepExecutions.size()
+                    + " partition(s) FAILED for step '" + managerStepExecution.getStepName() + "'");
+        }
+
         return stepExecutions;
     }
 
@@ -233,7 +243,8 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
         for (PartitionAssignmentTask originTask : transferable) {
             String assignedToNode = activeNodes.get(index % activeNodes.size()).nodeId();
             index++;
-            params.add(new Object[]{assignedToNode, new Date(), originTask.jobExecutionId(), originTask.masterStepExecutionId(), originTask.stepExecutionId()});
+            // last_updated is set by the DB clock (CURRENT_TIMESTAMP) in the reassignment query.
+            params.add(new Object[]{assignedToNode, originTask.jobExecutionId(), originTask.masterStepExecutionId(), originTask.stepExecutionId()});
         }
         databaseBackedClusterService.updateBatchPartitionsToReAssignedNodes(params);
     }

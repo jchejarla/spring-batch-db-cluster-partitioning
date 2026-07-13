@@ -50,13 +50,16 @@ public class DatabaseBackedClusterServiceUnitTest extends BaseUnitTest {
     @Test
     public void testRegister() {
         databaseBackedClusterService.registerNode();
-        verify(jdbcTemplate, times(1)).update(anyString(), anyString(), any(Date.class), any(Date.class), anyString(), anyString());
+        // created_time/last_updated_time are now set by the DB clock (CURRENT_TIMESTAMP), so only
+        // node id, status, and host identifier are bound.
+        verify(jdbcTemplate, times(1)).update(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
     public void testUpdateNodeHeartbeat() {
         databaseBackedClusterService.updateNodeHeartbeat();
-        verify(jdbcTemplate, times(1)).update(anyString(), any(Date.class), anyString(), anyLong(), anyString());
+        // last_updated_time is now set by the DB clock (CURRENT_TIMESTAMP); status, load, node id bound.
+        verify(jdbcTemplate, times(1)).update(anyString(), anyString(), anyLong(), anyString());
     }
 
     @Test

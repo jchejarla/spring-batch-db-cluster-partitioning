@@ -86,6 +86,25 @@ public class ClusterAwarePartitionHandlerUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void testHandleFailsStepWhenAnyPartitionFailed() throws Exception {
+        Set<StepExecution> stepExecutions = new HashSet<>();
+        StepExecution stepExecution = mock(StepExecution.class);
+        ExecutionContext executionContext = mock(ExecutionContext.class);
+        stepExecutions.add(stepExecution);
+        doReturn(executionContext).when(stepExecution).getExecutionContext();
+        doReturn("Test-Node-123").when(executionContext).getString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER);
+        doReturn(stepExecutions).when(stepSplitter).split(any(), anyInt());
+        doReturn(0).when(databaseBackedClusterService).getPendingTasksCount(anyLong()); // completes immediately
+        doReturn(1).when(databaseBackedClusterService).getFailedTasksCount(anyLong());  // one partition FAILED
+        // The manager step must fail when a partition ended FAILED, regardless of the aggregator wired.
+        Exception exception = Assertions.assertThrows(Exception.class,
+                () -> clusterAwarePartitionHandler.handle(stepSplitter, managerStepExecution));
+        assertTrue(exception.getMessage().contains("FAILED"));
+        // Coordination still transitions CREATED -> STARTED -> COMPLETED before the step is failed.
+        verify(databaseBackedClusterService, times(2)).updateBatchJobCoordinationStatus(anyLong(), anyLong(), anyString());
+    }
+
+    @Test
     public void testHandleSuccessfullyAndThereAreNodeFailuresRequiresReAssignments() throws Exception {
         Set<StepExecution> stepExecutions = new HashSet<>();
         StepExecution stepExecution = mock(StepExecution.class);

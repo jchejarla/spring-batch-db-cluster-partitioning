@@ -54,13 +54,15 @@ public class DatabaseBackedClusterService {
         } catch (Exception e) {
             log.error("Error occurred while getting host identifier", e);
         }
-        Object[] params = new Object[]{batchClusterProperties.getNodeId(), new Date(), new Date(), NodeStatus.ACTIVE.name(), hostIdentifier};
+        // created_time / last_updated_time are set by the DB clock (CURRENT_TIMESTAMP) in the query.
+        Object[] params = new Object[]{batchClusterProperties.getNodeId(), NodeStatus.ACTIVE.name(), hostIdentifier};
         return jdbcTemplate.update(queryProvider.getInsertQueryToRegisterNodeQuery(), params);
     }
 
     @Transactional
     public int updateNodeHeartbeat() {
-        Object[] params = new Object[]{new Date(), NodeStatus.ACTIVE.name(), NodeLoad.INST.getCurrentLoad(), batchClusterProperties.getNodeId()};
+        // last_updated_time is set by the DB clock (CURRENT_TIMESTAMP) in the query.
+        Object[] params = new Object[]{NodeStatus.ACTIVE.name(), NodeLoad.INST.getCurrentLoad(), batchClusterProperties.getNodeId()};
         return jdbcTemplate.update(queryProvider.getUpdateNodeHeartBeatQuery(), params);
     }
 
@@ -105,6 +107,11 @@ public class DatabaseBackedClusterService {
 
     public Integer getPendingTasksCount(long masterStepExecutionId) {
         return jdbcTemplate.queryForObject(queryProvider.getPendingTasksCountQuery(), Integer.class, masterStepExecutionId);
+    }
+
+    /** Number of partitions that ended FAILED for this job, used by the master to fail the step. */
+    public Integer getFailedTasksCount(long masterStepExecutionId) {
+        return jdbcTemplate.queryForObject(queryProvider.getFailedTasksCountQuery(), Integer.class, masterStepExecutionId);
     }
 
     /**
