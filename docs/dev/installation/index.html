@@ -16,7 +16,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../configuration/">
+        <link rel="next" href="../guide/">
       
       
         
@@ -408,6 +408,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../configuration/" class="md-nav__link">
         
   
@@ -443,6 +470,33 @@
     
   
     Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
   
 
     
@@ -684,6 +738,19 @@
 <span class="w">    </span><span class="nt">&lt;version&gt;</span><span class="cm">&lt;!-- the version shown in the selector above --&gt;</span><span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Testing a SNAPSHOT build?</p>
+<p>SNAPSHOTs are pre-release, not official versions. To consume one, add the snapshot repository:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;repositories&gt;</span>
+<span class="w">  </span><span class="nt">&lt;repository&gt;</span>
+<span class="w">    </span><span class="nt">&lt;id&gt;</span>central-snapshots<span class="nt">&lt;/id&gt;</span>
+<span class="w">    </span><span class="nt">&lt;url&gt;</span>https://central.sonatype.com/repository/maven-snapshots/<span class="nt">&lt;/url&gt;</span>
+<span class="w">    </span><span class="nt">&lt;snapshots&gt;&lt;enabled&gt;</span>true<span class="nt">&lt;/enabled&gt;&lt;/snapshots&gt;</span>
+<span class="w">    </span><span class="nt">&lt;releases&gt;&lt;enabled&gt;</span>false<span class="nt">&lt;/enabled&gt;&lt;/releases&gt;</span>
+<span class="w">  </span><span class="nt">&lt;/repository&gt;</span>
+<span class="nt">&lt;/repositories&gt;</span>
+</code></pre></div>
+</div>
 <h2 id="2-use-a-jdbc-jobrepository">2. Use a JDBC JobRepository<a class="headerlink" href="#2-use-a-jdbc-jobrepository" title="Permanent link">&para;</a></h2>
 <p>Spring Batch 6 defaults to an in-memory <code>ResourcelessJobRepository</code> that persists nothing. A cluster
 coordinates through <strong>shared, persisted</strong> job metadata, so a JDBC-backed repository is required. Enable
