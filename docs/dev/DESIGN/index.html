@@ -612,6 +612,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#execution-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#master-failure" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -887,6 +898,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#execution-guarantees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution guarantees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#master-failure" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1014,8 +1036,15 @@ plane.</p>
 <ul>
 <li><strong>Transferable-only</strong>: only partitions the user marked transferable (<code>arePartitionsTransferableWhenNodeFailed()</code>) are moved. Non-transferable partitions (node-local state, non-idempotent side effects) are never reassigned; when their node is lost they are <strong>failed</strong> (so the job fails cleanly) rather than re-executed elsewhere — correctness over availability, by contract.</li>
 <li><strong>Fencing</strong>: a node that loses its own heartbeat cancels its in-progress partition tasks and leaves them <code>CLAIMED</code> (not failed), so the master reassigns the transferable ones and fails the non-transferable ones.</li>
-<li><strong>Self-fencing</strong>: a node that has lost its own heartbeat stops claiming new work and aborts before executing a claimed partition. Combined with the transactional <code>CLAIMED</code> transition, this is what prevents a reassigned partition from being executed twice.</li>
+<li><strong>Self-fencing</strong>: a node that has lost its own heartbeat stops claiming new work and aborts before executing a claimed partition, reducing the chance it keeps running a partition the master is about to reassign.</li>
 </ul>
+<h3 id="execution-guarantees">Execution guarantees<a class="headerlink" href="#execution-guarantees" title="Permanent link">&para;</a></h3>
+<p>The reassignment and status transitions are compare-and-set (an <code>UPDATE</code> guarded by the current status), so a partition that has already reached a terminal state is never resurrected, and the master fails the step if any partition ends <code>FAILED</code>. Fencing is best-effort, though — a hard-paused node can resume and finish work the master has already reassigned. So the honest guarantees are:</p>
+<ul>
+<li><strong>Transferable partitions: at-least-once.</strong> On node loss they may run again on another node, so the work must be <strong>idempotent</strong> — which is exactly what marking a partition transferable asserts.</li>
+<li><strong>Non-transferable partitions: at-most-once.</strong> They are never reassigned; if their node is lost they are failed, so they are never executed on a second node.</li>
+</ul>
+<p>In both cases a partition is never <em>silently lost</em>: it either completes or the job fails.</p>
 <h3 id="master-failure">Master failure<a class="headerlink" href="#master-failure" title="Permanent link">&para;</a></h3>
 <p>Today, a node detects a job whose master has left the cluster (a <code>BATCH_JOB_COORDINATION</code> row still <code>STARTED</code> whose master node is gone), <strong>atomically claims it</strong> so exactly one survivor acts, and marks the stranded job execution <code>FAILED</code> — making it cleanly restartable instead of hanging in <code>STARTED</code> forever. The atomic claim plus the node-removal grace window guard against acting on a master that is merely slow. The claim also takes ownership of the coordination row, so if the recovering node itself dies mid-recovery the row is re-detected and re-claimed by another node (recovery is idempotent).</p>
 <p>Because this phase recovers by <strong>fail-and-restart</strong> rather than resume, a job is restarted even in the edge case where its master died after all partitions had completed but before finalizing — so <strong>restarts must be idempotent</strong>. (Resume-in-place is the roadmap item below.)</p>
