@@ -131,7 +131,10 @@ Then create the Spring Batch core tables and this library's cluster tables — s
 
 ### 3. Write a cluster-aware partitioner
 
+It must be a **Spring bean** (`@Component` or a `@Bean`) — the framework injects the cluster service into it, so a plain `new MyPartitioner()` fails with an NPE.
+
 ```java
+@Component
 public class MyPartitioner extends ClusterAwarePartitioner {
 
     @Override
@@ -161,7 +164,7 @@ public class MyPartitioner extends ClusterAwarePartitioner {
 }
 ```
 
-Wire it into a partitioned step using the library's `ClusterAwarePartitionHandler` and `ClusterAwareAggregator`, start two or more instances of your app, and launch the job on any of them — one becomes the master, the rest register as workers. The complete worked example — partitioner, step, aggregator callback, and running a multi-node cluster — is in **[examples/](examples/README.md)**.
+Wire it into a partitioned step using the library's `ClusterAwarePartitionHandler` and `ClusterAwareAggregator`, start two or more instances of your app, and launch the job on any of them — one becomes the master, the rest register as workers. The complete step-by-step wiring is in the **[Usage guide](docs/guide.md)**, and a full runnable multi-node project in **[examples/](examples/README.md)**.
 
 ## Observability
 

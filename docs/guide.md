@@ -12,20 +12,32 @@ library's **`ClusterAwarePartitionHandler`** and **`ClusterAwareAggregator`**.
 
 Extend the abstract `ClusterAwarePartitioner` and implement three methods. The key one,
 `createDistributedPartitions`, receives the **live node count** so you can size the split to the cluster
-that actually exists right now:
+that actually exists right now.
+
+!!! warning "The partitioner must be a Spring bean — don't `new` it"
+    `ClusterAwarePartitioner` has the cluster service injected into it by the framework, so it only works
+    as a **Spring-managed bean**. A plain `new RangeSumPartitioner(...)` is never injected and fails at
+    runtime with a `NullPointerException`. Annotate it (`@Component` below, or declare it as a `@Bean`),
+    and use `@StepScope` if it reads job parameters (as here).
 
 ```java
 import io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner;
 import io.github.jchejarla.springbatch.clustering.api.PartitionStrategy;
 import io.github.jchejarla.springbatch.clustering.partition.PartitioningMode;
 import io.github.jchejarla.springbatch.clustering.partition.PartitionTransferableProp;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
+@StepScope   // a new instance per job run, so it can read this run's job parameters
 public class RangeSumPartitioner extends ClusterAwarePartitioner {
 
     private final long from, to;
 
-    public RangeSumPartitioner(long from, long to) {
+    public RangeSumPartitioner(@Value("#{jobParameters['from']}") long from,
+                               @Value("#{jobParameters['to']}") long to) {
         this.from = from;
         this.to = to;
     }
@@ -90,8 +102,8 @@ worker step is an ordinary Spring Batch step that each node runs for its assigne
 @Configuration
 public class RangeSumJobConfig {
 
-    // Provided by the library's auto-configuration:
-    @Autowired ClusterAwarePartitionHandler partitionHandler;
+    @Autowired ClusterAwarePartitionHandler partitionHandler;   // provided by auto-configuration
+    @Autowired RangeSumPartitioner rangeSumPartitioner;         // the @Component bean from step 1
 
     @Bean
     public Job rangeSumJob(JobRepository jobRepository, PlatformTransactionManager txnManager,
@@ -105,15 +117,20 @@ public class RangeSumJobConfig {
     public Step managerStep(JobRepository jobRepository, PlatformTransactionManager txnManager,
                             StepExecutionAggregator aggregator) {
         return new StepBuilder("rangeSumStep.manager", jobRepository)
-                .partitioner("rangeSumStep", new RangeSumPartitioner(1, 1_000_000))
+                // inject the partitioner BEAN — never `new RangeSumPartitioner(...)` (see step 1).
+                .partitioner("rangeSumStep", rangeSumPartitioner)
                 .partitionHandler(partitionHandler)     // ← distributes via the database
-                .step(workerStep(jobRepository, txnManager))
+                .step(rangeSumStep(jobRepository, txnManager))
                 .aggregator(aggregator)
                 .build();
     }
 
+    // The worker step. Its BEAN NAME must equal the step name and the name passed to
+    // .partitioner("rangeSumStep", ...) above — worker nodes look the step up by that name in the
+    // application context. Here the @Bean method name, the StepBuilder name, and the partitioner name
+    // are all "rangeSumStep"; if they diverge, workers fail with NoSuchBeanDefinitionException.
     @Bean
-    public Step workerStep(JobRepository jobRepository, PlatformTransactionManager txnManager) {
+    public Step rangeSumStep(JobRepository jobRepository, PlatformTransactionManager txnManager) {
         return new StepBuilder("rangeSumStep", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
                     ExecutionContext ctx = chunkContext.getStepContext()
@@ -131,6 +148,8 @@ public class RangeSumJobConfig {
 
 Nothing about the worker step is cluster-aware — it just reads its partition's `ExecutionContext` and
 does the work. Distribution, claiming, and failover happen underneath, in `ClusterAwarePartitionHandler`.
+For a **chunk-oriented ETL** worker (a `@StepScope` reader/processor/writer reading `start`/`end` from
+`#{stepExecutionContext['start']}`), see the CSV→XML job in [Examples](examples.md).
 
 ## 3. Aggregate the results
 
@@ -163,6 +182,12 @@ Start two or more instances of your Spring Boot application (different hosts, or
 machine). Each node registers itself and generates a unique id automatically — no per-instance config.
 Launch the job on any node: that node becomes the **master** for that execution and the rest act as
 workers. Two jobs launched on two nodes have two independent masters, concurrently.
+
+!!! warning "Don't let the job auto-run at startup"
+    If you have a `Job` bean and launch jobs on demand (REST, a scheduler, …), set
+    **`spring.batch.job.enabled=false`**. Otherwise Spring Boot's `JobLauncherApplicationRunner` runs the
+    job at application startup — before the cluster has formed — and it fails. Trigger jobs yourself once
+    the app is up.
 
 Watch it run through the [actuator endpoints](Observability.md), and see a complete, runnable
 multi-node project — including a failover walkthrough — in [Examples](examples.md).

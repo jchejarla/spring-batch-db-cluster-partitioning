@@ -22,6 +22,19 @@ Maven:
 </dependency>
 ```
 
+The core artifact pulls in Spring Boot's web, batch, jdbc, and actuator starters transitively, so you
+don't add those. It does **not** bring a database driver — add the one for your database yourself:
+
+```xml
+<!-- H2 for the zero-setup quick start (use runtime scope) -->
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<!-- ...or com.mysql:mysql-connector-j / org.postgresql:postgresql / etc. for a server DB -->
+```
+
 !!! note "Testing a SNAPSHOT build?"
     SNAPSHOTs are pre-release, not official versions. To consume one, add the snapshot repository:
 
@@ -54,27 +67,34 @@ clustering is enabled on the resourceless repository, startup fails fast with an
 
 ## 3. Create the schema
 
-Two layers of tables must exist:
+Two layers of tables must exist: the **Spring Batch core tables** and this library's **cluster tables**
+(`BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`, `BATCH_JOB_PHASE_EVENTS`). Spring Boot 4 no
+longer auto-creates the Batch tables, so create both explicitly. The simplest portable way is
+`spring.sql.init`, pointing at the DDL that ships for your database — pick the matching suffix (`-h2`,
+`-postgresql`, `-mysql`, `-mariadb`, `-oracle`, `-sqlserver`, `-db2`):
 
-- **Spring Batch core tables** (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, …). Spring Boot 4 no
-  longer auto-creates these, so use Flyway/Liquibase, or `spring.sql.init`:
+```yaml
+spring:
+  sql:
+    init:
+      mode: always
+      continue-on-error: true   # tolerate "already exists" across restarts and peer nodes
+      schema-locations:
+        - classpath:org/springframework/batch/core/schema-h2.sql   # 1. Spring Batch core tables
+        - classpath:schema/schema-h2.sql                            # 2. this library's cluster tables
+```
 
-    ```yaml
-    spring:
-      sql:
-        init:
-          mode: always
-          schema-locations: classpath:org/springframework/batch/core/schema-@@platform@@.sql
-    ```
+Order matters — the cluster tables have foreign keys to the Spring Batch tables, so the core schema
+must be listed **first**. (For production, prefer a migration tool — Flyway/Liquibase — with
+`spring.batch.cluster.initialize-schema=never`.)
 
-- **Cluster tables** — `BATCH_NODES`, `BATCH_JOB_COORDINATION`, `BATCH_PARTITIONS`, and
-  `BATCH_JOB_PHASE_EVENTS`. DDL for all supported databases is bundled under `schema/`.
-    - **Development:** let the framework create them — `spring.batch.cluster.initialize-schema=embedded`
-      (default; embedded databases such as H2 only). It runs after the Spring Batch schema (via
-      `@DependsOnDatabaseInitialization`) so the foreign keys resolve.
-    - **Production:** apply the bundled DDL with your migration tool or by hand.
+!!! warning "Don't rely on `initialize-schema=embedded` for the H2 file demo"
+    `spring.batch.cluster.initialize-schema` defaults to `embedded`, which auto-creates the cluster
+    tables **only for genuinely in-memory databases**. It does **not** fire for **file-mode H2** (the
+    multi-node demo path) or any server database — for those you must create the cluster tables yourself
+    (via `spring.sql.init` as above, or a migration tool), and set `initialize-schema: never`.
 
-See [Configuration](configuration.md) for `initialize-schema` and the schema prerequisite.
+See [Configuration](configuration.md) for the full `initialize-schema` semantics.
 
 ## 4. Enable clustering
 
@@ -86,6 +106,45 @@ spring:
       node-id-prefix: ${HOSTNAME:batch-node}   # optional; a unique suffix is added automatically
 ```
 
+## 5. A complete, runnable config (zero-setup H2, multi-node)
+
+Putting it together — a full `application.yml` that forms a real cluster from multiple JVMs on one
+machine using **file-mode H2** (no external database). Copy this, then start two instances on different
+ports (`--server.port=8081`, `--server.port=8082`); they share the H2 file and form a cluster.
+
+```yaml
+spring:
+  datasource:
+    # AUTO_SERVER lets multiple JVMs share one H2 file — the first becomes an embedded server for the
+    # rest. Swap this for a Postgres/MySQL/... datasource in production.
+    url: jdbc:h2:file:./build/cluster-demo;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+      schema-locations:
+        - classpath:org/springframework/batch/core/schema-h2.sql
+        - classpath:schema/schema-h2.sql
+  batch:
+    job:
+      enabled: false          # jobs are triggered on demand (REST/scheduler), NOT auto-run at startup
+    cluster:
+      enabled: true
+      initialize-schema: never # the schema is created above via spring.sql.init
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,batch-cluster,batch-cluster-jobs
+```
+
+`spring.batch.job.enabled=false` is important: without it, Spring Boot runs your job at startup — before
+the cluster forms — and it fails. Trigger jobs yourself once the app is up.
+
 That's it — your existing job and step definitions are unchanged. Next, implement a
-`ClusterAwarePartitioner` (see the [API reference](apidocs/index.html)) and wire it with the
-`ClusterAwarePartitionHandler`.
+`ClusterAwarePartitioner` and wire it with the `ClusterAwarePartitionHandler` — see the
+**[Usage guide](guide.md)**.

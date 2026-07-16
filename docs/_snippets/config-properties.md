@@ -8,7 +8,7 @@
 | `enabled` | `false` | Master switch for clustering. When `false`, none of the cluster components are activated. |
 | `heartbeat-interval` | `3000` | How often this node updates its heartbeat (and refreshes its view of the cluster). |
 | `host-identifier` | `host-name` | Whether a node registers itself in `BATCH_NODES` by host name or IP address. |
-| `initialize-schema` | `embedded` | Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own `spring.batch.jdbc.initialize-schema`. `EMBEDDED` (default) creates them only on embedded databases such as H2; `ALWAYS` always; `NEVER` not at all. For production, prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually. |
+| `initialize-schema` | `embedded` | Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own `spring.batch.jdbc.initialize-schema`. `EMBEDDED` (default) creates them only on genuinely in-memory embedded databases — it does not fire for file-mode H2 or any server database, which must create the cluster tables via `spring.sql.init` or a migration tool. `ALWAYS` always creates them; `NEVER` never does. For production, prefer a managed migration tool (Flyway/Liquibase) with `NEVER`, or apply the bundled DDL manually. |
 | `master-task-status-check-interval` | `500` | Thread sleep time between each master-side check of overall partition completion. |
 | `node-cleanup-thread-interval` | `5000` | How often the phase-2 sweep runs that removes long-unreachable nodes from the registry. |
 | `node-cleanup-threshold` | `30000` | Heartbeat age after which an unreachable node is removed and its transferable partitions reassigned (phase 2). |

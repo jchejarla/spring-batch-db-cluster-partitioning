@@ -55,8 +55,10 @@ public class BatchClusterProperties {
     /**
      * Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own
      * {@code spring.batch.jdbc.initialize-schema}. {@code EMBEDDED} (default) creates them only on
-     * embedded databases such as H2; {@code ALWAYS} always; {@code NEVER} not at all. For production,
-     * prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually.
+     * genuinely in-memory embedded databases — it does <b>not</b> fire for file-mode H2 or any server
+     * database, which must create the cluster tables via {@code spring.sql.init} or a migration tool.
+     * {@code ALWAYS} always creates them; {@code NEVER} never does. For production, prefer a managed
+     * migration tool (Flyway/Liquibase) with {@code NEVER}, or apply the bundled DDL manually.
      */
     private DatabaseInitializationMode initializeSchema = DatabaseInitializationMode.EMBEDDED;
 
