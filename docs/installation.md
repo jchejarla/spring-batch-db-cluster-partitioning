@@ -112,6 +112,11 @@ Putting it together — a full `application.yml` that forms a real cluster from 
 machine using **file-mode H2** (no external database). Copy this, then start two instances on different
 ports (`--server.port=8081`, `--server.port=8082`); they share the H2 file and form a cluster.
 
+!!! tip "Start the first node first"
+    On the H2 file path, start one node and wait until it's up before starting the others — if several
+    JVMs launch at the exact same instant they can race to create the shared `./build` directory / H2
+    file. (A server database like Postgres/MySQL has no such race.)
+
 ```yaml
 spring:
   datasource:

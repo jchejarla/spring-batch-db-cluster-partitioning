@@ -29,8 +29,9 @@ import org.springframework.core.io.FileSystemResource;
 @Configuration
 public class CSVItemReaderConfig {
 
+    // --8<-- [start:etl-reader]
     @Bean("customerReader")
-    @StepScope
+    @StepScope   // one reader per partition, so it can read that partition's row window
     public FlatFileItemReader<Customer> customerReader(
             @Value("#{stepExecutionContext['startRow']}") long startIndex,
             @Value("#{stepExecutionContext['endRow']}") long endIndex,
@@ -62,6 +63,7 @@ public class CSVItemReaderConfig {
 
         return reader;
     }
+    // --8<-- [end:etl-reader]
 
     @Bean
     public LineMapper<Customer> lineMapper() {

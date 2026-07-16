@@ -80,6 +80,10 @@ public class ETLJobConfig {
                 .build();
     }
 
+    // --8<-- [start:etl-worker-step]
+    // The chunk-oriented worker step. Its @StepScope reader/processor/writer are injected as beans
+    // (the @Autowired fields above); each worker node runs this step for its assigned partitions.
+    // The bean name, the StepBuilder name, and the name given to .partitioner(...) must all match.
     @Bean
     public Step etlReaderWriterStep(JobRepository jobRepository, PlatformTransactionManager txnManager) {
         return new StepBuilder("etlReaderWriterStep", jobRepository).<Customer, Customer>chunk(100, txnManager)
@@ -88,6 +92,7 @@ public class ETLJobConfig {
                 .writer(customerXmlWriter)
                 .build();
     }
+    // --8<-- [end:etl-worker-step]
 
     @Bean("etlJobPartitioner")
     @StepScope

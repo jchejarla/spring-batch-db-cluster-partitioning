@@ -45,6 +45,31 @@ the actual example source:
 The `demo.partition.sleepMs` knob above is purely for demos — it stretches each partition so you can kill
 a node mid-flight and watch failover (see below).
 
+## A chunk-oriented ETL worker
+
+The range-sum job uses a `Tasklet`. A more typical ETL uses a **chunk-oriented** worker step
+(reader → processor → writer). The only cluster-specific part is that each partition reads **its own
+slice** of the input: the reader is `@StepScope` and pulls its window from the `stepExecutionContext`
+keys the partitioner put there (`startRow`/`endRow`). This is the real reader from the CSV→XML example:
+
+```java
+--8<-- "examples/src/main/java/examples/io/github/jchejarla/springbatch/clustering/advancedjob/CSVItemReaderConfig.java:etl-reader"
+```
+
+The worker step wires that reader (and a processor/writer) as an ordinary Spring Batch chunk step. Note
+the naming rule from the [Usage guide](guide.md): the worker step's **bean name = `StepBuilder` name =
+the name passed to `.partitioner(...)`** — workers look the step up by that name.
+
+```java
+--8<-- "examples/src/main/java/examples/io/github/jchejarla/springbatch/clustering/advancedjob/ETLJobConfig.java:etl-worker-step"
+```
+
+The `@StepScope` reader/processor/writer are declared as beans and injected into the worker step (here
+via `@Autowired` fields), so Spring hands each partition its own instances. The partitioner that seeds
+`startRow`/`endRow`/`partitionId` per partition, and the writer that emits one file per partition, are in
+the same [`advancedjob/`](https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples/src/main/java/examples/io/github/jchejarla/springbatch/clustering/advancedjob)
+package.
+
 ## Trying failover
 
 Start three nodes, launch a job with partitions long enough to interrupt (`-Ddemo.partition.sleepMs`),

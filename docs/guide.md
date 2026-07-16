@@ -151,6 +151,11 @@ does the work. Distribution, claiming, and failover happen underneath, in `Clust
 For a **chunk-oriented ETL** worker (a `@StepScope` reader/processor/writer reading `start`/`end` from
 `#{stepExecutionContext['start']}`), see the CSV→XML job in [Examples](examples.md).
 
+!!! note "Spring Batch 6 import"
+    `RunIdIncrementer` moved packages in Batch 6 — import it from
+    `org.springframework.batch.core.job.parameters.RunIdIncrementer` (it was in `…launch.support` in
+    Batch 5, and the old path no longer compiles).
+
 ## 3. Aggregate the results
 
 `ClusterAwareAggregator` collects the completed partitions on the master and invokes your callback.
