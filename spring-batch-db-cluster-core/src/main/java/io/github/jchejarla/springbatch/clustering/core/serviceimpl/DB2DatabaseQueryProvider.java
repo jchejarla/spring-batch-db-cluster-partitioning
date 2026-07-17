@@ -52,7 +52,11 @@ public class DB2DatabaseQueryProvider implements DBSpecificQueryProvider {
     }
 
     private String diffInMillis(String columnName) {
-        return "((DAYS(CURRENT TIMESTAMP) - DAYS(" + columnName + ")) * 86400 + "
-                + "(MIDNIGHT_SECONDS(CURRENT TIMESTAMP) - MIDNIGHT_SECONDS(" + columnName + "))) * 1000";
+        // Use the CURRENT_TIMESTAMP scalar-function form (underscore) here, not the two-word "CURRENT
+        // TIMESTAMP" special register: Db2 accepts the register as a bare value but rejects it as a
+        // function argument (DAYS(CURRENT TIMESTAMP) is a syntax error). Both resolve to the same clock,
+        // so this stays consistent with the timestamps written by currentDbTimestampExpression().
+        return "((DAYS(CURRENT_TIMESTAMP) - DAYS(" + columnName + ")) * 86400 + "
+                + "(MIDNIGHT_SECONDS(CURRENT_TIMESTAMP) - MIDNIGHT_SECONDS(" + columnName + "))) * 1000";
     }
 }
