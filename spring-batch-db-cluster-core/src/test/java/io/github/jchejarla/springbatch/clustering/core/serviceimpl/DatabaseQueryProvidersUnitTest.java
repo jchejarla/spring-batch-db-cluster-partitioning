@@ -31,11 +31,12 @@ public class DatabaseQueryProvidersUnitTest {
     }
 
     @Test
-    public void testDb2UsesDaysAndMidnightSeconds() {
+    public void testDb2UsesTimestampDiffInMillis() {
         DB2DatabaseQueryProvider provider = new DB2DatabaseQueryProvider();
         String diff = provider.getTimeStampColumnWithDiffInMillisToCurrentTime("last_updated_time");
-        assertTrue(diff.contains("DAYS"));
-        assertTrue(diff.contains("MIDNIGHT_SECONDS"));
+        assertTrue(diff.contains("TIMESTAMPDIFF"));
+        assertTrue(diff.contains("BIGINT"));            // BIGINT-cast to avoid 32-bit overflow
+        assertTrue(diff.contains("last_updated_time"));
         assertTrue(provider.getMarkNodesUnreachableQuery().contains("last_updated_time"));
         assertTrue(provider.getDeleteNodesUnreachableQuery().contains("last_updated_time"));
     }

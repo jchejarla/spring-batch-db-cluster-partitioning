@@ -20,10 +20,11 @@ import io.github.jchejarla.springbatch.clustering.core.DBSpecificQueryProvider;
 /**
  * Query provider for IBM Db2.
  *
- * <p>Db2's {@code TIMESTAMPDIFF} is only an approximation, so heartbeat age is computed exactly to the
- * second using {@code DAYS()} and {@code MIDNIGHT_SECONDS()}, then scaled to milliseconds. This matches
- * the second-granularity already used by the MySQL and Oracle providers (the heartbeat thresholds are
- * in seconds, so sub-second precision is not required).</p>
+ * <p>Heartbeat age is computed with {@code TIMESTAMPDIFF} over the timestamp difference and cast to
+ * {@code BIGINT} before scaling to milliseconds. {@code TIMESTAMPDIFF} is exact for the sub-month
+ * durations the heartbeat/cleanup thresholds compare (it only estimates month/year spans, which never
+ * occur here), and the {@code BIGINT} cast prevents the 32-bit overflow that {@code seconds * 1000}
+ * would otherwise hit for large thresholds.</p>
  *
  * @author Janardhan Chejarla
  */
@@ -52,11 +53,9 @@ public class DB2DatabaseQueryProvider implements DBSpecificQueryProvider {
     }
 
     private String diffInMillis(String columnName) {
-        // Use the CURRENT_TIMESTAMP scalar-function form (underscore) here, not the two-word "CURRENT
-        // TIMESTAMP" special register: Db2 accepts the register as a bare value but rejects it as a
-        // function argument (DAYS(CURRENT TIMESTAMP) is a syntax error). Both resolve to the same clock,
-        // so this stays consistent with the timestamps written by currentDbTimestampExpression().
-        return "((DAYS(CURRENT_TIMESTAMP) - DAYS(" + columnName + ")) * 86400 + "
-                + "(MIDNIGHT_SECONDS(CURRENT_TIMESTAMP) - MIDNIGHT_SECONDS(" + columnName + "))) * 1000";
+        // Elapsed milliseconds between columnName and now = seconds (TIMESTAMPDIFF over the timestamp
+        // difference) * 1000, cast to BIGINT first so it can't overflow a 32-bit INTEGER. CHAR(...) is
+        // required: TIMESTAMPDIFF's second argument is the 22-char string form of a timestamp duration.
+        return "BIGINT(TIMESTAMPDIFF(2, CHAR(CURRENT_TIMESTAMP - " + columnName + "))) * 1000";
     }
 }
