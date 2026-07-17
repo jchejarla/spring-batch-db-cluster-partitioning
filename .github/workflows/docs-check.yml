@@ -22,6 +22,10 @@ on:
       - 'scripts/**'
       - 'spring-batch-db-cluster-core/src/main/java/io/github/jchejarla/springbatch/clustering/autoconfigure/BatchClusterProperties.java'
 
+# Least privilege: this workflow only reads the repo (checkout + build docs).
+permissions:
+  contents: read
+
 jobs:
   docs-check:
     runs-on: ubuntu-latest

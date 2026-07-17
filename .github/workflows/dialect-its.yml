@@ -17,6 +17,10 @@ on:
       - '.github/workflows/dialect-its.yml'
   workflow_dispatch:
 
+# Least privilege: this workflow only reads the repo (checkout + build + test).
+permissions:
+  contents: read
+
 jobs:
   dialect-its:
     runs-on: ubuntu-latest
