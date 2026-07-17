@@ -31,7 +31,6 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -111,12 +110,15 @@ abstract class AbstractDialectSchemaIT {
     @Test
     void clusterSchemaAppliesAndDialectQueriesRunOnRealEngine() {
         // Register a node, then read it back through the active-nodes query.
+        // created_time/last_updated_time are written by the DB clock (CURRENT_TIMESTAMP), so only
+        // node id, status, and host are bound.
         int registered = jdbc.update(provider.getInsertQueryToRegisterNodeQuery(),
-                "node-A", new Date(), new Date(), "ACTIVE", "host-A");
+                "node-A", "ACTIVE", "host-A");
         assertEquals(1, registered);
 
+        // last_updated_time is written by the DB clock; bind status, load, node id.
         int heartbeat = jdbc.update(provider.getUpdateNodeHeartBeatQuery(),
-                new Date(), "ACTIVE", 3L, "node-A");
+                "ACTIVE", 3L, "node-A");
         assertEquals(1, heartbeat);
 
         List<ClusterNode> active = jdbc.query(provider.getActiveNodesQuery(),
@@ -143,7 +145,7 @@ abstract class AbstractDialectSchemaIT {
     @Test
     void masterFailoverRecoveryRunsOnRealEngine() {
         // A surviving node, and a job whose master node has left the cluster.
-        jdbc.update(provider.getInsertQueryToRegisterNodeQuery(), "survivor", now(), now(), "ACTIVE", "host");
+        jdbc.update(provider.getInsertQueryToRegisterNodeQuery(), "survivor", "ACTIVE", "host");
         long jobId = 1001L;
         insertJobExecution(jobId);
         insertCoordination(jobId, "ghost-master", CoordinationStatus.STARTED.name());
