@@ -507,6 +507,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-chunk-oriented-etl-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A chunk-oriented ETL worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#trying-failover" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -693,6 +704,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#a-chunk-oriented-etl-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A chunk-oriented ETL worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#trying-failover" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -818,6 +840,65 @@ the actual example source:</p>
 </code></pre></div>
 <p>The <code>demo.partition.sleepMs</code> knob above is purely for demos — it stretches each partition so you can kill
 a node mid-flight and watch failover (see below).</p>
+<h2 id="a-chunk-oriented-etl-worker">A chunk-oriented ETL worker<a class="headerlink" href="#a-chunk-oriented-etl-worker" title="Permanent link">&para;</a></h2>
+<p>The range-sum job uses a <code>Tasklet</code>. A more typical ETL uses a <strong>chunk-oriented</strong> worker step
+(reader → processor → writer). The only cluster-specific part is that each partition reads <strong>its own
+slice</strong> of the input: the reader is <code>@StepScope</code> and pulls its window from the <code>stepExecutionContext</code>
+keys the partitioner put there (<code>startRow</code>/<code>endRow</code>). This is the real reader from the CSV→XML example:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nd">@Bean</span><span class="p">(</span><span class="s">&quot;customerReader&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="nd">@StepScope</span><span class="w">   </span><span class="c1">// one reader per partition, so it can read that partition&#39;s row window</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">customerReader</span><span class="p">(</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{stepExecutionContext[&#39;startRow&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">startIndex</span><span class="p">,</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{stepExecutionContext[&#39;endRow&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">endIndex</span><span class="p">,</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{jobParameters[&#39;inputFile&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">inputFile</span><span class="p">,</span>
+<span class="w">            </span><span class="n">LineMapper</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lineMapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="p">(</span><span class="n">lineMapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">currentLine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">            </span><span class="nd">@Override</span>
+<span class="w">            </span><span class="kd">public</span><span class="w"> </span><span class="n">Customer</span><span class="w"> </span><span class="nf">read</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Customer</span><span class="w"> </span><span class="n">customer</span><span class="p">;</span>
+<span class="w">                </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="n">customer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">read</span><span class="p">())</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">currentLine</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentLine</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">startIndex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentLine</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">endIndex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">customer</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setResource</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">FileSystemResource</span><span class="p">(</span><span class="n">inputFile</span><span class="p">));</span>
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setLinesToSkip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// Skip header</span>
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setLineMapper</span><span class="p">(</span><span class="n">lineMapper</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">reader</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<p>The worker step wires that reader (and a processor/writer) as an ordinary Spring Batch chunk step. Note
+the naming rule from the <a href="../guide/">Usage guide</a>: the worker step's <strong>bean name = <code>StepBuilder</code> name =
+the name passed to <code>.partitioner(...)</code></strong> — workers look the step up by that name.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1">// The chunk-oriented worker step. Its @StepScope reader/processor/writer are injected as beans</span>
+<span class="w">    </span><span class="c1">// (the @Autowired fields above); each worker node runs this step for its assigned partitions.</span>
+<span class="w">    </span><span class="c1">// The bean name, the StepBuilder name, and the name given to .partitioner(...) must all match.</span>
+<span class="w">    </span><span class="nd">@Bean</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="nf">etlReaderWriterStep</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepBuilder</span><span class="p">(</span><span class="s">&quot;etlReaderWriterStep&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">).</span><span class="o">&lt;</span><span class="n">Customer</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="o">&gt;</span><span class="n">chunk</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">reader</span><span class="p">(</span><span class="n">customerItemReader</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">processor</span><span class="p">(</span><span class="n">customerProcessor</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">writer</span><span class="p">(</span><span class="n">customerXmlWriter</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<p>The <code>@StepScope</code> reader/processor/writer are declared as beans and injected into the worker step (here
+via <code>@Autowired</code> fields), so Spring hands each partition its own instances. The partitioner that seeds
+<code>startRow</code>/<code>endRow</code>/<code>partitionId</code> per partition, and the writer that emits one file per partition, are in
+the same <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples/src/main/java/examples/io/github/jchejarla/springbatch/clustering/advancedjob"><code>advancedjob/</code></a>
+package.</p>
 <h2 id="trying-failover">Trying failover<a class="headerlink" href="#trying-failover" title="Permanent link">&para;</a></h2>
 <p>Start three nodes, launch a job with partitions long enough to interrupt (<code>-Ddemo.partition.sleepMs</code>),
 kill one worker, and watch its transferable partitions get reassigned to the survivors — the job still

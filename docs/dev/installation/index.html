@@ -393,6 +393,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#5-a-complete-runnable-config-zero-setup-h2-multi-node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. A complete, runnable config (zero-setup H2, multi-node)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -725,6 +736,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#5-a-complete-runnable-config-zero-setup-h2-multi-node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. A complete, runnable config (zero-setup H2, multi-node)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -765,6 +787,16 @@
 <span class="w">    </span><span class="nt">&lt;version&gt;</span><span class="cm">&lt;!-- the version shown in the selector above --&gt;</span><span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div>
+<p>The core artifact pulls in Spring Boot's web, batch, jdbc, and actuator starters transitively, so you
+don't add those. It does <strong>not</strong> bring a database driver — add the one for your database yourself:</p>
+<div class="highlight"><pre><span></span><code><span class="cm">&lt;!-- H2 for the zero-setup quick start (use runtime scope) --&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+<span class="w">    </span><span class="nt">&lt;groupId&gt;</span>com.h2database<span class="nt">&lt;/groupId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>h2<span class="nt">&lt;/artifactId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;scope&gt;</span>runtime<span class="nt">&lt;/scope&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="cm">&lt;!-- ...or com.mysql:mysql-connector-j / org.postgresql:postgresql / etc. for a server DB --&gt;</span>
+</code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Testing a SNAPSHOT build?</p>
 <p>SNAPSHOTs are pre-release, not official versions. To consume one, add the snapshot repository:</p>
@@ -790,30 +822,31 @@ it on a configuration class:</p>
 <p>Both annotations are needed — <code>@EnableJdbcJobRepository</code> is inert without <code>@EnableBatchProcessing</code>. If
 clustering is enabled on the resourceless repository, startup fails fast with an actionable message.</p>
 <h2 id="3-create-the-schema">3. Create the schema<a class="headerlink" href="#3-create-the-schema" title="Permanent link">&para;</a></h2>
-<p>Two layers of tables must exist:</p>
-<ul>
-<li>
-<p><strong>Spring Batch core tables</strong> (<code>BATCH_JOB_EXECUTION</code>, <code>BATCH_STEP_EXECUTION</code>, …). Spring Boot 4 no
-  longer auto-creates these, so use Flyway/Liquibase, or <code>spring.sql.init</code>:</p>
+<p>Two layers of tables must exist: the <strong>Spring Batch core tables</strong> and this library's <strong>cluster tables</strong>
+(<code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, <code>BATCH_PARTITIONS</code>, <code>BATCH_JOB_PHASE_EVENTS</code>). Spring Boot 4 no
+longer auto-creates the Batch tables, so create both explicitly. The simplest portable way is
+<code>spring.sql.init</code>, pointing at the DDL that ships for your database — pick the matching suffix (<code>-h2</code>,
+<code>-postgresql</code>, <code>-mysql</code>, <code>-mariadb</code>, <code>-oracle</code>, <code>-sqlserver</code>, <code>-db2</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">spring</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">sql</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">init</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always</span>
-<span class="w">      </span><span class="nt">schema-locations</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:org/springframework/batch/core/schema-@@platform@@.sql</span>
+<span class="w">      </span><span class="nt">continue-on-error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">   </span><span class="c1"># tolerate &quot;already exists&quot; across restarts and peer nodes</span>
+<span class="w">      </span><span class="nt">schema-locations</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:org/springframework/batch/core/schema-h2.sql</span><span class="w">   </span><span class="c1"># 1. Spring Batch core tables</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:schema/schema-h2.sql</span><span class="w">                            </span><span class="c1"># 2. this library&#39;s cluster tables</span>
 </code></pre></div>
-</li>
-<li>
-<p><strong>Cluster tables</strong> — <code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, <code>BATCH_PARTITIONS</code>, and
-  <code>BATCH_JOB_PHASE_EVENTS</code>. DDL for all supported databases is bundled under <code>schema/</code>.</p>
-<ul>
-<li><strong>Development:</strong> let the framework create them — <code>spring.batch.cluster.initialize-schema=embedded</code>
-  (default; embedded databases such as H2 only). It runs after the Spring Batch schema (via
-  <code>@DependsOnDatabaseInitialization</code>) so the foreign keys resolve.</li>
-<li><strong>Production:</strong> apply the bundled DDL with your migration tool or by hand.</li>
-</ul>
-</li>
-</ul>
-<p>See <a href="../configuration/">Configuration</a> for <code>initialize-schema</code> and the schema prerequisite.</p>
+<p>Order matters — the cluster tables have foreign keys to the Spring Batch tables, so the core schema
+must be listed <strong>first</strong>. (For production, prefer a migration tool — Flyway/Liquibase — with
+<code>spring.batch.cluster.initialize-schema=never</code>.)</p>
+<div class="admonition warning">
+<p class="admonition-title">Don't rely on <code>initialize-schema=embedded</code> for the H2 file demo</p>
+<p><code>spring.batch.cluster.initialize-schema</code> defaults to <code>embedded</code>, which auto-creates the cluster
+tables <strong>only for genuinely in-memory databases</strong>. It does <strong>not</strong> fire for <strong>file-mode H2</strong> (the
+multi-node demo path) or any server database — for those you must create the cluster tables yourself
+(via <code>spring.sql.init</code> as above, or a migration tool), and set <code>initialize-schema: never</code>.</p>
+</div>
+<p>See <a href="../configuration/">Configuration</a> for the full <code>initialize-schema</code> semantics.</p>
 <h2 id="4-enable-clustering">4. Enable clustering<a class="headerlink" href="#4-enable-clustering" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nt">spring</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">batch</span><span class="p">:</span>
@@ -821,9 +854,49 @@ clustering is enabled on the resourceless repository, startup fails fast with an
 <span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">      </span><span class="nt">node-id-prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${HOSTNAME:batch-node}</span><span class="w">   </span><span class="c1"># optional; a unique suffix is added automatically</span>
 </code></pre></div>
+<h2 id="5-a-complete-runnable-config-zero-setup-h2-multi-node">5. A complete, runnable config (zero-setup H2, multi-node)<a class="headerlink" href="#5-a-complete-runnable-config-zero-setup-h2-multi-node" title="Permanent link">&para;</a></h2>
+<p>Putting it together — a full <code>application.yml</code> that forms a real cluster from multiple JVMs on one
+machine using <strong>file-mode H2</strong> (no external database). Copy this, then start two instances on different
+ports (<code>--server.port=8081</code>, <code>--server.port=8082</code>); they share the H2 file and form a cluster.</p>
+<div class="admonition tip">
+<p class="admonition-title">Start the first node first</p>
+<p>On the H2 file path, start one node and wait until it's up before starting the others — if several
+JVMs launch at the exact same instant they can race to create the shared <code>./build</code> directory / H2
+file. (A server database like Postgres/MySQL has no such race.)</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="nt">spring</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">datasource</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># AUTO_SERVER lets multiple JVMs share one H2 file — the first becomes an embedded server for the</span>
+<span class="w">    </span><span class="c1"># rest. Swap this for a Postgres/MySQL/... datasource in production.</span>
+<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jdbc:h2:file:./build/cluster-demo;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=PostgreSQL</span>
+<span class="w">    </span><span class="nt">driver-class-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org.h2.Driver</span>
+<span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sa</span>
+<span class="w">    </span><span class="nt">password</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">sql</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">init</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always</span>
+<span class="w">      </span><span class="nt">continue-on-error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">schema-locations</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:org/springframework/batch/core/schema-h2.sql</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:schema/schema-h2.sql</span>
+<span class="w">  </span><span class="nt">batch</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">job</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">          </span><span class="c1"># jobs are triggered on demand (REST/scheduler), NOT auto-run at startup</span>
+<span class="w">    </span><span class="nt">cluster</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">initialize-schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">never</span><span class="w"> </span><span class="c1"># the schema is created above via spring.sql.init</span>
+
+<span class="nt">management</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">web</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">exposure</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">include</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">health,info,batch-cluster,batch-cluster-jobs</span>
+</code></pre></div>
+<p><code>spring.batch.job.enabled=false</code> is important: without it, Spring Boot runs your job at startup — before
+the cluster forms — and it fails. Trigger jobs yourself once the app is up.</p>
 <p>That's it — your existing job and step definitions are unchanged. Next, implement a
-<code>ClusterAwarePartitioner</code> (see the <a href="../apidocs/">API reference</a>) and wire it with the
-<code>ClusterAwarePartitionHandler</code>.</p>
+<code>ClusterAwarePartitioner</code> and wire it with the <code>ClusterAwarePartitionHandler</code> — see the
+<strong><a href="../guide/">Usage guide</a></strong>.</p>
 
 
 

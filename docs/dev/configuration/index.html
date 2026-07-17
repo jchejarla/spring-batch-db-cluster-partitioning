@@ -638,7 +638,7 @@ suit small-to-medium clusters (~2–20 nodes).</p>
 <tr>
 <td><code>initialize-schema</code></td>
 <td><code>embedded</code></td>
-<td>Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own <code>spring.batch.jdbc.initialize-schema</code>. <code>EMBEDDED</code> (default) creates them only on embedded databases such as H2; <code>ALWAYS</code> always; <code>NEVER</code> not at all. For production, prefer a managed migration tool (Flyway/Liquibase) or apply the bundled DDL manually.</td>
+<td>Whether the framework creates its cluster tables on startup, mirroring Spring Batch's own <code>spring.batch.jdbc.initialize-schema</code>. <code>EMBEDDED</code> (default) creates them only on genuinely in-memory embedded databases — it does not fire for file-mode H2 or any server database, which must create the cluster tables via <code>spring.sql.init</code> or a migration tool. <code>ALWAYS</code> always creates them; <code>NEVER</code> never does. For production, prefer a managed migration tool (Flyway/Liquibase) with <code>NEVER</code>, or apply the bundled DDL manually.</td>
 </tr>
 <tr>
 <td><code>master-task-status-check-interval</code></td>

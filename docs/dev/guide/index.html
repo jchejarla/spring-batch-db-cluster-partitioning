@@ -789,18 +789,31 @@ library's <strong><code>ClusterAwarePartitionHandler</code></strong> and <strong
 <h2 id="1-write-a-clusterawarepartitioner">1. Write a <code>ClusterAwarePartitioner</code><a class="headerlink" href="#1-write-a-clusterawarepartitioner" title="Permanent link">&para;</a></h2>
 <p>Extend the abstract <code>ClusterAwarePartitioner</code> and implement three methods. The key one,
 <code>createDistributedPartitions</code>, receives the <strong>live node count</strong> so you can size the split to the cluster
-that actually exists right now:</p>
+that actually exists right now.</p>
+<div class="admonition warning">
+<p class="admonition-title">The partitioner must be a Spring bean — don't <code>new</code> it</p>
+<p><code>ClusterAwarePartitioner</code> has the cluster service injected into it by the framework, so it only works
+as a <strong>Spring-managed bean</strong>. A plain <code>new RangeSumPartitioner(...)</code> is never injected and fails at
+runtime with a <code>NullPointerException</code>. Annotate it (<code>@Component</code> below, or declare it as a <code>@Bean</code>),
+and use <code>@StepScope</code> if it reads job parameters (as here).</p>
+</div>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">io.github.jchejarla.springbatch.clustering.api.ClusterAwarePartitioner</span><span class="p">;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io.github.jchejarla.springbatch.clustering.api.PartitionStrategy</span><span class="p">;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io.github.jchejarla.springbatch.clustering.partition.PartitioningMode</span><span class="p">;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io.github.jchejarla.springbatch.clustering.partition.PartitionTransferableProp</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.batch.core.configuration.annotation.StepScope</span><span class="p">;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.batch.infrastructure.item.ExecutionContext</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.beans.factory.annotation.Value</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">org.springframework.stereotype.Component</span><span class="p">;</span>
 
+<span class="nd">@Component</span>
+<span class="nd">@StepScope</span><span class="w">   </span><span class="c1">// a new instance per job run, so it can read this run&#39;s job parameters</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">RangeSumPartitioner</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">ClusterAwarePartitioner</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="kd">to</span><span class="p">;</span>
 
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">RangeSumPartitioner</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kd">to</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">RangeSumPartitioner</span><span class="p">(</span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{jobParameters[&#39;from&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">from</span><span class="p">,</span>
+<span class="w">                               </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{jobParameters[&#39;to&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="kd">to</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">from</span><span class="p">;</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">to</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
@@ -873,8 +886,8 @@ worker step is an ordinary Spring Batch step that each node runs for its assigne
 <div class="highlight"><pre><span></span><code><span class="nd">@Configuration</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">RangeSumJobConfig</span><span class="w"> </span><span class="p">{</span>
 
-<span class="w">    </span><span class="c1">// Provided by the library&#39;s auto-configuration:</span>
-<span class="w">    </span><span class="nd">@Autowired</span><span class="w"> </span><span class="n">ClusterAwarePartitionHandler</span><span class="w"> </span><span class="n">partitionHandler</span><span class="p">;</span>
+<span class="w">    </span><span class="nd">@Autowired</span><span class="w"> </span><span class="n">ClusterAwarePartitionHandler</span><span class="w"> </span><span class="n">partitionHandler</span><span class="p">;</span><span class="w">   </span><span class="c1">// provided by auto-configuration</span>
+<span class="w">    </span><span class="nd">@Autowired</span><span class="w"> </span><span class="n">RangeSumPartitioner</span><span class="w"> </span><span class="n">rangeSumPartitioner</span><span class="p">;</span><span class="w">         </span><span class="c1">// the @Component bean from step 1</span>
 
 <span class="w">    </span><span class="nd">@Bean</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Job</span><span class="w"> </span><span class="nf">rangeSumJob</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">,</span>
@@ -888,15 +901,20 @@ worker step is an ordinary Spring Batch step that each node runs for its assigne
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="nf">managerStep</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">,</span>
 <span class="w">                            </span><span class="n">StepExecutionAggregator</span><span class="w"> </span><span class="n">aggregator</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepBuilder</span><span class="p">(</span><span class="s">&quot;rangeSumStep.manager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">)</span>
-<span class="w">                </span><span class="p">.</span><span class="na">partitioner</span><span class="p">(</span><span class="s">&quot;rangeSumStep&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RangeSumPartitioner</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1_000_000</span><span class="p">))</span>
+<span class="w">                </span><span class="c1">// inject the partitioner BEAN — never `new RangeSumPartitioner(...)` (see step 1).</span>
+<span class="w">                </span><span class="p">.</span><span class="na">partitioner</span><span class="p">(</span><span class="s">&quot;rangeSumStep&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rangeSumPartitioner</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">partitionHandler</span><span class="p">(</span><span class="n">partitionHandler</span><span class="p">)</span><span class="w">     </span><span class="c1">// ← distributes via the database</span>
-<span class="w">                </span><span class="p">.</span><span class="na">step</span><span class="p">(</span><span class="n">workerStep</span><span class="p">(</span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">txnManager</span><span class="p">))</span>
+<span class="w">                </span><span class="p">.</span><span class="na">step</span><span class="p">(</span><span class="n">rangeSumStep</span><span class="p">(</span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">txnManager</span><span class="p">))</span>
 <span class="w">                </span><span class="p">.</span><span class="na">aggregator</span><span class="p">(</span><span class="n">aggregator</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span>
 
+<span class="w">    </span><span class="c1">// The worker step. Its BEAN NAME must equal the step name and the name passed to</span>
+<span class="w">    </span><span class="c1">// .partitioner(&quot;rangeSumStep&quot;, ...) above — worker nodes look the step up by that name in the</span>
+<span class="w">    </span><span class="c1">// application context. Here the @Bean method name, the StepBuilder name, and the partitioner name</span>
+<span class="w">    </span><span class="c1">// are all &quot;rangeSumStep&quot;; if they diverge, workers fail with NoSuchBeanDefinitionException.</span>
 <span class="w">    </span><span class="nd">@Bean</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="nf">workerStep</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="nf">rangeSumStep</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepBuilder</span><span class="p">(</span><span class="s">&quot;rangeSumStep&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">tasklet</span><span class="p">((</span><span class="n">contribution</span><span class="p">,</span><span class="w"> </span><span class="n">chunkContext</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                    </span><span class="n">ExecutionContext</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chunkContext</span><span class="p">.</span><span class="na">getStepContext</span><span class="p">()</span>
@@ -912,7 +930,15 @@ worker step is an ordinary Spring Batch step that each node runs for its assigne
 <span class="p">}</span>
 </code></pre></div>
 <p>Nothing about the worker step is cluster-aware — it just reads its partition's <code>ExecutionContext</code> and
-does the work. Distribution, claiming, and failover happen underneath, in <code>ClusterAwarePartitionHandler</code>.</p>
+does the work. Distribution, claiming, and failover happen underneath, in <code>ClusterAwarePartitionHandler</code>.
+For a <strong>chunk-oriented ETL</strong> worker (a <code>@StepScope</code> reader/processor/writer reading <code>start</code>/<code>end</code> from
+<code>#{stepExecutionContext['start']}</code>), see the CSV→XML job in <a href="../examples/">Examples</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Spring Batch 6 import</p>
+<p><code>RunIdIncrementer</code> moved packages in Batch 6 — import it from
+<code>org.springframework.batch.core.job.parameters.RunIdIncrementer</code> (it was in <code>…launch.support</code> in
+Batch 5, and the old path no longer compiles).</p>
+</div>
 <h2 id="3-aggregate-the-results">3. Aggregate the results<a class="headerlink" href="#3-aggregate-the-results" title="Permanent link">&para;</a></h2>
 <p><code>ClusterAwareAggregator</code> collects the completed partitions on the master and invokes your callback.
 Provide a <code>ClusterAwareAggregatorCallback</code> for the success/failure hooks:</p>
@@ -939,6 +965,13 @@ Provide a <code>ClusterAwareAggregatorCallback</code> for the success/failure ho
 machine). Each node registers itself and generates a unique id automatically — no per-instance config.
 Launch the job on any node: that node becomes the <strong>master</strong> for that execution and the rest act as
 workers. Two jobs launched on two nodes have two independent masters, concurrently.</p>
+<div class="admonition warning">
+<p class="admonition-title">Don't let the job auto-run at startup</p>
+<p>If you have a <code>Job</code> bean and launch jobs on demand (REST, a scheduler, …), set
+<strong><code>spring.batch.job.enabled=false</code></strong>. Otherwise Spring Boot's <code>JobLauncherApplicationRunner</code> runs the
+job at application startup — before the cluster has formed — and it fails. Trigger jobs yourself once
+the app is up.</p>
+</div>
 <p>Watch it run through the <a href="../Observability/">actuator endpoints</a>, and see a complete, runnable
 multi-node project — including a failover walkthrough — in <a href="../examples/">Examples</a>.</p>
 
