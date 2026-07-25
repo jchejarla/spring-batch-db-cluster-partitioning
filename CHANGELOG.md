@@ -1,4 +1,4 @@
-## [3.0.0] – Unreleased
+## [3.0.0] – 2026-07-24
 
 > **Upgrading from 2.x?** See the [Migration Guide](docs/migration.md) — this is a platform release
 > (Spring Boot 4, Spring Batch 6, Java 21) with a required JobRepository change.
