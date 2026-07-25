@@ -182,14 +182,15 @@ The library exposes cluster state through Spring Boot Actuator:
 These are **not exposed over HTTP by default** — add the ones you want to `management.endpoints.web.exposure.include`, and protect them like any operational endpoint. Full reference with example responses and programmatic access via `BatchClusterQueryService` is on the **[Observability page](docs/Observability.md)**.
 
 ## Featured in
-* [📝 TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution)
-  *Spring Batch Database-Backed Clustered Partitioning* — 98+ views, 27+ downloads
-* [✍️ Dev.to Overview Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4)
-  *Introduction to the coordination framework* — 171+ views
-* [📘 Article Series: Distributed Spring Batch Coordination](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4)
-  * Distributed Spring Batch Coordination: Lightweight, Database-Driven, and Cloud-Native Series
-* [📚 Differ.blog Feature](https://differ.blog/p/distributed-spring-batch-clustering-a-lightweight-alternative-to-heav-8225f3)
-  * Distributed Spring Batch Clustering: A Lightweight Alternative to Heavy Orchestration
+
+**Peer-reviewed publication**
+* [📄 JOSS Paper](https://doi.org/10.21105/joss.09460) — *Database-driven clustering with heartbeats and failover for Spring Batch*, published in the **Journal of Open Source Software** (peer-reviewed). See [Citation](#citation) below.
+* [📝 TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution) — *Spring Batch Database-Backed Clustered Partitioning* (earlier preprint, superseded by the JOSS paper)
+
+**Articles & write-ups**
+* [✍️ Dev.to Overview Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4) — *Introduction to the coordination framework*
+* [📘 Article Series: Distributed Spring Batch Coordination](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4) — lightweight, database-driven, and cloud-native
+* [📚 Differ.blog Feature](https://differ.blog/p/distributed-spring-batch-clustering-a-lightweight-alternative-to-heav-8225f3) — *A Lightweight Alternative to Heavy Orchestration*
 
 ## Contributing
 
