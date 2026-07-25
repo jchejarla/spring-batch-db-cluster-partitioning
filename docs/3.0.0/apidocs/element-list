@@ -1,0 +1,11 @@
+io.github.jchejarla.springbatch.clustering.actuate
+io.github.jchejarla.springbatch.clustering.api
+io.github.jchejarla.springbatch.clustering.autoconfigure
+io.github.jchejarla.springbatch.clustering.autoconfigure.conditions
+io.github.jchejarla.springbatch.clustering.core
+io.github.jchejarla.springbatch.clustering.core.serviceimpl
+io.github.jchejarla.springbatch.clustering.mgmt
+io.github.jchejarla.springbatch.clustering.partition
+io.github.jchejarla.springbatch.clustering.partition.impl
+io.github.jchejarla.springbatch.clustering.polling
+io.github.jchejarla.springbatch.clustering.query

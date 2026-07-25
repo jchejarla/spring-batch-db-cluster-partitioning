@@ -1,0 +1,975 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Database-coordinated distributed partitioning for Spring Batch — versioned documentation.">
+      
+      
+      
+        <link rel="canonical" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/3.0.0/examples/">
+      
+      
+        <link rel="prev" href="../security/">
+      
+      
+        <link rel="next" href="../DESIGN/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Examples - Spring Batch DB Cluster Partitioning</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Spring Batch DB Cluster Partitioning" class="md-header__button md-logo" aria-label="Spring Batch DB Cluster Partitioning" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Spring Batch DB Cluster Partitioning
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jchejarla/spring-batch-db-cluster-partitioning
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Spring Batch DB Cluster Partitioning" class="md-nav__button md-logo" aria-label="Spring Batch DB Cluster Partitioning" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Spring Batch DB Cluster Partitioning
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jchejarla/spring-batch-db-cluster-partitioning
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-in-60-seconds-zero-setup-h2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it in 60 seconds (zero-setup H2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-worker-tasklet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The worker tasklet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-chunk-oriented-etl-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A chunk-oriented ETL worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trying-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying failover
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DESIGN/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration (2.x → 3.0)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apidocs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API (Javadoc)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#example-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-it-in-60-seconds-zero-setup-h2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run it in 60 seconds (zero-setup H2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-worker-tasklet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The worker tasklet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-chunk-oriented-etl-worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A chunk-oriented ETL worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trying-failover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trying failover
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h1>
+<p>The <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples"><code>examples/</code></a>
+module is a runnable Spring Boot application that stands up a real multi-node cluster and exposes jobs
+over REST. Use it to see coordination, distribution, and failover end-to-end.</p>
+<h2 id="example-jobs">Example jobs<a class="headerlink" href="#example-jobs" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Endpoint</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Range-sum</strong></td>
+<td><code>GET /api/v1/clusteredjob/addition/taskSize/{n}/from/{from}/to/{to}</code></td>
+<td>Splits a numeric range into <code>n</code> partitions, sums each on a different worker, aggregates the total.</td>
+</tr>
+<tr>
+<td><strong>ETL</strong></td>
+<td><code>GET /api/v1/etljob/rows/{rows}</code></td>
+<td>CSV → XML with chunk-oriented reader/processor/writer distributed across workers.</td>
+</tr>
+<tr>
+<td><strong>Single-node baseline</strong></td>
+<td><code>GET /api/v1/singlenodejob/addition/...</code></td>
+<td>The same work without clustering, to compare timings.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="run-it-in-60-seconds-zero-setup-h2">Run it in 60 seconds (zero-setup H2)<a class="headerlink" href="#run-it-in-60-seconds-zero-setup-h2" title="Permanent link">&para;</a></h2>
+<p>The bundled <code>h2</code> profile uses a shared file-mode H2 database, so multiple JVMs on one machine form a
+cluster with no external infrastructure:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. Build</span>
+mvn<span class="w"> </span>clean<span class="w"> </span>package<span class="w"> </span>-pl<span class="w"> </span>examples<span class="w"> </span>-am
+
+<span class="c1"># 2. Start two nodes (separate terminals), sharing the H2 file</span>
+java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples-3.0.0-SNAPSHOT.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8081</span>
+java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples-3.0.0-SNAPSHOT.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8082</span>
+
+<span class="c1"># 3. Trigger a clustered job on either node</span>
+curl<span class="w"> </span>http://localhost:8081/api/v1/clusteredjob/addition/taskSize/4/from/1/to/100
+</code></pre></div>
+<p>Each node prints a <code>&gt;&gt;&gt;</code> lifecycle trace so you can watch partitions being claimed and completed across
+both terminals, and the REST response returns the aggregated result.</p>
+<h2 id="the-worker-tasklet">The worker tasklet<a class="headerlink" href="#the-worker-tasklet" title="Permanent link">&para;</a></h2>
+<p>The work each partition runs is an ordinary Spring Batch <code>Tasklet</code> — it just reads its slice from the
+<code>ExecutionContext</code>. Nothing in it is cluster-aware; distribution and failover happen underneath. This is
+the actual example source:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">LargeSumExecutionTask</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Tasklet</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">nodeId</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">LargeSumExecutionTask</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">nodeId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">nodeId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nodeId</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Override</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">RepeatStatus</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">StepContribution</span><span class="w"> </span><span class="n">contribution</span><span class="p">,</span><span class="w"> </span><span class="n">ChunkContext</span><span class="w"> </span><span class="n">chunkContext</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">StepExecution</span><span class="w"> </span><span class="n">stepExecution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">chunkContext</span><span class="p">.</span><span class="na">getStepContext</span><span class="p">().</span><span class="na">getStepExecution</span><span class="p">();</span>
+<span class="w">        </span><span class="n">ExecutionContext</span><span class="w"> </span><span class="n">executionContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stepExecution</span><span class="p">.</span><span class="na">getExecutionContext</span><span class="p">();</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executionContext</span><span class="p">.</span><span class="na">getLong</span><span class="p">(</span><span class="s">&quot;start&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">executionContext</span><span class="p">.</span><span class="na">getLong</span><span class="p">(</span><span class="s">&quot;end&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">stepName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stepExecution</span><span class="p">.</span><span class="na">getStepName</span><span class="p">();</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; [&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">nodeId</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;] (worker) picked up partition &quot;</span>
+<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="n">stepName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; (range &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;..&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;) on &quot;</span>
+<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">isVirtual</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;virtual&quot;</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; thread &quot;</span>
+<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">());</span>
+<span class="w">        </span><span class="c1">// Optional demo knob: -Ddemo.partition.sleepMs=NNN makes each partition run for a fixed</span>
+<span class="w">        </span><span class="c1">// duration so failover (kill a node mid-partition -&gt; reassignment) can be demonstrated</span>
+<span class="w">        </span><span class="c1">// without CPU-burning huge ranges. Zero (the default) keeps the pure compute behavior.</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">sleepMs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Long</span><span class="p">.</span><span class="na">getLong</span><span class="p">(</span><span class="s">&quot;demo.partition.sleepMs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="n">L</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sleepMs</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Thread</span><span class="p">.</span><span class="na">sleep</span><span class="p">(</span><span class="n">sleepMs</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="n">InterruptedException</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">interrupt</span><span class="p">();</span>
+<span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">&quot;partition &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">stepName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; interrupted&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">long</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">i</span><span class="o">=</span><span class="n">start</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">&lt;=</span><span class="n">end</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">executionContext</span><span class="p">.</span><span class="na">putLong</span><span class="p">(</span><span class="s">&quot;result&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;&gt;&gt;&gt; [&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">nodeId</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;] (worker) completed partition &quot;</span>
+<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="n">stepName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; result=&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">RepeatStatus</span><span class="p">.</span><span class="na">FINISHED</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>demo.partition.sleepMs</code> knob above is purely for demos — it stretches each partition so you can kill
+a node mid-flight and watch failover (see below).</p>
+<h2 id="a-chunk-oriented-etl-worker">A chunk-oriented ETL worker<a class="headerlink" href="#a-chunk-oriented-etl-worker" title="Permanent link">&para;</a></h2>
+<p>The range-sum job uses a <code>Tasklet</code>. A more typical ETL uses a <strong>chunk-oriented</strong> worker step
+(reader → processor → writer). The only cluster-specific part is that each partition reads <strong>its own
+slice</strong> of the input: the reader is <code>@StepScope</code> and pulls its window from the <code>stepExecutionContext</code>
+keys the partitioner put there (<code>startRow</code>/<code>endRow</code>). This is the real reader from the CSV→XML example:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="nd">@Bean</span><span class="p">(</span><span class="s">&quot;customerReader&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="nd">@StepScope</span><span class="w">   </span><span class="c1">// one reader per partition, so it can read that partition&#39;s row window</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">customerReader</span><span class="p">(</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{stepExecutionContext[&#39;startRow&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">startIndex</span><span class="p">,</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{stepExecutionContext[&#39;endRow&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">endIndex</span><span class="p">,</span>
+<span class="w">            </span><span class="nd">@Value</span><span class="p">(</span><span class="s">&quot;#{jobParameters[&#39;inputFile&#39;]}&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">inputFile</span><span class="p">,</span>
+<span class="w">            </span><span class="n">LineMapper</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lineMapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">reader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FlatFileItemReader</span><span class="o">&lt;</span><span class="n">Customer</span><span class="o">&gt;</span><span class="p">(</span><span class="n">lineMapper</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kd">private</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">currentLine</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">            </span><span class="nd">@Override</span>
+<span class="w">            </span><span class="kd">public</span><span class="w"> </span><span class="n">Customer</span><span class="w"> </span><span class="nf">read</span><span class="p">()</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Customer</span><span class="w"> </span><span class="n">customer</span><span class="p">;</span>
+<span class="w">                </span><span class="k">while</span><span class="w"> </span><span class="p">((</span><span class="n">customer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kd">super</span><span class="p">.</span><span class="na">read</span><span class="p">())</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">currentLine</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentLine</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">startIndex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">currentLine</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">endIndex</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">customer</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setResource</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">FileSystemResource</span><span class="p">(</span><span class="n">inputFile</span><span class="p">));</span>
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setLinesToSkip</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// Skip header</span>
+<span class="w">        </span><span class="n">reader</span><span class="p">.</span><span class="na">setLineMapper</span><span class="p">(</span><span class="n">lineMapper</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">reader</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<p>The worker step wires that reader (and a processor/writer) as an ordinary Spring Batch chunk step. Note
+the naming rule from the <a href="../guide/">Usage guide</a>: the worker step's <strong>bean name = <code>StepBuilder</code> name =
+the name passed to <code>.partitioner(...)</code></strong> — workers look the step up by that name.</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1">// The chunk-oriented worker step. Its @StepScope reader/processor/writer are injected as beans</span>
+<span class="w">    </span><span class="c1">// (the @Autowired fields above); each worker node runs this step for its assigned partitions.</span>
+<span class="w">    </span><span class="c1">// The bean name, the StepBuilder name, and the name given to .partitioner(...) must all match.</span>
+<span class="w">    </span><span class="nd">@Bean</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="nf">etlReaderWriterStep</span><span class="p">(</span><span class="n">JobRepository</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">,</span><span class="w"> </span><span class="n">PlatformTransactionManager</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepBuilder</span><span class="p">(</span><span class="s">&quot;etlReaderWriterStep&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">jobRepository</span><span class="p">).</span><span class="o">&lt;</span><span class="n">Customer</span><span class="p">,</span><span class="w"> </span><span class="n">Customer</span><span class="o">&gt;</span><span class="n">chunk</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">txnManager</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">reader</span><span class="p">(</span><span class="n">customerItemReader</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">processor</span><span class="p">(</span><span class="n">customerProcessor</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">writer</span><span class="p">(</span><span class="n">customerXmlWriter</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+<p>The <code>@StepScope</code> reader/processor/writer are declared as beans and injected into the worker step (here
+via <code>@Autowired</code> fields), so Spring hands each partition its own instances. The partitioner that seeds
+<code>startRow</code>/<code>endRow</code>/<code>partitionId</code> per partition, and the writer that emits one file per partition, are in
+the same <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/tree/main/examples/src/main/java/examples/io/github/jchejarla/springbatch/clustering/advancedjob"><code>advancedjob/</code></a>
+package.</p>
+<h2 id="trying-failover">Trying failover<a class="headerlink" href="#trying-failover" title="Permanent link">&para;</a></h2>
+<p>Start three nodes, launch a job with partitions long enough to interrupt (<code>-Ddemo.partition.sleepMs</code>),
+kill one worker, and watch its transferable partitions get reassigned to the survivors — the job still
+completes with every partition run exactly once. The step-by-step walkthrough, along with the
+PostgreSQL / MySQL / Oracle profiles and SQL for inspecting cluster state, is in the
+<a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning/blob/main/examples/README.md"><strong>full example README</strong></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Demo timings</p>
+<p>The example profiles use deliberately fast failover timings so a dead node is removed in ~8s. Keep
+the <a href="../configuration/">library defaults</a> for real deployments — see the note on that page.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
