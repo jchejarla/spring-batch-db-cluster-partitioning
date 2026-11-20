@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -816,7 +816,7 @@ coordinates through <strong>shared, persisted</strong> job metadata, so a JDBC-b
 it on a configuration class:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@SpringBootApplication</span>
 <span class="nd">@EnableBatchProcessing</span>
-<span class="nd">@EnableJdbcJobRepository</span><span class="w">   </span><span class="c1">// dataSourceRef defaults to &quot;dataSource&quot;</span>
+<span class="nd">@EnableJdbcJobRepository</span><span class="w">   </span><span class="c1">// dataSourceRef defaults to "dataSource"</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MyApplication</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
 </code></pre></div>
 <p>Both annotations are needed — <code>@EnableJdbcJobRepository</code> is inert without <code>@EnableBatchProcessing</code>. If
@@ -831,10 +831,10 @@ longer auto-creates the Batch tables, so create both explicitly. The simplest po
 <span class="w">  </span><span class="nt">sql</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">init</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always</span>
-<span class="w">      </span><span class="nt">continue-on-error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">   </span><span class="c1"># tolerate &quot;already exists&quot; across restarts and peer nodes</span>
+<span class="w">      </span><span class="nt">continue-on-error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">   </span><span class="c1"># tolerate "already exists" across restarts and peer nodes</span>
 <span class="w">      </span><span class="nt">schema-locations</span><span class="p">:</span>
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:org/springframework/batch/core/schema-h2.sql</span><span class="w">   </span><span class="c1"># 1. Spring Batch core tables</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:schema/schema-h2.sql</span><span class="w">                            </span><span class="c1"># 2. this library&#39;s cluster tables</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">classpath:schema/schema-h2.sql</span><span class="w">                            </span><span class="c1"># 2. this library's cluster tables</span>
 </code></pre></div>
 <p>Order matters — the cluster tables have foreign keys to the Spring Batch tables, so the core schema
 must be listed <strong>first</strong>. (For production, prefer a migration tool — Flyway/Liquibase — with
@@ -952,10 +952,10 @@ the cluster forms — and it fails. Trigger jobs yourself once the app is up.</p
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

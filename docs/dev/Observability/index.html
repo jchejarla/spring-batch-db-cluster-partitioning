@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -897,7 +897,7 @@ ones you want to <code>management.endpoints.web.exposure.include</code>:</p>
 <span class="w">  </span><span class="nt">endpoints</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">web</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">exposure</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">include</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;health,info,batch-cluster,batch-cluster-jobs&quot;</span>
+<span class="w">        </span><span class="nt">include</span><span class="p">:</span><span class="w"> </span><span class="s">"health,info,batch-cluster,batch-cluster-jobs"</span>
 <span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">health</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">show-details</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">always</span><span class="w">   </span><span class="c1"># needed to see the cluster health details below</span>
@@ -909,22 +909,22 @@ enabled (<code>spring.batch.cluster.enabled=true</code>).</p>
 <h2 id="health-actuatorhealth">Health — <code>/actuator/health</code><a class="headerlink" href="#health-actuatorhealth" title="Permanent link">&para;</a></h2>
 <p>The library contributes <strong>two</strong> health components. With <code>show-details: always</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;batchCluster&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;Total Nodes in Cluster&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Total Active Nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2&quot;</span>
+<span class="w">  </span><span class="nt">"components"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"batchCluster"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"Total Nodes in Cluster"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Total Active Nodes"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2"</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">&quot;batchClusterNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;UP&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;details&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">&quot;Node Id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-8bde6cfa-0505-4f0a-a542-2c37a16b1936&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Node Status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Current Load&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;0&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Start Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fri Jul 10 11:46:19 EDT 2026&quot;</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">&quot;Last Heartbeat Update Time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Fri Jul 10 11:46:40 EDT 2026&quot;</span>
+<span class="w">    </span><span class="nt">"batchClusterNode"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UP"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"details"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"Node Id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-8bde6cfa-0505-4f0a-a542-2c37a16b1936"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Node Status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Current Load"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Start Time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fri Jul 10 11:46:19 EDT 2026"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"Last Heartbeat Update Time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fri Jul 10 11:46:40 EDT 2026"</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
@@ -961,17 +961,17 @@ self-fences (stops claiming work), and this reflects that before the master remo
 <p>Publishes the running library version and the <strong>effective</strong> cluster settings — handy for confirming
 what timings a node is actually using (support, debugging, drift checks):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;Batch Clustering Properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;Batch clustering version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3.0.0&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Node heartbeat interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Check for tasks polling interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Node unreachable marking threshold (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Node delete threshold (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Master task status check interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Check for orphaned tasks interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Concurrency limit per node&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Node unreachable marking-thread interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;Node cleanup-thread interval (milli seconds)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span>
+<span class="w">  </span><span class="nt">"Batch Clustering Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"Batch clustering version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.0.0"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Node heartbeat interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Check for tasks polling interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Node unreachable marking threshold (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">3000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Node delete threshold (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Master task status check interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Check for orphaned tasks interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Concurrency limit per node"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Node unreachable marking-thread interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"Node cleanup-thread interval (milli seconds)"</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
@@ -981,23 +981,23 @@ what timings a node is actually using (support, debugging, drift checks):</p>
 <h3 id="actuatorbatch-cluster"><code>/actuator/batch-cluster</code><a class="headerlink" href="#actuatorbatch-cluster" title="Permanent link">&para;</a></h3>
 <p>Every node currently in the registry, with its status, host, heartbeat, and live load:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;totalNodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"totalNodes"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Node Id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-8bde6cfa-0505-4f0a-a542-2c37a16b1936&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mac.lan&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Started At&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:19.954Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Last Heartbeat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:29.963Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Current Load (# of tasks)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">      </span><span class="nt">"Node Id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-8bde6cfa-0505-4f0a-a542-2c37a16b1936"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mac.lan"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Started At"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:19.954Z"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Last Heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:29.963Z"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Current Load (# of tasks)"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;Node Id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d4bfd102-f884-4fdc-9b7c-eefa7ff155b1&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Host&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mac.lan&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Started At&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:22.625Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Last Heartbeat&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:30.639Z&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;Current Load (# of tasks)&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">      </span><span class="nt">"Node Id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d4bfd102-f884-4fdc-9b7c-eefa7ff155b1"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mac.lan"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Started At"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:22.625Z"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Last Heartbeat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:30.639Z"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"Current Load (# of tasks)"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
@@ -1007,12 +1007,12 @@ is running right now — the same figure the <code>LEAST_LOADED</code> assignmen
 <h3 id="actuatorbatch-clusternodeid"><code>/actuator/batch-cluster/{nodeId}</code><a class="headerlink" href="#actuatorbatch-clusternodeid" title="Permanent link">&para;</a></h3>
 <p>One node's detail (the raw <code>ClusterNodeInfo</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;nodeId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-8bde6cfa-0505-4f0a-a542-2c37a16b1936&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;hostIdentifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mac.lan&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;nodeStatus&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ACTIVE&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;currentLoad&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;startTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:19.954Z&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;lastHeartbeatTime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-10T15:46:30.963Z&quot;</span>
+<span class="w">  </span><span class="nt">"nodeId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-8bde6cfa-0505-4f0a-a542-2c37a16b1936"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"hostIdentifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Mac.lan"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"nodeStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACTIVE"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"currentLoad"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"startTime"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:19.954Z"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"lastHeartbeatTime"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-10T15:46:30.963Z"</span>
 <span class="p">}</span>
 </code></pre></div>
 <hr />
@@ -1022,10 +1022,10 @@ is running right now — the same figure the <code>LEAST_LOADED</code> assignmen
 <p>The jobs currently coordinated by the cluster, one row each:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span>
 <span class="w">  </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;jobExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;masterNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d3706bd7-0d54-4011-aa53-49ec6395ab53&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;masterStepName&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;multiNodeWorkerStep&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;coordinationStatus&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;STARTED&quot;</span>
+<span class="w">    </span><span class="nt">"jobExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"masterNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d3706bd7-0d54-4011-aa53-49ec6395ab53"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"masterStepName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multiNodeWorkerStep"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"coordinationStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STARTED"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">]</span>
 </code></pre></div>
@@ -1035,27 +1035,27 @@ job was recovered).</p>
 <p>The full breakdown: the master, a status histogram, and every partition with the node it landed on.</p>
 <p><strong>While running</strong> — four partitions claimed across two nodes:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;jobExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;masterNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d3706bd7-0d54-4011-aa53-49ec6395ab53&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;coordinationStatus&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;STARTED&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;partitionCount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;statusCounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;CLAIMED&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;stepExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;partitionKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;multiNodeWorkerStep:0&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;assignedNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d3706bd7-0d54-4011-aa53-49ec6395ab53&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CLAIMED&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;stepExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;partitionKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;multiNodeWorkerStep:1&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;assignedNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-c96bd358-e2f6-425e-9f04-37c4d210efc9&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CLAIMED&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;stepExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;partitionKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;multiNodeWorkerStep:2&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;assignedNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d3706bd7-0d54-4011-aa53-49ec6395ab53&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CLAIMED&quot;</span><span class="w"> </span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;stepExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;partitionKey&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;multiNodeWorkerStep:3&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;assignedNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-c96bd358-e2f6-425e-9f04-37c4d210efc9&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CLAIMED&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"jobExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"masterNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d3706bd7-0d54-4011-aa53-49ec6395ab53"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"coordinationStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STARTED"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"partitionCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"statusCounts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"CLAIMED"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"partitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"stepExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"partitionKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multiNodeWorkerStep:0"</span><span class="p">,</span><span class="w"> </span><span class="nt">"assignedNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d3706bd7-0d54-4011-aa53-49ec6395ab53"</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLAIMED"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"stepExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="nt">"partitionKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multiNodeWorkerStep:1"</span><span class="p">,</span><span class="w"> </span><span class="nt">"assignedNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-c96bd358-e2f6-425e-9f04-37c4d210efc9"</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLAIMED"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"stepExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nt">"partitionKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multiNodeWorkerStep:2"</span><span class="p">,</span><span class="w"> </span><span class="nt">"assignedNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d3706bd7-0d54-4011-aa53-49ec6395ab53"</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLAIMED"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"stepExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"partitionKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"multiNodeWorkerStep:3"</span><span class="p">,</span><span class="w"> </span><span class="nt">"assignedNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-c96bd358-e2f6-425e-9f04-37c4d210efc9"</span><span class="p">,</span><span class="w"> </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CLAIMED"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 <p><strong>After completion</strong> — the histogram flips to all <code>COMPLETED</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;jobExecutionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;masterNode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node-d3706bd7-0d54-4011-aa53-49ec6395ab53&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;coordinationStatus&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COMPLETED&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;partitionCount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;statusCounts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;COMPLETED&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">&quot;partitions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;… four partitions, each status COMPLETED …&quot;</span><span class="w"> </span><span class="p">]</span>
+<span class="w">  </span><span class="nt">"jobExecutionId"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"masterNode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node-d3706bd7-0d54-4011-aa53-49ec6395ab53"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"coordinationStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"COMPLETED"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"partitionCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"statusCounts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"COMPLETED"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"partitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"… four partitions, each status COMPLETED …"</span><span class="w"> </span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>
 <table>
@@ -1170,10 +1170,10 @@ your ops network. See <a href="../security/">Security</a> for the full hardening
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
