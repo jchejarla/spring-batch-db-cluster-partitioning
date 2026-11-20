@@ -1,3 +1,21 @@
+## [3.0.1] – Unreleased
+
+### 🐛 Fixes
+
+- **Partitions failed on Spring Batch 6.0.5+.** Spring Batch 6.0.5 restricts execution-context
+  deserialization to JDK and Spring Batch types, which rejected the transferable flag the partitioner
+  stored as a `PartitionTransferableProp` enum. The flag is now stored as its name (`"YES"`/`"NO"`).
+
+### 📦 Dependencies
+
+- **The core artifact no longer pulls in a web stack.** `spring-boot-starter-web` (embedded Tomcat,
+  Spring MVC, Jackson) and `slf4j-simple` were declared on the parent POM and inherited by
+  `spring-batch-db-cluster-core`. Core now declares only what it uses (Boot starter, JDBC, Batch,
+  Actuator). If your application relied on core to bring in Spring MVC, add `spring-boot-starter-web`
+  yourself. The `examples` module declares its own web and driver dependencies.
+- Spring Boot 4.1.0 → 4.1.3 (Spring Batch 6.0.6, Tomcat 11.0.27, Jackson 3.1.8).
+- Test-only: pinned `commons-compress` (pulled in by Testcontainers) to 1.28.0.
+
 ## [3.0.0] – 2026-07-24
 
 > **Upgrading from 2.x?** See the [Migration Guide](docs/migration.md) — this is a platform release

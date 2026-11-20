@@ -118,10 +118,13 @@ public abstract class ClusterAwarePartitioner implements Partitioner {
         log.info("Strategy for distributing the step workload {}", partitionStrategy.getPartitioningMode());
         PartitionAssignmentStrategy strategy = PartitionStrategyFactory.getStrategy(partitionStrategy);
         List<PartitionAssignment> assignments = strategy.assignPartitions(executionContexts, activeNodesOrderedByLoad);
+        PartitionTransferableProp transferable = arePartitionsTransferableWhenNodeFailed() == PartitionTransferableProp.YES
+                ? PartitionTransferableProp.YES : PartitionTransferableProp.NO;
         return assignments.stream().collect(Collectors.toMap(partitionAssignment-> String.valueOf(partitionAssignment.uniqueChunkId()), partitionAssignment-> {
             ExecutionContext executionContext = partitionAssignment.executionContext();
             executionContext.putString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER, partitionAssignment.nodeId());
-            executionContext.put(ClusterPartitioningConstants.IS_TRANSFERABLE_IDENTIFIER, arePartitionsTransferableWhenNodeFailed());
+            // Stored as the enum name: Spring Batch 6.0.5+ only deserializes JDK/Spring Batch types from the context
+            executionContext.putString(ClusterPartitioningConstants.IS_TRANSFERABLE_IDENTIFIER, transferable.name());
             return executionContext;
         }));
     }

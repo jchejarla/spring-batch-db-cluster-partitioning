@@ -108,8 +108,8 @@ public class ClusterAwarePartitionHandler implements PartitionHandler {
             Long stepExecutionId = stepExecution.getId();
             String partitionKey = stepExecution.getStepName();
             String nodeId = stepExecution.getExecutionContext().getString(ClusterPartitioningConstants.CLUSTER_NODE_IDENTIFIER);
-            PartitionTransferableProp isTaskTransferable = stepExecution.getExecutionContext().get(ClusterPartitioningConstants.IS_TRANSFERABLE_IDENTIFIER, PartitionTransferableProp.class);
-            params.add(new Object[]{stepExecutionId, jobExecutionId, partitionKey, nodeId, PartitionStatus.PENDING.name(), masterStepExecutionId, Objects.equals(PartitionTransferableProp.YES, isTaskTransferable) ? 1 : 0});
+            String isTaskTransferable = stepExecution.getExecutionContext().getString(ClusterPartitioningConstants.IS_TRANSFERABLE_IDENTIFIER, PartitionTransferableProp.NO.name());
+            params.add(new Object[]{stepExecutionId, jobExecutionId, partitionKey, nodeId, PartitionStatus.PENDING.name(), masterStepExecutionId, PartitionTransferableProp.YES.name().equals(isTaskTransferable) ? 1 : 0});
         }
 
         log.info("Persisting master step info into coordination table with status = CREATED, master step execution id {}", masterStepExecutionId);
