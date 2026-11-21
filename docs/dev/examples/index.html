@@ -783,8 +783,8 @@ cluster with no external infrastructure:</p>
 mvn<span class="w"> </span>clean<span class="w"> </span>package<span class="w"> </span>-pl<span class="w"> </span>examples<span class="w"> </span>-am
 
 <span class="c1"># 2. Start two nodes (separate terminals), sharing the H2 file</span>
-java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples-3.0.0-SNAPSHOT.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8081</span>
-java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples-3.0.0-SNAPSHOT.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8082</span>
+java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8081</span>
+java<span class="w"> </span>-jar<span class="w"> </span>examples/target/examples.jar<span class="w"> </span>--spring.profiles.active<span class="o">=</span>h2<span class="w"> </span>--server.port<span class="o">=</span><span class="m">8082</span>
 
 <span class="c1"># 3. Trigger a clustered job on either node</span>
 curl<span class="w"> </span>http://localhost:8081/api/v1/clusteredjob/addition/taskSize/4/from/1/to/100
