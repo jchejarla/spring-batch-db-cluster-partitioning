@@ -22,8 +22,8 @@ cluster with no external infrastructure:
 mvn clean package -pl examples -am
 
 # 2. Start two nodes (separate terminals), sharing the H2 file
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar --spring.profiles.active=h2 --server.port=8081
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar --spring.profiles.active=h2 --server.port=8082
+java -jar examples/target/examples.jar --spring.profiles.active=h2 --server.port=8081
+java -jar examples/target/examples.jar --spring.profiles.active=h2 --server.port=8082
 
 # 3. Trigger a clustered job on either node
 curl http://localhost:8081/api/v1/clusteredjob/addition/taskSize/4/from/1/to/100

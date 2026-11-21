@@ -61,7 +61,7 @@ Each node generates its own unique `node-id` automatically (from the configured 
 #### A.2 Start Worker Node 1
 
 ```bash
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
+java -jar examples/target/examples.jar \
   --spring.profiles.active=h2 \
   --server.port=8081
 ```
@@ -69,7 +69,7 @@ java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
 #### A.3 Start Worker Node 2 (in a separate terminal)
 
 ```bash
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
+java -jar examples/target/examples.jar \
   --spring.profiles.active=h2 \
   --server.port=8082
 ```
@@ -153,14 +153,14 @@ Each node generates its own unique `node-id` automatically (from the configured 
 #### B.4 Start Worker Node 1
 
 ```bash
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
+java -jar examples/target/examples.jar \
   --server.port=8081
 ```
 
 #### B.5 Start Worker Node 2 (in a separate terminal)
 
 ```bash
-java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
+java -jar examples/target/examples.jar \
   --server.port=8082
 ```
 
@@ -350,7 +350,7 @@ Path B above uses PostgreSQL because it most closely resembles production deploy
     - Cluster DDL: `spring-batch-db-cluster-core/src/main/resources/schema/schema-mysql.sql` or `schema-oracle.sql` from this repository.
 3. **Activate the profile** when starting each node:
    ```bash
-   java -jar examples/target/examples-3.0.0-SNAPSHOT.jar \
+   java -jar examples/target/examples.jar \
      --spring.profiles.active=mysql \
      --server.port=8081
    ```

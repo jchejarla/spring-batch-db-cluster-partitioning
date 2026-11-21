@@ -100,11 +100,11 @@ Upgrading from 2.x? See the [Migration Guide](docs/migration.md).
 <dependency>
     <groupId>io.github.jchejarla</groupId>
     <artifactId>spring-batch-db-cluster-core</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 </dependency>
 ```
 
-Gradle: `implementation 'io.github.jchejarla:spring-batch-db-cluster-core:3.0.0'` — the [Maven Central badge](https://search.maven.org/artifact/io.github.jchejarla/spring-batch-db-cluster-core) always shows the latest release.
+Gradle: `implementation 'io.github.jchejarla:spring-batch-db-cluster-core:3.0.1'` — the [Maven Central badge](https://search.maven.org/artifact/io.github.jchejarla/spring-batch-db-cluster-core) always shows the latest release.
 
 ### 2. Enable a JDBC job repository and the cluster
 
