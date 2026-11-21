@@ -77,18 +77,43 @@ jobs:
           # Preserve the existing gh-pages content (landing page + prior versions).
           git fetch origin gh-pages || true
 
+      # A release pushes main and a tag together, so several runs can race on gh-pages. Each attempt
+      # rebuilds on top of the current remote branch and pushes once; a rejected push just retries.
       - name: Deploy versioned docs + Javadoc
         run: |
-          if [ "${{ steps.ver.outputs.release }}" = "true" ]; then
-            # Release (tag or manual): frozen version, move the "latest" alias, point /docs/ at latest.
-            mike deploy --deploy-prefix docs --update-aliases --push "${{ steps.ver.outputs.version }}" latest
-            mike set-default --deploy-prefix docs --push latest
-          else
-            # Rolling dev docs from main (not aliased "latest"). If no release exists yet, point /docs/
-            # at dev so the site isn't empty; once a release exists, /docs/ stays on latest.
-            has_release="$(git show origin/gh-pages:docs/versions.json 2>/dev/null | grep -c '"latest"' || true)"
-            mike deploy --deploy-prefix docs --push dev
-            if [ "${has_release:-0}" = "0" ]; then
-              mike set-default --deploy-prefix docs --push dev
+          version="${{ steps.ver.outputs.version }}"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin gh-pages
+            git branch -f gh-pages origin/gh-pages
+
+            if [ "${{ steps.ver.outputs.release }}" = "true" ]; then
+              # Release (tag or manual): frozen version, move the "latest" alias, point /docs/ at latest.
+              mike deploy --deploy-prefix docs --update-aliases "$version" latest
+              mike set-default --deploy-prefix docs latest
+            else
+              # Rolling dev docs from main (not aliased "latest"). If no release exists yet, point /docs/
+              # at dev so the site isn't empty; once a release exists, /docs/ stays on latest.
+              has_release="$(git show origin/gh-pages:docs/versions.json 2>/dev/null | grep -c '"latest"' || true)"
+              mike deploy --deploy-prefix docs dev
+              if [ "${has_release:-0}" = "0" ]; then
+                mike set-default --deploy-prefix docs dev
+              fi
             fi
-          fi
+
+            # Release tags also bump the Maven snippet on the hand-maintained landing page.
+            if [ "${{ github.ref_type }}" = "tag" ]; then
+              rm -rf "$RUNNER_TEMP/landing"
+              git worktree add "$RUNNER_TEMP/landing" gh-pages
+              perl -pi -e "s#&lt;version&gt;\d+\.\d+\.\d+&lt;/version&gt;#&lt;version&gt;${version}&lt;/version&gt;#" "$RUNNER_TEMP/landing/index.html"
+              git -C "$RUNNER_TEMP/landing" commit -am "Landing page: version ${version}" || true
+              git worktree remove --force "$RUNNER_TEMP/landing"
+            fi
+
+            if git push origin gh-pages; then
+              exit 0
+            fi
+            echo "gh-pages push rejected (attempt ${attempt}); retrying on the updated branch"
+            sleep $((attempt * 10))
+          done
+          echo "Could not push gh-pages after 5 attempts"
+          exit 1
