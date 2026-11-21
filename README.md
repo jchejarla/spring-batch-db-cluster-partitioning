@@ -13,6 +13,8 @@ deploy or monitor.
 
 📖 **[Documentation site →](https://jchejarla.github.io/spring-batch-db-cluster-partitioning/)**
 
+📰 **Featured on InfoQ:** [*Distributed Spring Batch without a Message Broker*](https://www.infoq.com/articles/spring-batch-without-broker/)
+
 ---
 
 ## Why
@@ -188,6 +190,7 @@ These are **not exposed over HTTP by default** — add the ones you want to `man
 * [📝 TechRxiv Preprint](https://www.techrxiv.org/users/944717/articles/1314759-spring-batch-database-backed-clustered-partitioning-a-lightweight-coordination-framework-for-distributed-job-execution) — *Spring Batch Database-Backed Clustered Partitioning* (earlier preprint, superseded by the JOSS paper)
 
 **Articles & write-ups**
+* [📰 InfoQ: Distributed Spring Batch without a Message Broker](https://www.infoq.com/articles/spring-batch-without-broker/) — *the brokerless design: coordinating partitioning, claiming, and failover through the shared database* (InfoQ, October 2026)
 * [✍️ Dev.to Overview Article](https://dev.to/jchejarla/spring-batch-clustering-with-zero-messaging-introducing-spring-batch-db-cluster-partitioning-39p4) — *Introduction to the coordination framework*
 * [📘 Article Series: Distributed Spring Batch Coordination](https://dev.to/jchejarla/distributed-spring-batch-coordination-part-1-the-problem-with-traditional-spring-batch-scaling-3he4) — lightweight, database-driven, and cloud-native
 * [📚 Differ.blog Feature](https://differ.blog/p/distributed-spring-batch-clustering-a-lightweight-alternative-to-heav-8225f3) — *A Lightweight Alternative to Heavy Orchestration*
