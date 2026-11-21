@@ -111,7 +111,7 @@ footer a{color:var(--muted)}
       <a href="https://opensource.org/licenses/Apache-2.0"><img alt="License Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
     </div>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#-getting-started">Get started</a>
+      <a class="btn primary" href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/installation/">Get started</a>
       <a class="btn" href="docs/">Documentation</a>
       <a class="btn" href="https://doi.org/10.21105/joss.09460">Read the JOSS paper</a>
       <a class="btn" href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning">View on GitHub</a>
@@ -144,13 +144,13 @@ footer a{color:var(--muted)}
 
   <section id="install">
     <h2>Install</h2>
-    <p class="sub">Available on Maven Central. Add the dependency and configure your datasource — no changes to your existing job or step definitions.</p>
+    <p class="sub">Available on Maven Central. Add the dependency and configure your datasource — no changes to your existing job or step definitions. Requires Java 21+, Spring Boot 4.1+ and Spring Batch 6 (for Spring Boot 3, use the 2.x line).</p>
 <pre>&lt;dependency&gt;
     &lt;groupId&gt;io.github.jchejarla&lt;/groupId&gt;
     &lt;artifactId&gt;spring-batch-db-cluster-core&lt;/artifactId&gt;
-    &lt;version&gt;2.0.1&lt;/version&gt;
+    &lt;version&gt;3.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
-    <p class="sub" style="margin-top:16px">Then create the schema: alongside the standard Spring Batch tables, this library adds three tables — <code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, and <code>BATCH_PARTITIONS</code>. DDL for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 is bundled with the library; see <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#database-setup">Database Setup</a> for the scripts and dev-vs-production guidance.</p>
+    <p class="sub" style="margin-top:16px">Then use a JDBC job repository (<code>@EnableBatchProcessing</code> + <code>@EnableJdbcJobRepository</code>) — nodes share job state through the database — and create the schema: alongside the standard Spring Batch tables, this library adds four tables — <code>BATCH_NODES</code>, <code>BATCH_JOB_COORDINATION</code>, <code>BATCH_PARTITIONS</code>, and <code>BATCH_JOB_PHASE_EVENTS</code>. DDL for PostgreSQL, MySQL, MariaDB, Oracle, SQL Server, Db2, and H2 is bundled with the library; see <a href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/installation/">Installation</a> for the setup steps and dev-vs-production guidance.</p>
   </section>
 
   <section id="usage">
@@ -169,13 +169,13 @@ footer a{color:var(--muted)}
       node-cleanup-threshold: 60000</pre>
 
     <p class="usage-step"><strong>2. Define a partitioner</strong> by extending <code>ClusterAwarePartitioner</code>. You receive the live node count and pick a distribution strategy:</p>
-<pre>@Configuration
+<pre>@Component
 public class MyJobPartitioner extends ClusterAwarePartitioner {
 
     @Override
-    public List&lt;ExecutionContext&gt; splitIntoChunksForDistribution(int availableNodeCount) {
+    public List&lt;ExecutionContext&gt; createDistributedPartitions(int availableNodeCount) {
         List&lt;ExecutionContext&gt; partitions = new ArrayList&lt;&gt;();
-        for (int i = 0; i &lt; 10; i++) {
+        for (int i = 0; i &lt; availableNodeCount * 2; i++) {
             ExecutionContext ctx = new ExecutionContext();
             ctx.putLong("startRange", i * 100000L);
             ctx.putLong("endRange", (i + 1) * 100000L - 1);
@@ -190,14 +190,14 @@ public class MyJobPartitioner extends ClusterAwarePartitioner {
     }
 
     @Override
-    public PartitionBuilder buildPartitionStrategy() {
-        return PartitionBuilder.builder()
-            .partitioningMode(PartitioningMode.ROUND_ROBIN)
+    public PartitionStrategy buildPartitionStrategy() {
+        return PartitionStrategy.builder()
+            .partitioningMode(PartitioningMode.ROUND_ROBIN) // or FIXED_NODE_COUNT / LEAST_LOADED
             .build();
     }
 }</pre>
 
-    <p class="usage-step"><strong>3. Wire it into a partitioned step</strong> exactly as you would with standard Spring Batch — pass your partitioner to <code>.partitioner(...)</code>, and the library handles distribution, claiming, and failover across the cluster. The full job configuration is in the <a href="https://github.com/jchejarla/spring-batch-db-cluster-partitioning#-usage">README usage guide</a>.</p>
+    <p class="usage-step"><strong>3. Wire it into a partitioned step</strong> exactly as you would with standard Spring Batch — pass your partitioner to <code>.partitioner(...)</code>, and the library handles distribution, claiming, and failover across the cluster. The full job configuration is in the <a href="https://jchejarla.github.io/spring-batch-db-cluster-partitioning/docs/latest/guide/">Usage guide</a>.</p>
   </section>
 
   <section id="examples">
